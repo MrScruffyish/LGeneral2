@@ -367,11 +367,11 @@ int unit_lib_load( char *fname, int main )
 			unit->nation = nation_get_index( n );
 	}
         /* class id */
-        unit->class = 0;
+        unit->unit_class = 0;
         if ( !parser_get_value( sub, "class", &str, 0 ) ) goto parser_failure;
         for ( i = 0; i < unit_class_count; i++ )
             if ( STRCMP( str, unit_classes[i].id ) ) {
-                unit->class = i;
+                unit->unit_class = i;
                 break;
             }
         /* target type id */

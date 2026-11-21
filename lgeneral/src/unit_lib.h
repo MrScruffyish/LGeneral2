@@ -124,7 +124,7 @@ typedef struct {
     char *id;       /* identification of this entry */
     char *name;     /* name */
     int nation;     /* nation */
-    int class;      /* unit class */
+    int unit_class; /* unit class */
     int trgt_type;  /* target type */
     int ini;        /* inititative */
     int mov;        /* movement */

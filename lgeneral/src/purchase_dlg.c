@@ -173,7 +173,7 @@ List *get_purchasable_unit_lib_entries( const char *nationid,
 		if (nationid && (e->nation == -1 || 
 				strcmp(nations[e->nation].id, nationid)))
 			continue;
-		if (uclassid && strcmp(unit_classes[e->class].id, uclassid))
+		if (uclassid && strcmp(unit_classes[e->unit_class].id, uclassid))
 			continue;
 		if (date ) {
 			if (e->start_year > date->year)
@@ -225,7 +225,7 @@ static void render_unit_lib_entry_info( Unit_Lib_Entry *entry,
 	/* first column: name, type, ammo, fuel, spot, mov, ini, range */
 	write_line( buffer, gui->font_std, entry->name, x, &y );
 	write_line( buffer, gui->font_std, 
-				unit_classes[entry->class].name, x, &y );
+				unit_classes[entry->unit_class].name, x, &y );
 	y += 5;
 	sprintf( str, tr("Cost:       %3i"), entry->cost );
 	write_line( buffer, gui->font_std, str, x, &y );

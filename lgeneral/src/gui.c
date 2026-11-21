@@ -977,7 +977,7 @@ void gui_show_full_info( Unit *unit )
     write_line( contents, gui->font_std, unit->prop.name, x, &y );
 	if (!camp_loaded)
 		y += 10;
-    write_line( contents, gui->font_std, unit_classes[unit->prop.class].name, x, &y );
+    write_line( contents, gui->font_std, unit_classes[unit->prop.unit_class].name, x, &y );
     //y += 10;
     snprintf( str, 128, tr("%s Movement"), mov_types[unit->prop.mov_type].name );
     write_line( contents, gui->font_std, str, x, &y );
@@ -1046,7 +1046,7 @@ void gui_show_full_info( Unit *unit )
         /* name & type */
         x = border; y = border + hex_h + offset;
         write_line( contents, gui->font_std, unit->trsp_prop.name, x, &y );
-        write_line( contents, gui->font_std, unit_classes[unit->trsp_prop.class].name, x, &y );
+        write_line( contents, gui->font_std, unit_classes[unit->trsp_prop.unit_class].name, x, &y );
         y += 6;
         sprintf( str, tr("%s Movement"), mov_types[unit->trsp_prop.mov_type].name );
         write_line( contents, gui->font_std, str, x, &y );
@@ -1945,8 +1945,8 @@ void gui_render_unit_list( SDL_Surface *contents, List * units)
                             last_tag+=strlen(unit->tag)+1;
                             tagUnits=1;
                         }
-                    if(unit->prop.class>class_count)
-                        class_count=unit->prop.class;
+                    if(unit->prop.unit_class>class_count)
+                        class_count=unit->prop.unit_class;
                 }
             unit=list_next(units);
         }
@@ -1964,7 +1964,7 @@ void gui_render_unit_list( SDL_Surface *contents, List * units)
                     unit=(Unit *)list_first(units);
                     while(unit)
                         {
-                            if(unit->player==cur_player&&unit->str&&((!strlen(unit->tag)&&!strcmp(tags+tag_iterator,"[untagged]"))||!strcmp(unit->tag,tags+tag_iterator))&&unit->prop.class==j&&!unit->killed)
+                            if(unit->player==cur_player&&unit->str&&((!strlen(unit->tag)&&!strcmp(tags+tag_iterator,"[untagged]"))||!strcmp(unit->tag,tags+tag_iterator))&&unit->prop.unit_class==j&&!unit->killed)
                                 {
                                     gui_render_single_unit(contents,unit,x,y);
                                     x+=hex_w*3/2;
@@ -2035,8 +2035,8 @@ Unit *gui_unit_list_unit_clicked( List * units ,int cx,int cy)
                             last_tag+=strlen(unit->tag)+1;
                             tagUnits=1;
                         }
-                    if(unit->prop.class>class_count)
-                        class_count=unit->prop.class;
+                    if(unit->prop.unit_class>class_count)
+                        class_count=unit->prop.unit_class;
                 }
             unit=list_next(units);
         }
@@ -2054,7 +2054,7 @@ Unit *gui_unit_list_unit_clicked( List * units ,int cx,int cy)
                     unit=(Unit *)list_first(units);
                     while(unit)
                         {
-                            if(unit->player==cur_player&&unit->str&&((!strlen(unit->tag)&&!strcmp(tags+tag_iterator,"[untagged]"))||!strcmp(unit->tag,tags+tag_iterator))&&unit->prop.class==j&&!unit->killed)
+                            if(unit->player==cur_player&&unit->str&&((!strlen(unit->tag)&&!strcmp(tags+tag_iterator,"[untagged]"))||!strcmp(unit->tag,tags+tag_iterator))&&unit->prop.unit_class==j&&!unit->killed)
                                 {
                                     if(wx > x && wx < x+hex_w*3/2 && 
                                    				wy > y && wy < y+hex_h*3/2)

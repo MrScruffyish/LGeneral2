@@ -234,8 +234,8 @@ void scen_get_date( char *date_str );
 Get/Add casualties for unit class and player.
 ====================================================================
 */
-int scen_get_casualties( int player, int class );
-int scen_inc_casualties( int player, int class );
+int scen_get_casualties( int player, int unit_class );
+int scen_inc_casualties( int player, int unit_class );
 /*
 ====================================================================
 Add casualties for unit. Regard unit and transport classes.

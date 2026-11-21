@@ -1233,19 +1233,19 @@ void scen_get_date( char *date_str )
 Get/Add casualties for unit class and player.
 ====================================================================
 */
-int scen_get_casualties( int player, int class )
+int scen_get_casualties( int player, int unit_class )
 {
     if (!casualties || player < 0 || player >= scen_info->player_count
-        || class < 0 || class >= unit_class_count)
+        || unit_class < 0 || unit_class >= unit_class_count)
         return 0;
-    return casualties[player*unit_class_count + class];
+    return casualties[player*unit_class_count + unit_class];
 }
-int scen_inc_casualties( int player, int class )
+int scen_inc_casualties( int player, int unit_class )
 {
     if (!casualties || player < 0 || player >= scen_info->player_count
-         || class < 0 || class >= unit_class_count)
+         || unit_class < 0 || unit_class >= unit_class_count)
         return 0;
-    return ++casualties[player*unit_class_count + class];
+    return ++casualties[player*unit_class_count + unit_class];
 }
 /*
 ====================================================================
@@ -1255,9 +1255,9 @@ Add casualties for unit. Regard unit and transport classes.
 int scen_inc_casualties_for_unit( Unit *unit )
 {
     int player = player_get_index( unit->player );
-    int cnt = scen_inc_casualties( player, unit->prop.class );
+    int cnt = scen_inc_casualties( player, unit->prop.unit_class );
     if ( unit->trsp_prop.id )
-        cnt = scen_inc_casualties( player, unit->trsp_prop.class );
+        cnt = scen_inc_casualties( player, unit->trsp_prop.unit_class );
     return cnt;
 }
 

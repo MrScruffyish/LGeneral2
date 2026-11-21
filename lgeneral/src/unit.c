@@ -1102,7 +1102,7 @@ int unit_check_merge( Unit *unit, Unit *source )
     /* units must not be sea/air embarked */
     if ( unit->embark != EMBARK_NONE || source->embark != EMBARK_NONE ) return 0;
     /* same class */
-    if ( unit->prop.class != source->prop.class ) return 0;
+    if ( unit->prop.unit_class != source->prop.unit_class ) return 0;
     /* same player */
     if ( !player_is_ally( unit->player, source->player ) ) return 0;
     /* first unit must not have moved so far */
@@ -1112,7 +1112,7 @@ int unit_check_merge( Unit *unit, Unit *source )
     /* the unit strength must not exceed limit */
     if ( unit->str + source->str > 13 ) return 0;
     /* fortresses (unit-class 7) could not merge */
-    if ( unit->prop.class == 7 ) return 0;
+    if ( unit->prop.unit_class == 7 ) return 0;
     /* artillery with different ranges may not merge */
     if (unit->prop.flags&ARTILLERY && unit->prop.rng!=source->prop.rng) return 0;
     /* not failed so far: allow merge */
@@ -1130,7 +1130,7 @@ int unit_get_split_strength( Unit *unit )
     if ( unit->embark != EMBARK_NONE ) return 0;
     if ( !unit->unused ) return 0;
     if ( unit->str <= 4 ) return 0;
-    if ( unit->prop.class == 7 ) return 0; /* fortress */
+    if ( unit->prop.unit_class == 7 ) return 0; /* fortress */
     return unit->str - 4;
 }
 
@@ -1329,16 +1329,16 @@ Duplicate the unit.
 */
 Unit *unit_duplicate( Unit *unit )
 {
-    Unit *new = calloc(1,sizeof(Unit));
-    memcpy(new,unit,sizeof(Unit));
-    unit_set_generic_name(new, units->count + 1, unit->prop.name);
+    Unit *new_unit = calloc(1,sizeof(Unit));
+    memcpy(new_unit,unit,sizeof(Unit));
+    unit_set_generic_name(new_unit, units->count + 1, unit->prop.name);
     if (unit->sel_prop==&unit->prop)
-        new->sel_prop=&new->prop;
+        new_unit->sel_prop=&new_unit->prop;
     else
-        new->sel_prop=&new->trsp_prop;
-    new->backup = calloc( 1, sizeof( Unit ) );
+        new_unit->sel_prop=&new_unit->trsp_prop;
+    new_unit->backup = calloc( 1, sizeof( Unit ) );
     /* terrain can't be updated here */
-    return new;
+    return new_unit;
 }
 
 transferredUnitProp *unit_create_transfer_props( Unit *unit )

@@ -248,7 +248,7 @@ static void save_unit_lib_entry( FILE *file, Unit_Lib_Entry *entry )
     /* nation */
     save_int(file, entry->nation);
     /* class */
-    save_int(file, entry->class);
+    save_int(file, entry->unit_class);
     /* trgt_type */
     save_int(file, entry->trgt_type);
     /* ini */
@@ -421,7 +421,7 @@ static void load_unit_lib_entry( FILE *file, Unit_Lib_Entry *entry )
     if (store_version >= StorePurchaseData)
         entry->nation = load_int(file);
     /* class */
-    entry->class = load_int(file);
+    entry->unit_class = load_int(file);
     /* trgt_type */
     entry->trgt_type = load_int(file);
     /* ini */

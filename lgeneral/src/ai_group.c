@@ -506,7 +506,7 @@ void ai_group_add_unit( AI_Group *group, Unit *unit )
          unit->prop.flags & AIR_DEFENSE )
         list_add( group->units, unit );
     else
-    if ( unit->prop.class == 9 || unit->prop.class == 10 )
+    if ( unit->prop.unit_class == 9 || unit->prop.unit_class == 10 )
     {
         /* tactical and high level bomber */
         list_insert( group->units, unit, 0 );
@@ -570,7 +570,7 @@ void ai_group_delete_unit( AI_Group *group, Unit *unit )
          unit->prop.flags & AIR_DEFENSE )
         /* nothing to be done */;
     else
-    if ( unit->prop.class == 9 || unit->prop.class == 10 )
+    if ( unit->prop.unit_class == 9 || unit->prop.unit_class == 10 )
     {
         /* tactical and high level bomber */
         group->bomber_count--;
