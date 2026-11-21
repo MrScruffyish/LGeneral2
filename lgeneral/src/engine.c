@@ -1087,21 +1087,9 @@ static void engine_select_player( Player *player, int skip_unit_prep )
     map_get_vis_units();
     if ( !skip_unit_prep) {
 
-        /* prepare deployment dialog on deployment-turn */
-        if ( deploy_turn
-             && cur_player && cur_player->ctrl == PLAYER_CTRL_HUMAN )
-            engine_handle_button( ID_DEPLOY );
-        else
-            group_hide( gui->deploy_window, 1 );
-
-        /* supply levels */
-        list_reset( units );
-        while ( ( unit = list_next( units ) ) )
-            if ( unit->player == cur_player )
-                scen_adjust_unit_supply_level( unit );
-            
-        /* mark unit as re-deployable in deployment-turn when it is
-         * located on a deployment-field and is allowed to be re-deployed.
+        /* Mark units as re-deployable before opening the deployment dialog:
+         * the dialog lists avail_units, so preparing it first would show an
+         * empty window on the first round.
          */
         if (deploy_turn)
         {
@@ -1116,6 +1104,19 @@ static void engine_select_player( Player *player, int skip_unit_prep )
                 }
             }
         }
+
+        /* supply levels */
+        list_reset( units );
+        while ( ( unit = list_next( units ) ) )
+            if ( unit->player == cur_player )
+                scen_adjust_unit_supply_level( unit );
+
+        /* prepare deployment dialog on deployment-turn */
+        if ( deploy_turn
+             && cur_player && cur_player->ctrl == PLAYER_CTRL_HUMAN )
+            engine_handle_button( ID_DEPLOY );
+        else
+            group_hide( gui->deploy_window, 1 );
     }
     /* clear selections/actions */
     cur_unit = cur_target = cur_atk = cur_def = surp_unit = move_unit = deploy_unit = 0;
