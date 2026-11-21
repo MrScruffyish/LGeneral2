@@ -1,0 +1,1101 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR LGeneral authors
+# This file is distributed under the same license as the lgeneral package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: lgeneral 1.4.4\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-21 15:14+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/windows.c:110 src/campaign.c:255 src/scenario.c:413 src/scenario.c:870
+msgid "Out of memory\n"
+msgstr ""
+
+#: src/windows.c:151
+msgid "This group has reached it's maximum number of buttons.\n"
+msgstr ""
+
+#: src/windows.c:537
+msgid "Up"
+msgstr ""
+
+#: src/windows.c:538
+msgid "Down"
+msgstr ""
+
+#: src/windows.c:759
+msgid "Ok"
+msgstr ""
+
+#: src/windows.c:760 src/windows.c:1173 src/gui.c:303
+msgid "Cancel"
+msgstr ""
+
+#: src/windows.c:973
+msgid "Fog Of War"
+msgstr ""
+
+#: src/windows.c:975
+msgid "Unit Supply"
+msgstr ""
+
+#: src/windows.c:977
+msgid "Weather Influence"
+msgstr ""
+
+#: src/windows.c:979
+msgid "Deploy Turn"
+msgstr ""
+
+#: src/windows.c:981
+msgid "Purchase Option"
+msgstr ""
+
+#: src/windows.c:996 src/windows.c:999
+msgid "Switch Control"
+msgstr ""
+
+#: src/windows.c:1128 src/windows.c:1136
+msgid "Human"
+msgstr ""
+
+#: src/windows.c:1171
+msgid "Apply"
+msgstr ""
+
+#: src/windows.c:1185
+msgid "Failed to create select dialogue\n"
+msgstr ""
+
+#: src/gui.c:302
+msgid "Accept"
+msgstr ""
+
+#: src/gui.c:312
+msgid "Undo Turn [u]"
+msgstr ""
+
+#: src/gui.c:313
+msgid "Supply Unit [s]"
+msgstr ""
+
+#: src/gui.c:314
+msgid "Air Embark"
+msgstr ""
+
+#: src/gui.c:315
+msgid "Rename Unit"
+msgstr ""
+
+#: src/gui.c:316
+msgid "Merge Unit [j]"
+msgstr ""
+
+#: src/gui.c:317
+msgid "Split Unit [x+1..9]"
+msgstr ""
+
+#: src/gui.c:318
+msgid "Disband Unit"
+msgstr ""
+
+#: src/gui.c:327 src/engine.c:1897
+#, c-format
+msgid "Split Up %d Strength"
+msgstr ""
+
+#: src/gui.c:339
+msgid "Scroll Up"
+msgstr ""
+
+#: src/gui.c:340
+msgid "Scroll Down"
+msgstr ""
+
+#: src/gui.c:341
+msgid "Apply Deployment"
+msgstr ""
+
+#: src/gui.c:342
+msgid "Cancel Deployment"
+msgstr ""
+
+#: src/gui.c:356
+msgid "Switch Air/Ground [t]"
+msgstr ""
+
+#: src/gui.c:357
+msgid "Minimap [o]"
+msgstr ""
+
+#: src/gui.c:358
+msgid "Request Reinforcements"
+msgstr ""
+
+#: src/gui.c:359
+msgid "Deploy Reinforcements [d]"
+msgstr ""
+
+#: src/gui.c:360
+msgid "Unit List"
+msgstr ""
+
+#: src/gui.c:361
+msgid "Scenario Info [i]"
+msgstr ""
+
+#: src/gui.c:362
+msgid "Victory Conditions"
+msgstr ""
+
+#: src/gui.c:363
+msgid "End Turn [e]"
+msgstr ""
+
+#: src/gui.c:372
+msgid "Save Game"
+msgstr ""
+
+#: src/gui.c:373
+msgid "Load Game"
+msgstr ""
+
+#: src/gui.c:374
+msgid "Load Scenario"
+msgstr ""
+
+#: src/gui.c:375
+msgid "Load Campaign"
+msgstr ""
+
+#: src/gui.c:376
+msgid "Options"
+msgstr ""
+
+#: src/gui.c:377
+msgid "Restart Scenario"
+msgstr ""
+
+#: src/gui.c:378
+msgid "Quit Game"
+msgstr ""
+
+#: src/gui.c:387 src/gui.c:1423
+#, c-format
+msgid "Load: %s"
+msgstr ""
+
+#: src/gui.c:399 src/gui.c:1427
+#, c-format
+msgid "Save: %s"
+msgstr ""
+
+#: src/gui.c:413
+msgid "Hex Grid [g]"
+msgstr ""
+
+#: src/gui.c:414
+msgid "Show CPU Turn"
+msgstr ""
+
+#: src/gui.c:415
+msgid "Show Unit Strength [.]"
+msgstr ""
+
+#: src/gui.c:416
+msgid "Sound"
+msgstr ""
+
+#: src/gui.c:417
+msgid "Sound Volume Up"
+msgstr ""
+
+#: src/gui.c:418
+msgid "Sound Volume Down"
+msgstr ""
+
+#: src/gui.c:420
+msgid "Fullscreen/Window [v]"
+msgstr ""
+
+#: src/gui.c:878 src/gui.c:907
+#, c-format
+msgid "%i   CASUALTIES   %i"
+msgstr ""
+
+#: src/gui.c:928
+#, c-format
+msgid "%i   SURPRESSED   %i"
+msgstr ""
+
+#: src/gui.c:973
+msgid "Core Unit"
+msgstr ""
+
+#: src/gui.c:975
+msgid "Auxiliary Unit"
+msgstr ""
+
+#: src/gui.c:982 src/gui.c:1051
+#, c-format
+msgid "%s Movement"
+msgstr ""
+
+#: src/gui.c:984 src/gui.c:1053
+#, c-format
+msgid "%s Target"
+msgstr ""
+
+#: src/gui.c:989
+msgid "Ammo:       N.A."
+msgstr ""
+
+#: src/gui.c:992
+#, c-format
+msgid "Ammo:     %02i/%02i"
+msgstr ""
+
+#: src/gui.c:994
+#, c-format
+msgid "Ammo:        %02i"
+msgstr ""
+
+#: src/gui.c:997
+msgid "Fuel:       N.A."
+msgstr ""
+
+#: src/gui.c:1000
+#, c-format
+msgid "Fuel:     %2i/%2i"
+msgstr ""
+
+#: src/gui.c:1002
+#, c-format
+msgid "Fuel:        %2i"
+msgstr ""
+
+#: src/gui.c:1005 src/gui.c:1057
+#, c-format
+msgid "Spotting:    %2i"
+msgstr ""
+
+#: src/gui.c:1007 src/gui.c:1059
+#, c-format
+msgid "Movement:    %2i"
+msgstr ""
+
+#: src/gui.c:1009 src/gui.c:1061
+#, c-format
+msgid "Initiative:  %2i"
+msgstr ""
+
+#: src/gui.c:1011 src/gui.c:1063
+#, c-format
+msgid "Range:       %2i"
+msgstr ""
+
+#: src/gui.c:1014
+#, c-format
+msgid "Experience: %3i"
+msgstr ""
+
+#: src/gui.c:1016
+#, c-format
+msgid "Entrenchment: %i"
+msgstr ""
+
+#: src/gui.c:1022
+#, c-format
+msgid "%6s Attack:[%2i]"
+msgstr ""
+
+#: src/gui.c:1024 src/gui.c:1068
+#, c-format
+msgid "%6s Attack:  %2i"
+msgstr ""
+
+#: src/gui.c:1028 src/gui.c:1072
+#, c-format
+msgid "Ground Defense: %2i"
+msgstr ""
+
+#: src/gui.c:1030 src/gui.c:1074
+#, c-format
+msgid "Air Defense:    %2i"
+msgstr ""
+
+#: src/gui.c:1032 src/gui.c:1076
+#, c-format
+msgid "Close Defense:  %2i"
+msgstr ""
+
+#: src/gui.c:1035
+#, c-format
+msgid "Suppression:    %2i"
+msgstr ""
+
+#: src/gui.c:1110
+#, c-format
+msgid "Turns Left: %i"
+msgstr ""
+
+#: src/gui.c:1112
+msgid "Turns Left: Last Turn"
+msgstr ""
+
+#: src/gui.c:1117
+msgid "Result: "
+msgstr ""
+
+#: src/gui.c:1126
+#, c-format
+msgid "Current Player:  %s"
+msgstr ""
+
+#: src/gui.c:1129
+#, c-format
+msgid "Next Player:     %s"
+msgstr ""
+
+#: src/gui.c:1135
+#, c-format
+msgid "Weather:  %s"
+msgstr ""
+
+#: src/gui.c:1137 src/gui.c:1141
+msgid "n/a"
+msgstr ""
+
+#: src/gui.c:1139
+#, c-format
+msgid "Forecast: %s"
+msgstr ""
+
+#: src/gui.c:1158
+#, c-format
+msgid "%i turns remaining"
+msgstr ""
+
+#: src/gui.c:1161
+msgid "control all victory hexes"
+msgstr ""
+
+#: src/gui.c:1164
+#, c-format
+msgid "control hex %i,%i"
+msgstr ""
+
+#: src/gui.c:1167
+#, c-format
+msgid "control at least %i vic hexes"
+msgstr ""
+
+#: src/gui.c:1170
+#, c-format
+msgid "kill units with tag '%s'"
+msgstr ""
+
+#: src/gui.c:1173
+#, c-format
+msgid "save units with tag '%s'"
+msgstr ""
+
+#: src/gui.c:1176
+#, c-format
+msgid "units with tag '%s' escape"
+msgstr ""
+
+#: src/gui.c:1189
+#, c-format
+msgid "Explicit VicConds (%s)"
+msgstr ""
+
+#: src/gui.c:1190
+msgid "every turn"
+msgstr ""
+
+#: src/gui.c:1190
+msgid "last turn"
+msgstr ""
+
+#: src/gui.c:1197
+#, c-format
+msgid "AND %.2s "
+msgstr ""
+
+#: src/gui.c:1199
+msgid "AND -- "
+msgstr ""
+
+#: src/gui.c:1205
+#, c-format
+msgid "OR %.2s "
+msgstr ""
+
+#: src/gui.c:1207
+msgid "OR -- "
+msgstr ""
+
+#: src/gui.c:1214
+#, c-format
+msgid "else: '%s'"
+msgstr ""
+
+#: src/gui.c:1818 src/engine.c:3409
+msgid "Fullscreen"
+msgstr ""
+
+#: src/gui.c:1818 src/engine.c:3410
+msgid "Window"
+msgstr ""
+
+#: src/lg-sdl.c:280
+#, c-format
+msgid "Cannot load new glyphs surface: %s\n"
+msgstr ""
+
+#: src/lg-sdl.c:291
+#, c-format
+msgid "Invalid font file: %d, %d\n"
+msgstr ""
+
+#: src/lg-sdl.c:322
+#, c-format
+msgid "font '%s' contains too many glyphs\n"
+msgstr ""
+
+#: src/lg-sdl.c:347
+#, c-format
+msgid "could not create font surface: %s\n"
+msgstr ""
+
+#: src/lg-sdl.c:395
+#, c-format
+msgid "ERR: %s: not enough memory\n"
+msgstr ""
+
+#: src/lg-sdl.c:640
+#, c-format
+msgid "Requested mode %ix%i, Fullscreen: %i unavailable, fallback to 800x600\n"
+msgstr ""
+
+#: src/campaign.c:114
+#, c-format
+msgid "%s: %d: warning: entry '%s' not found in '%s/%s'\n"
+msgstr ""
+
+#: src/campaign.c:306
+#, c-format
+msgid "Campaign entry '%s' not found in campaign '%s'\n"
+msgstr ""
+
+#: src/unit_lib.c:254
+#, c-format
+msgid ""
+"%s: can't load as main unit library (which is already loaded): loading as "
+"'additional' instead\n"
+msgstr ""
+
+#: src/unit_lib.c:260
+#, c-format
+msgid "  Parsing '%s'"
+msgstr ""
+
+#: src/unit_lib.c:267
+msgid "  Loading Main Definitions"
+msgstr ""
+
+#: src/unit_lib.c:273
+#, c-format
+msgid "%i target types is the limit!\n"
+msgstr ""
+
+#: src/unit_lib.c:344
+msgid "  Loading Tactical Icons"
+msgstr ""
+
+#: src/scenario.c:297
+#, c-format
+msgid "*** Loading scenario '%s' ***"
+msgstr ""
+
+#: src/scenario.c:300
+msgid "Loading Scenario Info"
+msgstr ""
+
+#: src/scenario.c:315
+msgid "Loading Nations"
+msgstr ""
+
+#: src/scenario.c:324 src/scenario.c:330
+#, c-format
+msgid "Loading Main Unit Library '%s'"
+msgstr ""
+
+#: src/scenario.c:336
+#, c-format
+msgid "Loading Additional Unit Library '%s'"
+msgstr ""
+
+#: src/scenario.c:348
+#, c-format
+msgid "Loading Map '%s'"
+msgstr ""
+
+#: src/scenario.c:365
+msgid "Loading Players"
+msgstr ""
+
+#: src/scenario.c:423
+#, c-format
+msgid ""
+"Oops: No prestige info for player %s in scenario %s.\n"
+"Maybe you did not convert scenarios after update?\n"
+msgstr ""
+
+#: src/scenario.c:444
+msgid "Loading Flags"
+msgstr ""
+
+#: src/scenario.c:470
+msgid "Loading Victory Conditions"
+msgstr ""
+
+#: src/scenario.c:642
+msgid "No subconditions specified!\n"
+msgstr ""
+
+#: src/scenario.c:651
+msgid "Defeat"
+msgstr ""
+
+#: src/scenario.c:659
+msgid "Loading Units"
+msgstr ""
+
+#: src/scenario.c:675
+#, c-format
+msgid "%s: unit entry not found\n"
+msgstr ""
+
+#: src/scenario.c:682
+#, c-format
+msgid "%s: not a nation\n"
+msgstr ""
+
+#: src/scenario.c:686
+#, c-format
+msgid "%s: no player controls this nation\n"
+msgstr ""
+
+#: src/scenario.c:708
+#, c-format
+msgid "%s: out of map: ignored\n"
+msgstr ""
+
+#: src/scenario.c:873
+#, c-format
+msgid "%s##%s##%s Turns#%s Players"
+msgstr ""
+
+#: src/parser.c:179
+#, c-format
+msgid "warning: %s\n"
+msgstr ""
+
+#: src/parser.c:200
+msgid "<EndOfInput>"
+msgstr ""
+
+#: src/parser.c:219
+msgid "Unterminated string constant"
+msgstr ""
+
+#: src/parser.c:232 src/parser.c:247
+msgid "token exceeds limit"
+msgstr ""
+
+#: src/parser.c:252
+#, c-format
+msgid "Invalid character '%c'"
+msgstr ""
+
+#: src/parser.c:321 src/parser.c:345 src/parser.c:367
+#, c-format
+msgid "parse error before '%s'"
+msgstr ""
+
+#: src/parser.c:499
+#, c-format
+msgid "parse error: use '%c' or '%c' for assignment or '<' for section"
+msgstr ""
+
+#: src/parser.c:526
+#, c-format
+msgid "%s: file not found"
+msgstr ""
+
+#: src/parser.c:541
+#, c-format
+msgid "%s: file's too big to fit the compact buffer (%dKB)\n"
+msgstr ""
+
+#: src/parser.c:658
+#, c-format
+msgid "%s: no subtrees"
+msgstr ""
+
+#: src/parser.c:669
+#, c-format
+msgid "%s: subtree '%s' not found"
+msgstr ""
+
+#: src/parser.c:693
+#, c-format
+msgid "parser_get_entries: %s/%s: no subtrees"
+msgstr ""
+
+#: src/parser.c:708
+#, c-format
+msgid "parser_get_values: %s/%s: no values"
+msgstr ""
+
+#: src/parser.c:722
+#, c-format
+msgid "parser_get_value: %s/%s: index %i out of range (%i elements)"
+msgstr ""
+
+#: src/engine.c:367
+msgid "(C) 2001-2021 Michael Speck"
+msgstr ""
+
+#: src/engine.c:369 src/main.c:103
+msgid "http://lgames.sf.net"
+msgstr ""
+
+#: src/engine.c:580
+#, c-format
+msgid "Supply Unit [s] (Rate:%3i%%)"
+msgstr ""
+
+#: src/engine.c:795
+#, c-format
+msgid "Next Player: %s"
+msgstr ""
+
+#: src/engine.c:802
+msgid "Deploy your troops"
+msgstr ""
+
+#: src/engine.c:816
+#, c-format
+msgid "Remaining Turns: %i"
+msgstr ""
+
+#: src/engine.c:820
+#, c-format
+msgid "Weather: %s"
+msgstr ""
+
+#: src/engine.c:824
+#, c-format
+msgid "Turn: %d"
+msgstr ""
+
+#: src/engine.c:826
+msgid "Last Turn"
+msgstr ""
+
+#: src/engine.c:833
+msgid "New units can be deployed!"
+msgstr ""
+
+#: src/engine.c:1231
+msgid "CPU thinks..."
+msgstr ""
+
+#: src/engine.c:1233
+msgid "( Enable option 'Show Cpu Turn' if you want to see what it is doing. )"
+msgstr ""
+
+#: src/engine.c:1889
+#, c-format
+msgid "Prestige: %d"
+msgstr ""
+
+#: src/engine.c:1893
+msgid "Select Drop Zone"
+msgstr ""
+
+#: src/engine.c:2138
+#, c-format
+msgid "Load Game '%s'"
+msgstr ""
+
+#: src/engine.c:2156
+msgid "Overwrite saved game?"
+msgstr ""
+
+#: src/engine.c:2243
+msgid "Do you really want to restart this scenario?"
+msgstr ""
+
+#: src/engine.c:2300
+msgid "Do you really want to quit?"
+msgstr ""
+
+#: src/engine.c:2311
+msgid "Do you really want to end your turn?"
+msgstr ""
+
+#: src/engine.c:2350
+msgid "Abandon the ground transporter?"
+msgstr ""
+
+#: src/engine.c:2432
+msgid "Do you really want to disband this unit?"
+msgstr ""
+
+#: src/engine.c:2560
+msgid "End deployment?"
+msgstr ""
+
+#: src/engine.c:3193
+#, c-format
+msgid "Game saved to slot '%i' as '%s'.\n"
+msgstr ""
+
+#: src/engine.c:3246
+msgid "Defensive Fire"
+msgstr ""
+
+#: src/engine.c:3249
+msgid "Air-Defense"
+msgstr ""
+
+#: src/engine.c:3251
+msgid "Interceptors"
+msgstr ""
+
+#: src/engine.c:3401
+#, c-format
+msgid "Video Mode: %ix%i, Fullscreen: %i not available\n"
+msgstr ""
+
+#: src/engine.c:3407
+#, c-format
+msgid "Applied video mode %dx%dx%d %s\n"
+msgstr ""
+
+#: src/engine.c:3558
+#, c-format
+msgid "%s has no move points remaining\n"
+msgstr ""
+
+#: src/engine.c:3571
+#, c-format
+msgid "'%s' (%i,%i) can not attack '%s' (%i,%i)\n"
+msgstr ""
+
+#: src/engine.c:3577
+#, c-format
+msgid "'%s' may not attack unit '%s' (not visible)\n"
+msgstr ""
+
+#: src/engine.c:3644
+#, c-format
+msgid "%i,%i out of reach for '%s'\n"
+msgstr ""
+
+#: src/engine.c:3649
+#, c-format
+msgid "%i,%i is blocked ('%s' wants to move there)\n"
+msgstr ""
+
+#: src/engine.c:3655
+#, c-format
+msgid "There is no way for unit '%s' to move to %i,%i\n"
+msgstr ""
+
+#: src/engine.c:3887
+msgid "Carpet Bombing!"
+msgstr ""
+
+#: src/engine.c:4003
+msgid "Out Of The Sun!"
+msgstr ""
+
+#: src/engine.c:4006
+msgid "Surprise Contact!"
+msgstr ""
+
+#: src/engine.c:4008
+msgid "Rugged Defense!"
+msgstr ""
+
+#: src/engine.c:4013
+msgid "Submarine evades!"
+msgstr ""
+
+#: src/engine.c:4216
+msgid "Attack Broken Up!"
+msgstr ""
+
+#: src/engine.c:4221
+msgid "Ship is scuttled!"
+msgstr ""
+
+#: src/engine.c:4221
+msgid "Surrenders!"
+msgstr ""
+
+#: src/engine.c:4467
+#, c-format
+msgid "%s: AI module '%s' invalid. Use built-in AI.\n"
+msgstr ""
+
+#: src/date.c:43
+msgid "January"
+msgstr ""
+
+#: src/date.c:44
+msgid "February"
+msgstr ""
+
+#: src/date.c:45
+msgid "March"
+msgstr ""
+
+#: src/date.c:46
+msgid "April"
+msgstr ""
+
+#: src/date.c:47
+msgid "May_long"
+msgstr ""
+
+#: src/date.c:48
+msgid "June"
+msgstr ""
+
+#: src/date.c:49
+msgid "July"
+msgstr ""
+
+#: src/date.c:50
+msgid "August"
+msgstr ""
+
+#: src/date.c:51
+msgid "September"
+msgstr ""
+
+#: src/date.c:52
+msgid "October"
+msgstr ""
+
+#: src/date.c:53
+msgid "November"
+msgstr ""
+
+#: src/date.c:54
+msgid "December"
+msgstr ""
+
+#: src/date.c:59
+msgid "Jan"
+msgstr ""
+
+#: src/date.c:60
+msgid "Feb"
+msgstr ""
+
+#: src/date.c:61
+msgid "Mar"
+msgstr ""
+
+#: src/date.c:62
+msgid "Apr"
+msgstr ""
+
+#: src/date.c:63
+msgid "May"
+msgstr ""
+
+#: src/date.c:64
+msgid "Jun"
+msgstr ""
+
+#: src/date.c:65
+msgid "Jul"
+msgstr ""
+
+#: src/date.c:66
+msgid "Aug"
+msgstr ""
+
+#: src/date.c:67
+msgid "Sep"
+msgstr ""
+
+#: src/date.c:68
+msgid "Oct"
+msgstr ""
+
+#: src/date.c:69
+msgid "Nov"
+msgstr ""
+
+#: src/date.c:70
+msgid "Dec"
+msgstr ""
+
+#: src/config.c:45
+#, c-format
+msgid ""
+"Couldn't find/open config directory '%s'\n"
+"Attempting to create it... "
+msgstr ""
+
+#: src/config.c:49
+msgid "failed\n"
+msgstr ""
+
+#: src/config.c:51
+msgid "ok\n"
+msgstr ""
+
+#: src/config.c:127
+#, c-format
+msgid "Cannot access config file '%s' to save settings\n"
+msgstr ""
+
+#: src/file.c:66
+#, c-format
+msgid "%s cannot be opened\n"
+msgstr ""
+
+#: src/file.c:143
+#, c-format
+msgid "get_file_list: can't open parent directory '%s'\n"
+msgstr ""
+
+#: src/main.c:101
+msgid "(C) 2001-2005 Michael Speck"
+msgstr ""
+
+#: src/main.c:134
+#, c-format
+msgid "Syntax: %s [options] [resource-file]\n"
+msgstr ""
+
+#: src/main.c:135
+#, c-format
+msgid ""
+"\n"
+"Options:\n"
+"    --ai-debug=<loglev>\n"
+"\t\tVerbosity level of debug messages for AI turn\n"
+"    --campaign-start=<state>\n"
+"\t\tInitial state to start campaign with (debug only)\n"
+"    --control=<who>\n"
+"\t\tEntity who controls the current side. <who> is either human,\n"
+"\t\tor cpu (short: h, or c). Multiple options can be specified.\n"
+"\t\tIn this case the first option refers to the first side, the\n"
+"\t\tsecond option to the second side, etc.\n"
+"    --(no-)deploy-turn\n"
+"\t\tAllow/Disallow deployment of troops before scenario starts.\n"
+"    --(no-)purchase\n"
+"\t\tEnable/Disable option for purchasing by prestige. If disabled\n"
+"\t\tthe predefined reinforcements are used.\n"
+"    --notitle\tInhibit title screen\n"
+"    --speed=<n>\tAccelerate animation speed by <n>\n"
+"    --version\tDisplay version information and quit\n"
+"\n"
+"<resource-file>\tscenario file relative to scenarios-directory,\n"
+"\t\tor campaign file relative to campaigns-directory\n"
+"\t\tunder %s\n"
+msgstr ""
+
+#: src/main.c:165
+#, c-format
+msgid ""
+"LGeneral %s\n"
+"Copyright 2001-%d Michael Speck\n"
+"Published under GNU GPL\n"
+"---\n"
+msgstr ""
+
+#: src/main.c:166
+#, c-format
+msgid "Looking up data in: %s\n"
+msgstr ""
+
+#: src/main.c:168
+msgid "Compiled without sound and music\n"
+msgstr ""
+
+#: src/main.c:195
+#, c-format
+msgid "Invalid player control: %s\n"
+msgstr ""
+
+#: src/main.c:213
+#, c-format
+msgid "Animation speed up: x%d\n"
+msgstr ""
+
+#: src/main.c:234
+#, c-format
+msgid "Error loading scenario %s\n"
+msgstr ""
+
+#: src/main.c:270
+#, c-format
+msgid "LGeneral %s"
+msgstr ""
+
+#: src/misc.c:104
+#, c-format
+msgid "get_coord: no comma found in pair of coordinates '%s'\n"
+msgstr ""
+
+#: src/misc.c:111
+msgid ""
+"get_coord: warning: y-coordinate is empty (maybe you left a space between x "
+"and comma?)\n"
+msgstr ""
+
+#: src/misc.c:279
+#, c-format
+msgid "%s: unknown flag\n"
+msgstr ""
+
+#: src/slot.c:847
+#, c-format
+msgid "init_slots: can't open directory '%s' to read saved games\n"
+msgstr ""
+
+#: src/slot.c:858
+#, c-format
+msgid "'%s': file not found\n"
+msgstr ""
+
+#: src/slot.c:939 src/slot.c:1011
+#, c-format
+msgid "%s: not found\n"
+msgstr ""
+
+#: src/terrain.c:252
+msgid "If data seems to be missing, please re-run the converter lgc-pg.\n"
+msgstr ""

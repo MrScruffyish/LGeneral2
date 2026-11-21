@@ -18,10 +18,10 @@ make
 
 It needs autoconf/automake, `pkg-config`, SDL 1.2 with SDL_mixer (the
 `sdl12_compat` packages work), SDL2 with SDL2_image and SDL2_ttf, and gettext
-0.21 or newer. Translations remain disabled for now. Generated autotools files
-are not tracked; each build bootstraps them in its own `.build/` copy with
-`autoreconf -fi`. To also convert the Panzer General data into the game's data
-directory, set `PG_DATA` to `pg-data.tar.gz` or an unpacked `pg-data` directory:
+0.21 or newer. Generated autotools files are not tracked; each build
+bootstraps them in its own `.build/` copy with `autoreconf -fi`. To also
+convert the Panzer General data into the game's data directory, set `PG_DATA`
+to `pg-data.tar.gz` or an unpacked `pg-data` directory:
 
 ```bash
 PG_DATA=~/PG_DATA/pg-data.tar.gz make
@@ -61,6 +61,26 @@ warning-free build check:
 ```bash
 PG_DATA=~/PG_DATA/pg-data.tar.gz make smoke
 ```
+
+It also checks that both gettext domains (`lgeneral` and `pg`) compile and that
+a German string is actually returned at runtime.
+
+### Translations
+
+GNU gettext translations are enabled. The two catalogs in `lgeneral/po/` are
+compiled to `.gmo` during the build and staged into
+`.build/lgeneral/src/share/locale/<lang>/LC_MESSAGES/`. Select a language at
+runtime with `LANGUAGE`, for example:
+
+```bash
+cd .build/lgeneral/src && LANGUAGE=de ./lgeneral
+```
+
+The catalogs and the game's bitmap font are ISO-8859-1, so `localize.c` binds
+that codeset explicitly. `lgeneral.pot` is generated from the `tr()`, `trd()`
+and `TR_NOOP()` calls in `lgeneral/src/`; run `make -C
+.build/lgeneral/po/lgeneral update-po` after changing source strings, then
+update the `.po` files.
 
 ## License
 

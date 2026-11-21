@@ -56,8 +56,8 @@ $(LGEDITOR_BUILD)/.synced: $(shell find $(LGEDITOR) -type f) Makefile
 	cp -a $(LGEDITOR)/. $(LGEDITOR_BUILD)/
 	touch $@
 
-# Translations stay disabled for now; the build uses system gettext and
-# bootstraps the autotools files in the isolated build copy.
+# The build uses system gettext and bootstraps autotools files in the isolated
+# build copy.
 lgeneral: $(LGENERAL_BUILD)/.synced
 	@echo "==> Building $(LGENERAL)"
 	@if [ "$(TRACE)" = 1 ]; then \
@@ -66,8 +66,21 @@ lgeneral: $(LGENERAL_BUILD)/.synced
 	fi
 	cd $(LGENERAL_BUILD) && CFLAGS="$(CFLAGS) $(TRACE_CFLAGS)" autoreconf -fi && \
 		CFLAGS="$(CFLAGS) $(TRACE_CFLAGS)" ./configure --disable-install \
-		--disable-nls $(LGENERAL_CONFIGURE_ARGS)
+		$(LGENERAL_CONFIGURE_ARGS)
 	$(MAKE) -C $(LGENERAL_BUILD) -j$(JOBS)
+	@echo "==> Staging translations"
+	@set -e; for dom in lgeneral pg; do \
+		for lang in en de; do \
+			gmo="$(LGENERAL_BUILD)/po/$$dom/$$lang.gmo"; \
+			if [ -f "$$gmo" ]; then \
+				dir="$(GAME_DATA)/share/locale/$$lang/LC_MESSAGES"; \
+				mkdir -p "$$dir"; \
+				cp "$$gmo" "$$dir/$$dom.mo"; \
+			else \
+				echo "warning: missing catalog $$gmo" >&2; \
+			fi; \
+		done; \
+	done
 	@printf '%s\n' '@' 'grid=0' 'tran=1' 'bar=1' 'width=800' 'height=600' \
 		'fullscreen=0' 'anim_speed=1' 'supply=1' 'weather=1' \
 		'fog_of_war=1' 'cpu_turn=1' 'deploy=1' 'purchase=1' \

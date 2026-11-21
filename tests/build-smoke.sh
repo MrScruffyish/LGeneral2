@@ -75,6 +75,11 @@ for mode in normal trace; do
         echo "smoke: missing generated config: $build/src/lgeneral.conf" >&2
         exit 1
     fi
+
+    if [ "$mode" = normal ]; then
+        echo "==> smoke: translation check"
+        "$tmp/tests/test-translations.sh" "$build"
+    fi
 done
 
 if ! strings "$tmp/.build/lgeneral-trace/src/lgeneral" | grep -q '\[trace\]'; then

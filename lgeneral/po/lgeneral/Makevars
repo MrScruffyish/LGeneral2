@@ -12,7 +12,7 @@ subdir = po/lgeneral
 top_builddir = ../..
 
 # These options get passed to xgettext.
-XGETTEXT_OPTIONS = --keyword=_ --keyword=N_ --from-code=ISO-8859-1
+XGETTEXT_OPTIONS = --keyword=tr:1 --keyword=trd:2 --keyword=TR_NOOP:1 --from-code=ISO-8859-1
 
 # This is the copyright holder that gets inserted into the header of the
 # $(DOMAIN).pot file.

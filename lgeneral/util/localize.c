@@ -26,7 +26,6 @@
 
 #include "localize.h"
 #include "hashtable.h"
-#include "paths.h"
 
 #include "hash-string.h"
 
@@ -161,13 +160,14 @@ int locale_load_domain(const char *domain, const char *translations) {
 
 #ifdef ENABLE_NLS
   {
-    char *path;
-    const char suffix[] = "/share/locale";
-    unsigned len = strlen(paths_prefix());
-    path = malloc(len + sizeof suffix);
-    strcpy(path, paths_prefix());
-    strcpy(path + len, suffix);
-    bindtextdomain(domain, path);
+#ifndef LOCALEDIR
+#  define LOCALEDIR "."
+#endif
+    bindtextdomain(domain, LOCALEDIR);
+    /* The catalogs are ISO-8859-1 and the game renders text in that charset.
+     * Request the conversion explicitly instead of relying on the deprecated
+     * OUTPUT_CHARSET environment variable. */
+    bind_textdomain_codeset(domain, lang_data[lang_code].charset);
   }
 #endif
   info = malloc(sizeof(struct DomainInfo));

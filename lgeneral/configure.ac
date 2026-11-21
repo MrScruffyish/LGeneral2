@@ -83,29 +83,30 @@ fi
 dnl libintl.h is supplied by the system gettext (external mode).
 INTLINCLUDES=
 
-dnl newer versions of gettext don't support CATALOGS -> create it here
-if test "x$CATALOGS" = x ; then
-  AC_MSG_CHECKING(for catalogs to be installed);
-  for l in $ALL_LINGUAS ; do
-    CATALOGS="$CATALOGS$l$CATOBJEXT "
-  done
-  AC_MSG_RESULT($ALL_LINGUAS)
-  AC_SUBST(CATALOGS)
-fi
-
-dnl newer versions of gettext don't export POFILES and GMOFILES
-dnl export them here to stay compatible with older versions
+dnl The po/ Makefiles are generated from Makefile.in.in through
+dnl AC_CONFIG_FILES below, so autoconf needs these values at configure time.
+dnl External gettext leaves them for config.status (which runs too late for
+dnl us), so provide them here. Modern gettext compiles .po straight to .gmo;
+dnl CATOBJEXT is empty in external mode, so spell the suffix out explicitly.
 if test "x$POFILES" = x ; then
   for l in $ALL_LINGUAS ; do
-    POFILES="$POFILES${l}.po "
+    POFILES="$POFILES$l.po "
   done
   AC_SUBST(POFILES)
 fi
 if test "x$GMOFILES" = x ; then
   for l in $ALL_LINGUAS ; do
-    GMOFILES="$GMOFILES$l$CATOBJEXT "
+    GMOFILES="$GMOFILES$l.gmo "
   done
   AC_SUBST(GMOFILES)
+fi
+if test "x$CATALOGS" = x ; then
+  AC_MSG_CHECKING([for catalogs to be installed])
+  for l in $ALL_LINGUAS ; do
+    CATALOGS="$CATALOGS$l.gmo "
+  done
+  AC_MSG_RESULT([$ALL_LINGUAS])
+  AC_SUBST(CATALOGS)
 fi
 
 AC_SUBST(XGETTEXTFLAGS)
@@ -164,6 +165,17 @@ inst_flag=)
 
 AC_SUBST(inst_dir)
 AC_SUBST(inst_flag)
+
+dnl Where gettext looks for the compiled catalogs. With --disable-install the
+dnl game runs from its data directory (like the rest of its data), so use a
+dnl path relative to the working directory in that case.
+if test x$inst_dir = x. ; then
+  AC_DEFINE_UNQUOTED([LOCALEDIR], ["share/locale"],
+    [Directory holding gettext catalogs, relative to the cwd in uninstalled builds])
+else
+  AC_DEFINE_UNQUOTED([LOCALEDIR], ["$prefix/share/locale"],
+    [Directory holding gettext catalogs])
+fi
 
 AC_CONFIG_FILES([
  Makefile
