@@ -12,6 +12,13 @@ from pathlib import Path
 MARKER = "[trace]"
 
 
+def ensure_include(path):
+    """Make lgtrace() visible without polluting configure's feature tests."""
+    text = path.read_text()
+    if '#include "lgtrace.h"' not in text:
+        path.write_text('#include "lgtrace.h"\n' + text)
+
+
 def insert_after(path, anchor, additions):
     text = path.read_text()
     if any(MARKER in line for line in additions) and MARKER in text:
@@ -45,6 +52,9 @@ def main():
     if len(sys.argv) != 2:
         raise SystemExit("usage: instrument.py <lgeneral-build-dir>")
     root = Path(sys.argv[1]) / "src"
+
+    for name in ("config.c", "scenario.c", "engine.c", "gui.c", "player.c"):
+        ensure_include(root / name)
 
     config = root / "config.c"
     insert_after(

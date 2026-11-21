@@ -1,5 +1,5 @@
 noinst_LIBRARIES = libutil.a
-libutil_a_SOURCES = localize.c localize.h \
+libutil_a_SOURCES = localize.c localize.h hash-string.h \
 	hashtable.c hashtable.h hashtable_private.h \
 	hashtable_itr.c hashtable_itr.h \
 	hashtable_utility.c hashtable_utility.h \

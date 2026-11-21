@@ -16,10 +16,11 @@ The top-level `Makefile` builds both sub-projects into `.build/`:
 make
 ```
 
-It needs autoconf/automake, SDL 1.2 with SDL_mixer, SDL2 with SDL2_image and
-SDL2_ttf, and gettext. To also convert the Panzer General data into the game's
-data directory, set `PG_DATA` to `pg-data.tar.gz` or an unpacked `pg-data`
-directory:
+It needs autoconf/automake, `pkg-config`, SDL 1.2 with SDL_mixer (the
+`sdl12_compat` packages work), SDL2 with SDL2_image and SDL2_ttf, and gettext
+0.21 or newer. Translations remain disabled for now. To also convert the Panzer
+General data into the game's data directory, set `PG_DATA` to `pg-data.tar.gz`
+or an unpacked `pg-data` directory:
 
 ```bash
 PG_DATA=~/PG_DATA/pg-data.tar.gz make

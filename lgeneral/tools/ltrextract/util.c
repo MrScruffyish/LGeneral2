@@ -26,7 +26,7 @@
 
 #include "util.h"
 
-#include "intl/hash-string.h"
+#include "hash-string.h"
 #include "util/hashtable.h"
 #include "util/hashtable_itr.h"
 

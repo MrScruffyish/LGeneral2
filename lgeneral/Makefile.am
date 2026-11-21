@@ -1,4 +1,4 @@
-SUBDIRS = intl util lged lgc-pg src tools po
+SUBDIRS = util lged lgc-pg src tools po
 
 EXTRA_DIST = AUTHORS COPYING ChangeLog README.lgeneral \
 README.lgc-pg README.redit TODO \

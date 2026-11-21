@@ -28,7 +28,7 @@
 #include "hashtable.h"
 #include "paths.h"
 
-#include "intl/hash-string.h"
+#include "hash-string.h"
 
 #include <assert.h>
 #include <locale.h>

@@ -9,16 +9,9 @@ AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE
 AC_USE_SYSTEM_EXTENSIONS
 
-dnl AC_INIT(lgeneral,1.4.3)
-dnl AC_CONFIG_SRCDIR(Makefile.am)
-dnl AM_INIT_AUTOMAKE
-dnl AC_CANONICAL_TARGET
-dnl AM_CONFIG_HEADER(config.h)
-
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_RANLIB
-AM_PROG_CC_C_O
 
 dnl various CFLAGS
 CFLAGS="$CFLAGS -Wall -std=gnu89"
@@ -30,12 +23,15 @@ dnl AC_CHECK_LIB(dl, main,, AC_CHECK_LIB(c, dlopen,, AC_MSG_ERROR(dl library is 
 dnl AC_CHECK_LIB(dl, main,, AC_MSG_ERROR(dl library is needed))
 
 dnl Checks for functions.
-AC_CHECK_FUNCS(strcasestr)
+AC_CHECK_FUNCS([strcasestr setenv])
 
 dnl check for mkdir accepting permissions
 AC_MSG_CHECKING(if mkdir rejects permissions)
 ac_mkdir_perm_broken=yes
-AC_TRY_COMPILE([#include <unistd.h>,#include <sys/stat.h>], [mkdir("test", 0777)], [ac_mkdir_perm_broken=no])
+AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM([[#include <unistd.h>
+#include <sys/stat.h>]], [[mkdir("test", 0777)]])],
+  [ac_mkdir_perm_broken=no])
 if test x$ac_mkdir_perm_broken = xyes ; then
   AC_DEFINE_UNQUOTED(HAVE_BROKEN_MKDIR, 1, [Defined if mkdir rejects a second permissions parameter.])
 fi
@@ -44,8 +40,8 @@ AC_MSG_RESULT($ac_mkdir_perm_broken)
 dnl L10n support
 ALL_LINGUAS="en de"
 
-AC_GNU_SOURCE
-AM_GNU_GETTEXT
+AM_GNU_GETTEXT_VERSION([0.21])
+AM_GNU_GETTEXT([external])
 
 dnl win32 stuff
 dnl USE_NLS=no
@@ -85,10 +81,8 @@ EOF
   rm -f ac_tmp.c
 fi
 
-dnl determining include paths for libintl.h
-if test x$USE_INCLUDED_LIBINTL = xyes ; then
-  INTLINCLUDES="-I\$(top_srcdir)/intl -I\$(top_builddir)/intl"
-fi
+dnl libintl.h is supplied by the system gettext (external mode).
+INTLINCLUDES=
 
 dnl newer versions of gettext don't support CATALOGS -> create it here
 if test "x$CATALOGS" = x ; then
@@ -129,13 +123,9 @@ AC_MSG_RESULT($ac_can_determ_paths)
 AC_MSG_RESULT(executable's path determination strategy... $ac_paths_determ)
 AM_CONDITIONAL(compile_paths_linux, test x$ac_paths_determ = xlinux)
 
-dnl check SDL version
-AM_PATH_SDL(1.1.4,, AC_MSG_ERROR(lib SDL >=1.1.4 is needed))
-dnl win32 stuff: disable AM_PATH_SDL and use this
-dnl SDL_CFLAGS="-I/usr/i686-w64-mingw32/sys-root/mingw/include/SDL -D_GNU_SOURCE=1 -Dmain=SDL_main"
-dnl SDL_LIBS="-L/usr/i686-w64-mingw32/sys-root/mingw/lib -lmingw32 -lSDLmain -lSDL -mwindows -lintl"
-dnl AC_SUBST(SDL_CFLAGS)
-dnl AC_SUBST(SDL_LIBS)
+dnl check SDL version via pkg-config; sdl12_compat provides the "sdl" module.
+PKG_CHECK_MODULES([SDL], [sdl >= 1.2.0], [],
+                  [AC_MSG_ERROR([lib SDL >= 1.2 is needed])])
 
 dnl check sound
 sound_flag="-DWITH_SOUND"
@@ -176,18 +166,33 @@ inst_flag=)
 AC_SUBST(inst_dir)
 AC_SUBST(inst_flag)
 
-# create Makefiles for Makefile.ins in po-subdirectories.
-# FIXME! autoconf is simply too stupid to grok that for-loop
-#for ac_domain in lgeneral ; do
-  AC_CONFIG_COMMANDS([po-lgeneral],
-     [case "$CONFIG_FILES" in *po/lgeneral/Makefile.in*)
-        sed -e "/POTFILES =/r po/lgeneral/POTFILES" po/lgeneral/Makefile.in > po/lgeneral/Makefile
-      esac])
-  AC_CONFIG_COMMANDS([po-pg],
-     [case "$CONFIG_FILES" in *po/pg/Makefile.in*)
-        cat po/pg/Makefile.in > po/pg/Makefile
-      esac])
-#done
-
-AC_OUTPUT(Makefile lged/Makefile lgc-pg/Makefile lgc-pg/convdata/Makefile src/Makefile src/nations/Makefile src/scenarios/Makefile src/units/Makefile src/sounds/Makefile src/music/Makefile src/terrain/Makefile src/maps/Makefile src/gfx/Makefile  src/gfx/flags/Makefile src/gfx/terrain/Makefile src/gfx/units/Makefile src/ai_modules/Makefile src/campaigns/Makefile src/themes/Makefile src/themes/default/Makefile util/Makefile intl/Makefile po/Makefile po/lgeneral/Makefile.in po/pg/Makefile.in tools/Makefile tools/ltrextract/Makefile)
+AC_CONFIG_FILES([
+ Makefile
+ lged/Makefile
+ lgc-pg/Makefile
+ lgc-pg/convdata/Makefile
+ src/Makefile
+ src/nations/Makefile
+ src/scenarios/Makefile
+ src/units/Makefile
+ src/sounds/Makefile
+ src/music/Makefile
+ src/terrain/Makefile
+ src/maps/Makefile
+ src/gfx/Makefile
+ src/gfx/flags/Makefile
+ src/gfx/terrain/Makefile
+ src/gfx/units/Makefile
+ src/ai_modules/Makefile
+ src/campaigns/Makefile
+ src/themes/Makefile
+ src/themes/default/Makefile
+ util/Makefile
+ po/Makefile
+ po/lgeneral/Makefile.in
+ po/pg/Makefile.in
+ tools/Makefile
+ tools/ltrextract/Makefile
+])
+AC_OUTPUT
 

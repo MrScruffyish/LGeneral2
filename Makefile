@@ -16,7 +16,7 @@ JOBS ?= $(shell nproc)
 # Output goes to /tmp/human.log (override with LG_TRACE_FILE).
 TRACE ?= 0
 TRACE_SUFFIX := $(if $(filter 1,$(TRACE)),-trace,)
-TRACE_CFLAGS := $(if $(filter 1,$(TRACE)),-DLG_TRACE -include $(CURDIR)/debug/lgtrace.h -O0 -g,)
+TRACE_CFLAGS := $(if $(filter 1,$(TRACE)),-DLG_TRACE -O0 -g,)
 
 # Path to pg-data.tar.gz or an unpacked pg-data directory, supplied through
 # the environment (e.g. export PG_DATA=~/PG_DATA/pg-data.tar.gz).
@@ -55,22 +55,17 @@ $(LGEDITOR_BUILD)/.synced: $(shell find $(LGEDITOR) -type f) Makefile
 	cp -a $(LGEDITOR)/. $(LGEDITOR_BUILD)/
 	touch $@
 
-# The bundled intl/po trees use gettext macros that current toolchains no
-# longer build; use system gettext and leave translations out for now.
+# Translations stay disabled for now; the build uses system gettext and
+# bootstraps the autotools files in the isolated build copy.
 lgeneral: $(LGENERAL_BUILD)/.synced
 	@echo "==> Building $(LGENERAL)"
-	@sed -i -E 's/^AM_GNU_GETTEXT[[:space:]]*$$/AM_GNU_GETTEXT([external])/' \
-		$(LGENERAL_BUILD)/configure.ac
-	@sed -i -e 's/^SUBDIRS = intl /SUBDIRS = /' -e 's/ po$$//' \
-		$(LGENERAL_BUILD)/Makefile.am
 	@if [ "$(TRACE)" = 1 ]; then \
+		cp debug/lgtrace.h $(LGENERAL_BUILD)/src/; \
 		python3 debug/instrument.py $(LGENERAL_BUILD); \
 	fi
 	cd $(LGENERAL_BUILD) && CFLAGS="$(CFLAGS) $(TRACE_CFLAGS)" autoreconf -fi && \
 		CFLAGS="$(CFLAGS) $(TRACE_CFLAGS)" ./configure --disable-install \
-		$(LGENERAL_CONFIGURE_ARGS)
-	@grep -q '^#define HAVE_SETENV' $(LGENERAL_BUILD)/config.h || \
-		echo '#define HAVE_SETENV 1' >> $(LGENERAL_BUILD)/config.h
+		--disable-nls $(LGENERAL_CONFIGURE_ARGS)
 	$(MAKE) -C $(LGENERAL_BUILD) -j$(JOBS)
 	@printf '%s\n' '@' 'grid=0' 'tran=1' 'bar=1' 'width=800' 'height=600' \
 		'fullscreen=0' 'anim_speed=1' 'supply=1' 'weather=1' \
