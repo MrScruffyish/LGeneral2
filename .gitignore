@@ -55,6 +55,24 @@ compile_commands.json
 !/Makefile
 .build/
 
+# Generated autotools files. The build bootstraps these in .build/ with
+# autoreconf -fi, so they are intentionally not tracked in git.
+configure
+aclocal.m4
+config.h.in
+Makefile.in
+Makefile.in.in
+stamp-h.in
+compile
+config.guess
+config.sub
+config.rpath
+depcomp
+install-sh
+missing
+mkinstalldirs
+INSTALL
+
 # Temporary files
 *.tmp
 *.log

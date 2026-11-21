@@ -29,6 +29,16 @@ echo "==> smoke: copying sources to $tmp"
     tar --exclude=./.git --exclude=./.build --exclude=./TODO.md -cf - .
 ) | tar -xf - -C "$tmp"
 
+# Even if a developer has bootstrapped in place, force both builds to start
+# from sources only, as a fresh checkout would.
+find "$tmp" -type f \( \
+    -name configure -o -name aclocal.m4 -o -name config.h.in -o \
+    -name Makefile.in -o -name Makefile.in.in -o -name stamp-h.in -o \
+    -name compile -o -name config.guess -o -name config.sub -o \
+    -name config.rpath -o -name depcomp -o -name install-sh -o \
+    -name missing -o -name mkinstalldirs -o -name INSTALL \
+\) -delete
+
 for mode in normal trace; do
     if [ "$mode" = trace ]; then
         trace=1

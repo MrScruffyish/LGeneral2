@@ -18,9 +18,10 @@ make
 
 It needs autoconf/automake, `pkg-config`, SDL 1.2 with SDL_mixer (the
 `sdl12_compat` packages work), SDL2 with SDL2_image and SDL2_ttf, and gettext
-0.21 or newer. Translations remain disabled for now. To also convert the Panzer
-General data into the game's data directory, set `PG_DATA` to `pg-data.tar.gz`
-or an unpacked `pg-data` directory:
+0.21 or newer. Translations remain disabled for now. Generated autotools files
+are not tracked; each build bootstraps them in its own `.build/` copy with
+`autoreconf -fi`. To also convert the Panzer General data into the game's data
+directory, set `PG_DATA` to `pg-data.tar.gz` or an unpacked `pg-data` directory:
 
 ```bash
 PG_DATA=~/PG_DATA/pg-data.tar.gz make
