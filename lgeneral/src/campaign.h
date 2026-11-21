@@ -18,6 +18,11 @@
 #ifndef __CAMPAIGN_H
 #define __CAMPAIGN_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ====================================================================
 Campaign Scenario entry.
@@ -92,4 +97,8 @@ Set current scenario by camp scen entry id.
 */
 void camp_set_cur( const char *id );
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

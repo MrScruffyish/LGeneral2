@@ -18,6 +18,11 @@
 #ifndef __PLAYER_H
 #define __PLAYER_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ====================================================================
 Player info. The players are created by scenario but managed
@@ -147,4 +152,8 @@ Get player index in list
 */
 int player_get_index( Player *player );
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

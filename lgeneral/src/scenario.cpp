@@ -142,7 +142,7 @@ static int subcond_check( VSubCond *cond )
             /* as long as there are units out using this tag this condition
                is not fullfilled */
             list_reset( units );
-            while ( ( unit = list_next( units ) ) )
+            while ( ( unit = (Unit*)list_next( units ) ) )
                 if ( !unit->killed && !player_is_ally( cond->player, unit->player ) )
                     if ( unit->tag[0] != 0 && STRCMP( unit->tag, cond->tag ) )
                         return 0;
@@ -151,7 +151,7 @@ static int subcond_check( VSubCond *cond )
             /* we counted the number of units with this tag so count again
                and if one is missing: bingo */
             list_reset( units ); count = 0;
-            while ( ( unit = list_next( units ) ) )
+            while ( ( unit = (Unit*)list_next( units ) ) )
                 if ( player_is_ally( cond->player, unit->player ) )
                     if ( unit->tag[0] != 0 && STRCMP( unit->tag, cond->tag ) )
                         count++;
@@ -163,7 +163,7 @@ static int subcond_check( VSubCond *cond )
 			* on a map tile marked as escape_zone */
 			list_reset( units );
 			count = 0;
-			while ( ( unit = list_next( units ) ) ) {
+			while ( ( unit = (Unit*)list_next( units ) ) ) {
 				if ( !player_is_ally( cond->player, unit->player ) )
 					continue; /* not our unit */
 				if ( unit->tag[0] == 0 || !STRCMP( unit->tag, cond->tag ) )
@@ -206,16 +206,16 @@ static void update_nations_purchase_flag()
 	
 	/* mark all nations that have at least one entry assigned */
 	list_reset( unit_lib );
-	while ((e = list_next( unit_lib )))
+	while ((e = (Unit_Lib_Entry*)list_next( unit_lib )))
 		if (e->nation != -1)
 			nations[e->nation].no_purchase |= 0x01;
 		
 	/* mark all nations that have at least one unit/flag under control */
 	list_reset( units );
-	while ((u = list_next( units )))
+	while ((u = (Unit*)list_next( units )))
 		u->nation->no_purchase |= 0x02;
 	list_reset( reinf );
-	while ((u = list_next( reinf )))
+	while ((u = (Unit*)list_next( reinf )))
 		u->nation->no_purchase |= 0x02;
 	for ( x = 0; x < map_w; x++ )
 		for ( y = 0; y < map_h; y++ )
@@ -299,7 +299,7 @@ int scen_load( const char *fname )
     /* get scenario info */
     sprintf( log_str, tr("Loading Scenario Info"));
     write_line( sdl.screen, log_font, log_str, log_x, &log_y ); refresh_screen( 0, 0, 0, 0 );
-    scen_info = calloc( 1, sizeof( Scen_Info ) );
+    scen_info = (Scen_Info*)calloc( 1, sizeof( Scen_Info ) );
     scen_info->fname = strdup( fname );
     if ( !parser_get_localized_string( pd, "name", domain, &scen_info->name ) ) goto parser_failure;
     if ( !parser_get_localized_string( pd, "desc", domain, &scen_info->desc ) ) goto parser_failure;
@@ -332,7 +332,7 @@ int scen_load( const char *fname )
         if ( !unit_lib_load( str, UNIT_LIB_MAIN ) ) goto parser_failure;
         if ( parser_get_values( sub, "add", &values ) ) {
             list_reset( values );
-            while ( ( lib = list_next( values ) ) ) {
+            while ( ( lib = (char*)list_next( values ) ) ) {
                 sprintf( log_str, tr("Loading Additional Unit Library '%s'"), lib );
                 write_line( sdl.screen, log_font, log_str, log_x, &log_y ); refresh_screen( 0, 0, 0, 0 );
                 if ( !unit_lib_load( lib, UNIT_LIB_ADD ) )
@@ -348,10 +348,10 @@ int scen_load( const char *fname )
     sprintf( log_str, tr("Loading Map '%s'"), str );
     write_line( sdl.screen, log_font, log_str, log_x, &log_y ); refresh_screen( 0, 0, 0, 0 );
     if ( !map_load( str ) ) goto failure;
-    weather = calloc( scen_info->turn_limit, sizeof( int ) );
+    weather = (int*)calloc( scen_info->turn_limit, sizeof( int ) );
     if ( parser_get_values( pd, "weather", &values ) ) {
         list_reset( values ); i = 0;
-        while ( ( str = list_next( values ) ) ) {
+        while ( ( str = (char*)list_next( values ) ) ) {
             if ( i == scen_info->turn_limit ) break;
             for ( j = 0; j < weather_type_count; j++ )
                 if ( STRCMP( str, weather_types[j].id ) ) {
@@ -366,18 +366,18 @@ int scen_load( const char *fname )
     write_line( sdl.screen, log_font, log_str, log_x, &log_y ); refresh_screen( 0, 0, 0, 0 );
     if ( !parser_get_entries( pd, "players", &entries ) ) goto parser_failure;
     list_reset( entries );
-    while ( ( sub = list_next( entries ) ) ) {
+    while ( ( sub = (PData*)list_next( entries ) ) ) {
         /* create player */
-        player = calloc( 1, sizeof( Player ) );
+        player = (Player*)calloc( 1, sizeof( Player ) );
 	    
         player->id = strdup( sub->name );
         if ( !parser_get_localized_string( sub, "name", domain, &player->name ) ) goto parser_failure;
         if ( !parser_get_values( sub, "nations", &values ) ) goto parser_failure;
         player->nation_count = values->count;
-        player->nations = calloc( player->nation_count, sizeof( Nation* ) );
+        player->nations = (Nation**)calloc( player->nation_count, sizeof( Nation* ) );
         list_reset( values );
         for ( i = 0; i < values->count; i++ )
-            player->nations[i] = nation_find( list_next( values ) );
+            player->nations[i] = nation_find( (char*)list_next( values ) );
 	
 	/* unit limit (0 = no limit) */
 	parser_get_int(sub, "unit_limit", &player->unit_limit);
@@ -408,14 +408,14 @@ int scen_load( const char *fname )
             if ( !parser_get_int( subsub, "count", &player->sea_trsp_count ) ) goto parser_failure;
         }
 	/* Load prestige info if any. If none is present show a warning. */ 
-	player->prestige_per_turn = calloc( scen_info->turn_limit, sizeof(int));
+	player->prestige_per_turn = (int*)calloc( scen_info->turn_limit, sizeof(int));
 	if (!player->prestige_per_turn) {
 		fprintf( stderr, tr("Out of memory\n") );
 		goto failure;
 	}
 	if ( parser_get_values( sub, "prestige", &values ) ) {
 		list_reset( values ); i = 0;
-		while ( ( str = list_next( values ) ) ) {
+		while ( ( str = (char*)list_next( values ) ) ) {
 			player->prestige_per_turn[i] = atoi(str);
 			i++;
 		}
@@ -431,13 +431,13 @@ int scen_load( const char *fname )
     /* set alliances */
     list_reset( players );
     for ( i = 0; i < players->count; i++ ) {
-        player = list_next( players );
+        player = (Player*)list_next( players );
         player->allies = list_create( LIST_NO_AUTO_DELETE, LIST_NO_CALLBACK );
         sprintf( path, "players/%s/allied_players", player->id );
         if ( parser_get_values( pd, path, &values ) ) {
             list_reset( values );
             for ( j = 0; j < values->count; j++ )
-                list_add( player->allies, player_get_by_id( list_next( values ) ) );
+                list_add( player->allies, player_get_by_id( (char*)list_next( values ) ) );
         }
     }
     /* flags */
@@ -445,7 +445,7 @@ int scen_load( const char *fname )
     write_line( sdl.screen, log_font, log_str, log_x, &log_y ); refresh_screen( 0, 0, 0, 0 );
     if ( !parser_get_entries( pd, "flags", &flags ) ) goto parser_failure;
     list_reset( flags );
-    while ( ( flag = list_next( flags ) ) ) {
+    while ( ( flag = (PData*)list_next( flags ) ) ) {
         if ( !parser_get_int( flag, "x", &x ) ) goto parser_failure;
         if ( !parser_get_int( flag, "y", &y ) ) goto parser_failure;
         obj = 0; parser_get_int( flag, "obj", &obj );
@@ -482,13 +482,13 @@ int scen_load( const char *fname )
     scen_message[0] = 0;
     /* count conditions */
     list_reset( entries ); i = 0;
-    while ( ( pd_vcond = list_next( entries ) ) )
+    while ( ( pd_vcond = (PData*)list_next( entries ) ) )
         if ( STRCMP( pd_vcond->name, "cond" ) ) i++;
     vcond_count = i + 1;
     /* create conditions */
-    vconds = calloc( vcond_count, sizeof( VCond ) );
+    vconds = (VCond*)calloc( vcond_count, sizeof( VCond ) );
     list_reset( entries ); i = 1; /* the very first condition is the else condition */
-    while ( ( pd_vcond = list_next( entries ) ) ) {
+    while ( ( pd_vcond = (PData*)list_next( entries ) ) ) {
         if ( STRCMP( pd_vcond->name, "cond" ) ) {
             /* result & message */
             if ( parser_get_value( pd_vcond, "result", &str, 0 ) )
@@ -503,9 +503,9 @@ int scen_load( const char *fname )
             if ( parser_get_pdata( pd_vcond, "and", &pd_bind ) ) {
                 vconds[i].sub_and_count = pd_bind->entries->count;
                 /* create subconditions */
-                vconds[i].subconds_and = calloc( vconds[i].sub_and_count, sizeof( VSubCond ) );
+                vconds[i].subconds_and = (VSubCond*)calloc( vconds[i].sub_and_count, sizeof( VSubCond ) );
                 list_reset( pd_bind->entries ); j = 0;
-                while ( ( pd_vsubcond = list_next( pd_bind->entries ) ) ) {
+                while ( ( pd_vsubcond = (PData*)list_next( pd_bind->entries ) ) ) {
                     /* get subconds */
                     if ( STRCMP( pd_vsubcond->name, "control_all_hexes" ) ) {
                         vconds[i].subconds_and[j].type = VSUBCOND_CTRL_ALL_HEXES;
@@ -564,7 +564,7 @@ int scen_load( const char *fname )
 						if ( parser_get_values( pd_vsubcond, "coordinates", &values ) && values->count>0 )
 						{
 							list_reset( values );
-							while ( ( lib = list_next( values ) ) ) {
+							while ( ( lib = (char*)list_next( values ) ) ) {
 								get_coord( lib, &x, &y );
 								vconds[i].subconds_and[j].coords[vconds[i].subconds_and[j].coord_count][0]=x;
 								vconds[i].subconds_and[j].coords[vconds[i].subconds_and[j].coord_count][1]=y;
@@ -588,9 +588,9 @@ int scen_load( const char *fname )
             if ( parser_get_pdata( pd_vcond, "or", &pd_bind ) ) {
                 vconds[i].sub_or_count = pd_bind->entries->count;
                 /* create subconditions */
-                vconds[i].subconds_or = calloc( vconds[i].sub_or_count, sizeof( VSubCond ) );
+                vconds[i].subconds_or = (VSubCond*)calloc( vconds[i].sub_or_count, sizeof( VSubCond ) );
                 list_reset( pd_bind->entries ); j = 0;
-                while ( ( pd_vsubcond = list_next( pd_bind->entries ) ) ) {
+                while ( ( pd_vsubcond = (PData*)list_next( pd_bind->entries ) ) ) {
                     /* get subconds */
                     if ( STRCMP( pd_vsubcond->name, "control_all_hexes" ) ) {
                         vconds[i].subconds_or[j].type = VSUBCOND_CTRL_ALL_HEXES;
@@ -668,7 +668,7 @@ int scen_load( const char *fname )
 
     if ( !parser_get_entries( pd, "units", &entries ) ) goto parser_failure;
     list_reset( entries );
-    while ( ( sub = list_next( entries ) ) ) {
+    while ( ( sub = (PData*)list_next( entries ) ) ) {
         /* unit type */
         if ( !parser_get_value( sub, "id", &str, 0 ) ) goto parser_failure;
         if ( ( unit_prop = unit_lib_find( str ) ) == 0 ) {
@@ -774,7 +774,7 @@ int scen_load( const char *fname )
     /* load deployment hexes */
     if ( parser_get_entries( pd, "deployfields", &entries ) ) {
         list_reset( entries );
-        while ( ( sub = list_next( entries ) ) ) {
+        while ( ( sub = (PData*)list_next( entries ) ) ) {
             Player *pl;
             int plidx;
             if ( !parser_get_value( sub, "id", &str, 0 ) ) goto parser_failure;
@@ -784,7 +784,7 @@ int scen_load( const char *fname )
             if ( parser_get_values( sub, "coordinates", &values ) && values->count>0 )
             {
                 list_reset( values );
-                while ( ( lib = list_next( values ) ) ) {
+                while ( ( lib = (char*)list_next( values ) ) ) {
                     if (!strcmp(lib,"default"))
                         { x=-1; y=-1; }
                     else if (!strcmp(lib,"none"))
@@ -802,11 +802,11 @@ int scen_load( const char *fname )
 	list_reset( entries );
 	while ( ( list_next( entries ) ) )
 		sMessage_count++;
-	sMessages = calloc( sMessage_count, sizeof( Scen_Message ) );
+	sMessages = (Scen_Message*)calloc( sMessage_count, sizeof( Scen_Message ) );
 
 	/* load them now */
 	list_reset( entries ); i = 0;
-	while ( ( sub = list_next( entries ) ) ) {
+	while ( ( sub = (PData*)list_next( entries ) ) ) {
 		if ( !parser_get_value( sub, "player", &str, 0 ) )
 			goto parser_failure;
 		sMessages[i].player = player_get_by_id( str );
@@ -823,7 +823,7 @@ int scen_load( const char *fname )
     }
     parser_free( &pd );
 
-    casualties = calloc( scen_info->player_count * unit_class_count, sizeof casualties[0] );
+    casualties = (int*)calloc( scen_info->player_count * unit_class_count, sizeof casualties[0] );
     deploy_turn = config.deploy_turn;
     
     /* check which nations may do purchase for this scenario */
@@ -866,7 +866,7 @@ char* scen_load_info( const char *fname )
     if ( !parser_get_entries( pd, "players", &entries ) ) goto parser_failure;
     if ( !parser_get_value( pd, "turns", &turns, 0 ) ) goto parser_failure;
     sprintf( count, "%i",  entries->count );
-    if ( ( info = calloc( strlen( name ) + strlen( desc ) + strlen( count ) + strlen( turns ) + 30, sizeof( char ) ) ) == 0 ) {
+    if ( ( info = (char*)calloc( strlen( name ) + strlen( desc ) + strlen( count ) + strlen( turns ) + 30, sizeof( char ) ) ) == 0 ) {
         fprintf( stderr, tr("Out of memory\n") );
         goto failure;
     }
@@ -875,12 +875,12 @@ char* scen_load_info( const char *fname )
     scen_clear_setup();
     strcpy( setup.fname, fname );
     setup.player_count = entries->count;
-    setup.ctrl = calloc( setup.player_count, sizeof( int ) );
-    setup.names = calloc( setup.player_count, sizeof( char* ) );
-    setup.modules = calloc( setup.player_count, sizeof( char* ) );
+    setup.ctrl = (int*)calloc( setup.player_count, sizeof( int ) );
+    setup.names = (char**)calloc( setup.player_count, sizeof( char* ) );
+    setup.modules = (char**)calloc( setup.player_count, sizeof( char* ) );
     /* load the player ctrls */
     list_reset( entries ); i = 0;
-    while ( ( sub = list_next( entries ) ) ) {
+    while ( ( sub = (PData*)list_next( entries ) ) ) {
         if ( !parser_get_value( sub, "name", &str, 0 ) ) goto parser_failure;
         setup.names[i] = strdup(trd(domain, str));
         if ( !parser_get_value( sub, "control", &str, 0 ) ) goto parser_failure;
@@ -916,12 +916,12 @@ void scen_set_setup()
     Player *player;
     scen_clear_setup();
     setup.player_count = players->count;
-    setup.ctrl = calloc( setup.player_count, sizeof( int ) );
-    setup.names = calloc( setup.player_count, sizeof( char* ) );
-    setup.modules = calloc( setup.player_count, sizeof( char* ) );
+    setup.ctrl = (int*)calloc( setup.player_count, sizeof( int ) );
+    setup.names = (char**)calloc( setup.player_count, sizeof( char* ) );
+    setup.modules = (char**)calloc( setup.player_count, sizeof( char* ) );
     list_reset( players );
     for ( i = 0; i < setup.player_count; i++ ) {
-        player = list_next( players );
+        player = (Player*)list_next( players );
         setup.ctrl[i] = player->ctrl;
         setup.names[i] = strdup( player->name );
         setup.modules[i] = strdup( player->ai_fname );
@@ -1289,7 +1289,7 @@ int scen_save_core_units( )
     if ( units )
 	if ( !list_empty( units ) )
 	{
-	    current = list_first( units );
+	    current = (Unit*)list_first( units );
 	    do
 		//don't transfer killed units
 		if ( current->core && !current->killed )
@@ -1298,12 +1298,12 @@ int scen_save_core_units( )
 		    list_add( prev_scen_core_units, cur);
 		    n_units++;
 		}
-	    while( (current = list_next( units )) );
+	    while( (current = (Unit*)list_next( units )) );
 	}
     if ( reinf )
 	if ( !list_empty( reinf ) )
 	{
-	    current = list_first( reinf );
+	    current = (Unit*)list_first( reinf );
 	    do
 		if ( current->core )
 		{
@@ -1311,12 +1311,12 @@ int scen_save_core_units( )
 		    list_add( prev_scen_core_units, cur);
 		    n_units++;
 		}
-	    while( (current = list_next( reinf )) );
+	    while( (current = (Unit*)list_next( reinf )) );
 	}
     if ( avail_units )
 	if ( !list_empty( avail_units ) )
 	{
-	    current = list_first( avail_units );
+	    current = (Unit*)list_first( avail_units );
 	    do
 		if ( current->core )
 		{
@@ -1324,7 +1324,7 @@ int scen_save_core_units( )
 		    list_add( prev_scen_core_units, cur);
 		    n_units++;
 		}
-	    while( (current = list_next( avail_units )) );
+	    while( (current = (Unit*)list_next( avail_units )) );
 	}
 #ifdef DEBUG_CORETRANSFER
 	printf("saved %d core units\n", n_units);
@@ -1347,7 +1347,7 @@ int scen_load_core_units()
     if ( prev_scen_core_units && !list_empty( prev_scen_core_units ) )
     {
 	list_reset( prev_scen_core_units );
-	current = list_first( prev_scen_core_units );
+	current = (transferredUnitProp*)list_first( prev_scen_core_units );
 	do
 	{
 		/* fix all pointers and icon settings in properties */
@@ -1405,7 +1405,7 @@ int scen_load_core_units()
 		list_add( reinf, unit );
 		n_units++;
 	}
-	while ( (current = list_next( prev_scen_core_units )) );
+	while ( (current = (transferredUnitProp*)list_next( prev_scen_core_units )) );
     }
 #ifdef DEBUG_CORETRANSFER
 	printf("loaded %d core units\n", n_units);

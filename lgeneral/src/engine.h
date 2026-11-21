@@ -18,6 +18,11 @@
 #ifndef __ENGINE_H
 #define __ENGINE_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ====================================================================
 Create engine (load resources that are not modified by scenario)
@@ -42,4 +47,8 @@ Run the engine (starts with the title screen)
 */
 void engine_run();
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

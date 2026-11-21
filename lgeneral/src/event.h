@@ -18,6 +18,11 @@
 #ifndef __EVENT_H
 #define __EVENT_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ====================================================================
 Event filter. As long as this is active no KEY or MOUSE events
@@ -100,4 +105,8 @@ Wait until neither a key nor a button is pressed.
 */
 void event_wait_until_no_input();
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

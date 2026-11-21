@@ -20,6 +20,11 @@
 #include "unit.h"
 #include "windows.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _List;
 
 /*
@@ -517,4 +522,8 @@ void gui_resize_panel();
 void gui_init_minimap();
 void gui_update_minimap(int full);
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

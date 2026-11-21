@@ -20,6 +20,11 @@
 
 #include "terrain.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum { FAIR = 0, CLOUDS, RAIN, SNOW };
 
 /*
@@ -411,4 +416,8 @@ Get drop zone for unit (all close hexes that are free).
 */
 void map_get_dropzone_mask( Unit *unit );
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

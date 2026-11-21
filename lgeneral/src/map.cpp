@@ -143,17 +143,17 @@ int map_load( char *fname )
     if ( !terrain_load( str ) ) goto failure;
     if ( !parser_get_values( pd, "tiles", &tiles ) ) goto parser_failure;
     /* allocate map memory */
-    map = calloc( map_w, sizeof( Map_Tile* ) );
+    map = (Map_Tile**)calloc( map_w, sizeof( Map_Tile* ) );
     for ( i = 0; i < map_w; i++ )
-        map[i] = calloc( map_h, sizeof( Map_Tile ) );
-    mask = calloc( map_w, sizeof( Mask_Tile* ) );
+        map[i] = (Map_Tile*)calloc( map_h, sizeof( Map_Tile ) );
+    mask = (Mask_Tile**)calloc( map_w, sizeof( Mask_Tile* ) );
     for ( i = 0; i < map_w; i++ )
-        mask[i] = calloc( map_h, sizeof( Mask_Tile ) );
+        mask[i] = (Mask_Tile*)calloc( map_h, sizeof( Mask_Tile ) );
     /* map itself */
     list_reset( tiles );
     for ( y = 0; y < map_h; y++ )
         for ( x = 0; x < map_w; x++ ) {
-            tile = list_next( tiles );
+            tile = (char*)list_next( tiles );
             /* default is no flag */
             map[x][y].nation = 0;
             map[x][y].player = 0;
@@ -185,7 +185,7 @@ int map_load( char *fname )
     if ( parser_get_values( pd, "names", &names ) ) {
         list_reset( names );
         for ( i = 0; i < names->count; i++ ) {
-            str = list_next( names );
+            str = (char*)list_next( names );
             x = i % map_w;
             y = i / map_w;
             free( map[x][y].name );
@@ -686,8 +686,8 @@ Returns 1 when at least one tile's danger mask was set, otherwise 0.
 int map_get_danger_mask( Unit *unit )
 {
     int i, x, y, retval = 0;
-    short *dist_air_mask = alloca(map_w*map_h*sizeof dist_air_mask[0]);
-    MapCoord *airfields = alloca(map_w*map_h*sizeof airfields[0]);
+    short *dist_air_mask = (short int*)alloca(map_w*map_h*sizeof dist_air_mask[0]);
+    MapCoord *airfields = (MapCoord*)alloca(map_w*map_h*sizeof airfields[0]);
     int airfield_count = map_write_friendly_depot_list( unit, airfields );
 
     /* initialise masks */
@@ -733,8 +733,8 @@ Way_Point* map_get_unit_way_points( Unit *unit, int x, int y, int *count, Unit *
     int maxpoints = unit->cur_mov;
     if (mask[x][y].mount == 1)
         maxpoints = (unit->trsp_prop.mov>unit->prop.mov?unit->trsp_prop.mov:unit->prop.mov);
-    way = calloc( maxpoints + 1, sizeof( Way_Point ) );
-    reverse = calloc( maxpoints + 1, sizeof( Way_Point ) );
+    way = (Way_Point*)calloc( maxpoints + 1, sizeof( Way_Point ) );
+    reverse = (Way_Point*)calloc( maxpoints + 1, sizeof( Way_Point ) );
     /* it's easiest to get positions in reverse order */
     next_x = x; next_y = y; *count = 0;
     while ( next_x != unit->x || next_y != unit->y ) {
@@ -1106,7 +1106,7 @@ void map_set_spot_mask()
     /* use map::mask::aux as buffer */
     list_reset( units );
     for ( i = 0; i < units->count; i++ ) {
-        unit = list_next( units );
+        unit = (Unit*)list_next( units );
         if ( unit->killed ) continue;
         if ( player_is_ally( cur_player, unit->player ) ) /* it's your unit or at least it's allied... */
             map_add_unit_spot_mask( unit );
@@ -1188,7 +1188,7 @@ void map_set_fog_by_player( Player *player )
     /* units */
     list_reset( units );
     for ( i = 0; i < units->count; i++ ) {
-        unit = list_next( units );
+        unit = (Unit*)list_next( units );
         if ( unit->killed ) continue;
         if ( player_is_ally( player, unit->player ) ) /* it's your unit or at least it's allied... */
             map_add_unit_spot_mask( unit );
@@ -1271,7 +1271,7 @@ void map_set_infl_mask()
     map_clear_mask( F_INFL | F_INFL_AIR );
     /* add all hostile units influence */
     list_reset( units );
-    while ( ( unit = list_next( units ) ) )
+    while ( ( unit = (Unit*)list_next( units ) ) )
         if ( !unit->killed && !player_is_ally( cur_player, unit->player ) )
             map_add_unit_infl( unit );
     /* visible influence must also be updated */
@@ -1283,7 +1283,7 @@ void map_set_vis_infl_mask()
     map_clear_mask( F_VIS_INFL | F_VIS_INFL_AIR );
     /* add all hostile units influence */
     list_reset( units );
-    while ( ( unit = list_next( units ) ) )
+    while ( ( unit = (Unit*)list_next( units ) ) )
         if ( !unit->killed && !player_is_ally( cur_player, unit->player ) )
             if ( map_mask_tile( unit->x, unit->y )->spot )
                 map_add_vis_unit_infl( unit );
@@ -1567,11 +1567,11 @@ void map_set_deploy_field( int mx, int my, int player ) {
         MapCoord *pt = 0;
         List *field_list;
         if ( player == 0 ) {
-            pt = malloc( sizeof(MapCoord) );
+            pt = (MapCoord*)malloc( sizeof(MapCoord) );
             pt->x = (short)mx; pt->y = (short)my;
         }
 
-        field_list = list_next( deploy_fields );
+        field_list = (List*)list_next( deploy_fields );
         if ( !field_list ) {
             field_list = list_create( LIST_AUTO_DELETE, LIST_NO_CALLBACK );
             list_add( deploy_fields, field_list );
@@ -1642,7 +1642,7 @@ deployed, so water is always off. Screws the deploy mask!
 */
 static MapCoord *map_create_new_coord(int x, int y)
 {
-    MapCoord *pt = calloc(1,sizeof(MapCoord));
+    MapCoord *pt = (MapCoord*)calloc(1,sizeof(MapCoord));
     pt->x = x; pt->y = y;
     return pt;
 }
@@ -1652,7 +1652,7 @@ static void map_add_default_deploy_fields( Player *player, List *fields )
     Unit *unit;
 
     list_reset(units);
-    while ((unit=list_next(units))) /* make sure all units can be re-deployed */
+    while ((unit=(Unit*)list_next(units))) /* make sure all units can be re-deployed */
         if (unit->player == player && unit_supports_deploy(unit))
             mask[unit->x][unit->y].deploy = 1;
 
@@ -1677,11 +1677,11 @@ static void map_set_initial_deploy_mask( Player *player )
     MapCoord *pt;
     if ( !deploy_fields ) return;
     list_reset( deploy_fields );
-    while ( ( field_list = list_next( deploy_fields ) ) && i-- );
+    while ( ( field_list = (List*)list_next( deploy_fields ) ) && i-- );
     if ( !field_list ) return;
 
     list_reset( field_list );
-    while ( ( pt = list_next( field_list ) ) ) {
+    while ( ( pt = (MapCoord*)list_next( field_list ) ) ) {
         Mask_Tile *tile = map_mask_tile(pt->x, pt->y);
         if (!tile) /* -1,-1 */
         {

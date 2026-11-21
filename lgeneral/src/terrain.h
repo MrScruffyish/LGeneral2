@@ -18,6 +18,11 @@
 #ifndef __TERRAIN_H
 #define __TERRAIN_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ====================================================================
 Weather flags.
@@ -129,4 +134,8 @@ Return cost else.
 */
 int terrain_get_mov( Terrain_Type *type, int mov_type, int weather );
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

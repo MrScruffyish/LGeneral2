@@ -18,6 +18,11 @@
 #ifndef __AI_H
 #define __AI_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ====================================================================
 Initiate turn
@@ -41,4 +46,8 @@ Undo the steps (e.g. memory allocation) made in ai_init()
 */
 void ai_finalize( void );
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

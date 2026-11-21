@@ -125,7 +125,7 @@ Player *players_get_next( int *new_turn )
                 *new_turn = 1;
             cur_player_id = 0;
         }
-        player = list_get( players, cur_player_id );
+        player = (Player*)list_get( players, cur_player_id );
         //printf("Pl: %s,%d\n",player->name,player->no_init_deploy);
     } while (deploy_turn&&player->no_init_deploy);
     return player;
@@ -139,8 +139,8 @@ Check who would be the next player but do not choose him.
 Player *players_test_next()
 {
     if ( cur_player_id + 1 == players->count )
-        return list_get( players, 0 );
-    return list_get( players, cur_player_id + 1 );
+        return (Player*)list_get( players, 0 );
+    return (Player*)list_get( players, cur_player_id + 1 );
 }
 
 /*
@@ -153,7 +153,7 @@ Player *players_set_current( int index )
     if ( index < 0 ) index = 0;
     if ( index > players->count ) index = 0;
     cur_player_id = index;
-    return list_get( players, cur_player_id );
+    return (Player*)list_get( players, cur_player_id );
 }
 
 /*
@@ -166,7 +166,7 @@ int player_is_ally( Player *player, Player *second )
     Player *ally;
     if ( player == second || player == 0 ) return 1;
     list_reset( player->allies );
-    while ( ( ally = list_next( player->allies ) ) )
+    while ( ( ally = (Player*)list_next( player->allies ) ) )
         if ( ally == second )
             return 1;
     return 0;
@@ -182,7 +182,7 @@ Player *player_get_by_nation( Nation *nation )
     int i;
     Player *player;
     list_reset( players );
-    while ( ( player = list_next( players ) ) ) {
+    while ( ( player = (Player*)list_next( players ) ) ) {
         for ( i = 0; i < player->nation_count; i++ )
             if ( nation == player->nations[i] )
                 return player;
@@ -199,7 +199,7 @@ Player *player_get_by_id( char *id )
 {
     Player *player;
     list_reset( players );
-    while ( ( player = list_next( players ) ) ) {
+    while ( ( player = (Player*)list_next( players ) ) ) {
         if ( STRCMP( player->id, id ) )
             return player;
     }
@@ -213,7 +213,7 @@ Get player with this index
 */
 Player *player_get_by_index( int index )
 {
-    return list_get( players, index );
+    return (Player*)list_get( players, index );
 }
 
 /*
@@ -226,7 +226,7 @@ int player_get_index( Player *player )
     Player *entry;
     int i = 0;
     list_reset( players );
-    while ( ( entry = list_next( players ) ) ) {
+    while ( ( entry = (Player*)list_next( players ) ) ) {
         if ( player == entry )
             return i;
         i++;

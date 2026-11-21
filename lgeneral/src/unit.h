@@ -23,6 +23,11 @@
 #include "player.h"
 #include "terrain.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //#define DEBUG_ATTACK
 
 /*
@@ -407,4 +412,8 @@ Check whether unit can be considered for deployment.
 */
 int unit_supports_deploy( Unit *unit );
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

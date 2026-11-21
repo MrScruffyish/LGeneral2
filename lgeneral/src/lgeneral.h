@@ -18,6 +18,11 @@
 #ifndef __LGENERAL_H
 #define __LGENERAL_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ====================================================================
 General system includes.
@@ -44,4 +49,8 @@ Important local includes
 #include "list.h"
 #include "config.h"
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

@@ -5,8 +5,8 @@ bin_PROGRAMS = lgeneral
 AM_CPPFLAGS = -I$(top_srcdir)/util $(INTLINCLUDES)
 lgeneral_SOURCES = main.c \
 config.c date.cpp \
-file.cpp map.c nation.c \
-player.c scenario.c lg-sdl.c misc.c unit.c \
+file.cpp map.cpp nation.cpp \
+player.cpp scenario.cpp lg-sdl.c misc.c unit.c \
 audio.c parser.cpp list.cpp unit_lib.c \
 terrain.c image.c slot.c gui.c purchase_dlg.c \
 event.c windows.c action.c campaign.c \

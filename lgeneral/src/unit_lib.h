@@ -18,6 +18,11 @@
 #ifndef __UNIT_LIB_H
 #define __UNIT_LIB_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ====================================================================
 Unit flags.
@@ -195,4 +200,8 @@ This evaluation is PG specific.
 */
 void unit_lib_eval_unit( Unit_Lib_Entry *unit );
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

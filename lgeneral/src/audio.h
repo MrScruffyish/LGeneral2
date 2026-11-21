@@ -18,6 +18,11 @@
 #ifndef __AUDIO_H
 #define __AUDIO_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef WITH_SOUND
 
 /*
@@ -60,4 +65,8 @@ void wav_play_at( Wav *wav, int channel );
 
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

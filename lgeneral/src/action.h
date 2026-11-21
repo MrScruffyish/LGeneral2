@@ -18,6 +18,11 @@
 #ifndef __ACTION_H
 #define __ACTION_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ====================================================================
 Engine actions
@@ -129,4 +134,8 @@ void action_queue_start_scen();
 void action_queue_start_camp();
 void action_queue_strategic_attack( Unit *unit);
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

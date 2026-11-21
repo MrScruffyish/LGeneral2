@@ -18,6 +18,11 @@
 #ifndef __AI_GROUP_H
 #define __AI_GROUP_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ====================================================================
 AI army group
@@ -67,4 +72,8 @@ enum {
     AI_FIND_ENEMY_OBJ
 };
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

@@ -18,6 +18,11 @@
 #ifndef __SCENARIO_H
 #define __SCENARIO_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _Unit;
 
 #define DEBUG_CAMPAIGN 1
@@ -251,4 +256,8 @@ Save/Load core units to be transferred between scenarios.
 int scen_save_core_units( );
 int scen_load_core_units( );
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

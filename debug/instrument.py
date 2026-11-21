@@ -53,7 +53,7 @@ def main():
         raise SystemExit("usage: instrument.py <lgeneral-build-dir>")
     root = Path(sys.argv[1]) / "src"
 
-    for name in ("config.c", "scenario.c", "engine.c", "gui.c", "player.c"):
+    for name in ("config.c", "scenario.cpp", "engine.c", "gui.c", "player.cpp"):
         ensure_include(root / name)
 
     config = root / "config.c"
@@ -70,7 +70,7 @@ def main():
          '        config.purchase, config.deploy_turn);'],
     )
 
-    scenario = root / "scenario.c"
+    scenario = root / "scenario.cpp"
     insert_after(
         scenario,
         "char log_str[256];",
@@ -90,7 +90,7 @@ def main():
         "update_nations_purchase_flag();",
         ['{ int pi;',
          '  for ( pi = 0; players && pi < players->count; pi++ ) {',
-         '      Player *pp = list_get( players, pi );',
+         '      Player *pp = (Player *)list_get( players, pi );',
          '      lgtrace("[trace] scenario player[%d] id=%s ctrl=%d no_init_deploy=%d\\n",',
          '              pi, pp->id ? pp->id : "?", pp->ctrl, pp->no_init_deploy);',
          '  } }'],
@@ -173,10 +173,10 @@ def main():
          '        deploy_unit ? deploy_unit->name : "(none)");'],
     )
 
-    player = root / "player.c"
+    player = root / "player.cpp"
     insert_after(
         player,
-        "player = list_get( players, cur_player_id );",
+        "player = (Player*)list_get( players, cur_player_id );",
         ['lgtrace("[trace] next player id=%s ctrl=%d no_init_deploy=%d deploy_turn=%d\\n",',
          '        player->id ? player->id : "?", player->ctrl,',
          '        player->no_init_deploy, deploy_turn);'],

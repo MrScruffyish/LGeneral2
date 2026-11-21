@@ -10,6 +10,11 @@
 #ifndef __PURCHASEDLG_H
 #define __PURCHASEDLG_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** Dialogue to purchase units or refund purchased reinforcements. */
 
 typedef struct {
@@ -48,4 +53,8 @@ int purchase_dlg_handle_button( PurchaseDlg *pdlg, int bid, int cx, int cy,
 
 void purchase_dlg_reset( PurchaseDlg *pdlg );
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

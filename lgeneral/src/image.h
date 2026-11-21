@@ -18,6 +18,11 @@
 #ifndef __IMAGE_H
 #define __IMAGE_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ====================================================================
 Surface buffer. Used to buffer parts of a surface.
@@ -254,4 +259,8 @@ void frame_apply( Frame *frame ); /* apply changed contents to image */
 #define frame_get_width( frame ) ( (frame)->img->img->w )
 #define frame_get_height( frame ) ( (frame)->img->img->h )
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

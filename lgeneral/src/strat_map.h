@@ -18,6 +18,11 @@
 #ifndef __STRATMAP_H
 #define __STRATMAP_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ====================================================================
 Is called after scenario was loaded in init_engine() and creates
@@ -62,4 +67,8 @@ void strat_map_blink();
 void minimap_render();
 
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

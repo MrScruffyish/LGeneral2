@@ -18,6 +18,11 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* stupid name similarity */
 #ifdef HAVE_CONFIG_H
 #  include <../config.h>
@@ -60,4 +65,8 @@ void load_config( );
 /* save config */
 void save_config( );
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

@@ -18,6 +18,11 @@
 #ifndef __NATION_H
 #define __NATION_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ====================================================================
 A nation provides a full name and a flag icon for units
@@ -77,4 +82,8 @@ Get a specific pixel value in a nation's flag.
 */
 Uint32 nation_get_flag_pixel( Nation *nation, int x, int y );
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

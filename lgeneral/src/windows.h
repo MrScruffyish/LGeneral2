@@ -20,6 +20,11 @@
 
 #include "image.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ====================================================================
 Label. A frame with a text drawn to it.
@@ -572,4 +577,8 @@ void mmview_render(MMView *mmv, int full);
 int mmview_handle_click( MMView *mmv, int button_id, int x, int y, int *newx, int *newy );
 int mmview_handle_motion( MMView *mmv, int x, int y, int *newx, int *newy );
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

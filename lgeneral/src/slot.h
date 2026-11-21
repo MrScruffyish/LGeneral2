@@ -18,6 +18,11 @@
 #ifndef __SLOT_H
 #define __SLOT_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum { SLOT_COUNT = 11 };
 
 /*
@@ -58,4 +63,8 @@ Return True if slot is loadable.
 */
 int slot_is_valid( int id );
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif

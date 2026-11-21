@@ -21,6 +21,10 @@
 #define AI_DEBUG( loglev, ... ) \
 	do { if (loglev <= config.ai_debug) printf(__VA_ARGS__); } while (0)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ====================================================================
 Check the surrounding of a tile and apply the eval function to
@@ -33,4 +37,8 @@ typedef struct {
 } AI_Pos;
 void ai_eval_hexes( int x, int y, int range, int(*eval_func)(int,int,void*), void *ctx );
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif
