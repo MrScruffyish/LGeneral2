@@ -167,7 +167,7 @@ List *get_purchasable_unit_lib_entries( const char *nationid,
 	}
 	
 	list_reset(unit_lib);
-	while ((e = list_next(unit_lib))) {
+	while ((e = (Unit_Lib_Entry*)list_next(unit_lib))) {
 		if (e->cost <= 0)
 			continue;
 		if (nationid && (e->nation == -1 || 
@@ -206,7 +206,7 @@ static List *get_reinf_units( void )
 	}
 	
 	list_reset(reinf);
-	while ((u = list_next(reinf)))
+	while ((u = (Unit*)list_next(reinf)))
 		if (u->player == cur_player)
 			list_add( l, u );
 	return l;
@@ -308,7 +308,7 @@ int player_get_purchase_unit_limit( Player *player,
 	
 	/* units placed on map */
 	list_reset( units );
-	while ((u = list_next( units )))
+	while ((u = (Unit*)list_next( units )))
 		if (u->player == player && u->killed == 0) {
 			if (u->core)
 				cl--;
@@ -317,7 +317,7 @@ int player_get_purchase_unit_limit( Player *player,
 		}
 	/* units ordered, not yet arrived */	
 	list_reset( reinf );
-	while ((u = list_next( reinf )))
+	while ((u = (Unit*)list_next( reinf )))
 		if (u->player == player) {
 			if (u->core)
 				cl--;
@@ -326,7 +326,7 @@ int player_get_purchase_unit_limit( Player *player,
 		}
 	/* units arrived, not yet placed */
 	list_reset( avail_units );
-	while ((u = list_next( avail_units ))) {
+	while ((u = (Unit*)list_next( avail_units ))) {
 		if (u->core)
 			cl--;
 		else
@@ -374,14 +374,14 @@ static void update_unit_purchase_info( PurchaseDlg *pdlg )
 	SDL_FillRect( contents, 0, 0x0 );
 	
 	/* get selected objects */
-	reinf_unit = lbox_get_selected_item( pdlg->reinf_lbox );
+	reinf_unit = (Unit*)lbox_get_selected_item( pdlg->reinf_lbox );
 	if (reinf_unit) {
 		unit_entry = &reinf_unit->prop;
 		if (reinf_unit->trsp_prop.id)
 			trsp_entry = &reinf_unit->trsp_prop;
 	} else {
-		unit_entry = lbox_get_selected_item( pdlg->unit_lbox );
-		trsp_entry = lbox_get_selected_item( pdlg->trsp_lbox );
+		unit_entry = (Unit_Lib_Entry*)lbox_get_selected_item( pdlg->unit_lbox );
+		trsp_entry = (Unit_Lib_Entry*)lbox_get_selected_item( pdlg->trsp_lbox );
 	}
 	
 	/* unit info */
@@ -532,7 +532,7 @@ static void player_refund_unit( Player *p, Unit *u )
 	Unit *e;
 	
 	list_reset(reinf);
-	while ((e = list_next(reinf))) {
+	while ((e = (Unit*)list_next(reinf))) {
 		if (e != u)
 			continue;
 		p->cur_prestige += u->prop.cost;
@@ -551,10 +551,10 @@ static void handle_purchase_button( PurchaseDlg *pdlg )
 {
 	int core;
 	
-	Nation *nation = lbox_get_selected_item( pdlg->nation_lbox );
-	Unit_Lib_Entry *unit_prop = lbox_get_selected_item( pdlg->unit_lbox );
-	Unit_Lib_Entry *trsp_prop = lbox_get_selected_item( pdlg->trsp_lbox );
-	Unit *reinf_unit = lbox_get_selected_item( pdlg->reinf_lbox );
+	Nation *nation = (Nation*)lbox_get_selected_item( pdlg->nation_lbox );
+	Unit_Lib_Entry *unit_prop = (Unit_Lib_Entry*)lbox_get_selected_item( pdlg->unit_lbox );
+	Unit_Lib_Entry *trsp_prop = (Unit_Lib_Entry*)lbox_get_selected_item( pdlg->trsp_lbox );
+	Unit *reinf_unit = (Unit*)lbox_get_selected_item( pdlg->reinf_lbox );
 
 	if (reinf_unit == NULL) {
 		core = (pdlg->cur_core_limit > 0)?1:0;
@@ -579,7 +579,7 @@ PurchaseDlg *purchase_dlg_create( const char *theme_path )
 	char path[512];
 	int sx, sy, alpha=200;
 	
-	pdlg = calloc( 1, sizeof(PurchaseDlg) );
+	pdlg = (PurchaseDlg*)calloc( 1, sizeof(PurchaseDlg) );
 	if (pdlg == NULL)
 		return NULL;
 	
@@ -845,10 +845,10 @@ void purchase_dlg_reset( PurchaseDlg *pdlg )
 	lbox_set_items( pdlg->nation_lbox, get_purchase_nations() );
 	lbox_set_items( pdlg->uclass_lbox, get_purchase_unit_classes() );
 	
-	pdlg->cur_nation = lbox_select_first_item( pdlg->nation_lbox );
+	pdlg->cur_nation = (Nation*)lbox_select_first_item( pdlg->nation_lbox );
 	if (pdlg->cur_nation == NULL) /* list box empty */
 		pdlg->cur_nation = cur_player->nations[0];
-	pdlg->cur_uclass = lbox_select_first_item( pdlg->uclass_lbox );
+	pdlg->cur_uclass = (Unit_Class*)lbox_select_first_item( pdlg->uclass_lbox );
 	if (pdlg->cur_uclass == NULL) /* list box empty */
 		pdlg->cur_uclass = &unit_classes[0];
 	pdlg->trsp_uclass = get_purchase_trsp_class();

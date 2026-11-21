@@ -25,7 +25,13 @@
 Externals
 ====================================================================
 */
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern int scen_get_weather( void );
+#ifdef __cplusplus
+}
+#endif
 extern Sdl sdl;
 extern Config config;
 extern int trgt_type_count;
@@ -370,7 +376,7 @@ Unit *unit_create( Unit_Lib_Entry *prop, Unit_Lib_Entry *trsp_prop, Unit *base )
 {
     Unit *unit = 0;
     if ( prop == 0 ) return 0;
-    unit = calloc( 1, sizeof( Unit ) );
+    unit = (Unit*)calloc( 1, sizeof( Unit ) );
     /* shallow copy of properties */
     memcpy( &unit->prop, prop, sizeof( Unit_Lib_Entry ) );
     unit->sel_prop = &unit->prop; 
@@ -409,7 +415,7 @@ Unit *unit_create( Unit_Lib_Entry *prop, Unit_Lib_Entry *trsp_prop, Unit *base )
     /* update life bar properties */
     update_bar( unit );
     /* allocate backup mem */
-    unit->backup = calloc( 1, sizeof( Unit ) );
+    unit->backup = (Unit*)calloc( 1, sizeof( Unit ) );
     return unit;
 }
 
@@ -963,7 +969,7 @@ void unit_get_expected_losses( Unit *unit, Unit *target, int *unit_damage, int *
     unit_backup( unit ); unit_backup( target );
     /* let defensive fire go to work (no chance to defend against this) */
     list_reset( df_units );
-    while ( ( df = list_next( df_units ) ) ) {
+    while ( ( df = (Unit*)list_next( df_units ) ) ) {
         unit_get_damage( unit, df, unit, UNIT_DEFENSIVE_ATTACK, 0, 0, &damage, &suppr );
         if ( !unit_apply_damage( unit, damage, suppr, 0 ) ) break;
     }
@@ -998,7 +1004,7 @@ void unit_get_df_units( Unit *unit, Unit *target, List *units, List *df_units )
     list_clear( df_units );
     if ( unit->sel_prop->flags & FLYING ) {
         list_reset( units );
-        while ( ( entry = list_next( units ) ) ) {
+        while ( ( entry = (Unit*)list_next( units ) ) ) {
             if ( entry->killed ) continue;
             if ( entry == target ) continue;
             if ( entry == unit ) continue;
@@ -1027,7 +1033,7 @@ void unit_get_df_units( Unit *unit, Unit *target, List *units, List *df_units )
         /* artillery for melee combat; if unit attacks ranged, there is no 
            support */
         list_reset( units );
-        while ( ( entry = list_next( units ) ) ) {
+        while ( ( entry = (Unit*)list_next( units ) ) ) {
             if ( entry->killed ) continue;
             if ( entry == target ) continue;
             if ( entry == unit ) continue;
@@ -1051,7 +1057,7 @@ void unit_get_df_units( Unit *unit, Unit *target, List *units, List *df_units )
     /* randomly remove all support but one */
     if (df_units->count>0)
     {
-        entry = list_get(df_units,rand()%df_units->count);
+        entry = (Unit*)list_get(df_units,rand()%df_units->count);
         list_clear(df_units);
         list_add( df_units, entry );
     }
@@ -1063,7 +1069,7 @@ void unit_get_df_units_strategic( Unit *unit, Player * player,List *units, List 
     list_clear( df_units );
     if ( unit->sel_prop->flags & FLYING ) {
         list_reset( units );
-        while ( ( entry = list_next( units ) ) ) {
+        while ( ( entry = (Unit*)list_next( units ) ) ) {
             if ( entry->killed ) continue;
             if ( entry == unit ) continue;
             /* bombers -- intercepting impossibly covered by unit_check_attack() */
@@ -1087,7 +1093,7 @@ void unit_get_df_units_strategic( Unit *unit, Player * player,List *units, List 
     /* randomly remove all support but one */
     if (df_units->count>0)
     {
-        entry = list_get(df_units,rand()%df_units->count);
+        entry = (Unit*)list_get(df_units,rand()%df_units->count);
         list_clear(df_units);
         list_add( df_units, entry );
     }
@@ -1329,21 +1335,21 @@ Duplicate the unit.
 */
 Unit *unit_duplicate( Unit *unit )
 {
-    Unit *new_unit = calloc(1,sizeof(Unit));
+    Unit *new_unit = (Unit*)calloc(1,sizeof(Unit));
     memcpy(new_unit,unit,sizeof(Unit));
     unit_set_generic_name(new_unit, units->count + 1, unit->prop.name);
     if (unit->sel_prop==&unit->prop)
         new_unit->sel_prop=&new_unit->prop;
     else
         new_unit->sel_prop=&new_unit->trsp_prop;
-    new_unit->backup = calloc( 1, sizeof( Unit ) );
+    new_unit->backup = (Unit*)calloc( 1, sizeof( Unit ) );
     /* terrain can't be updated here */
     return new_unit;
 }
 
 transferredUnitProp *unit_create_transfer_props( Unit *unit )
 {
-	transferredUnitProp *result = calloc( 1, sizeof( transferredUnitProp ) );
+	transferredUnitProp *result = (transferredUnitProp*)calloc( 1, sizeof( transferredUnitProp ) );
 
 	/* copy basic property structs
 	 * ALL POINTERS WILL BE REALLOCATED AND BROKEN IN NEXT SCENARIO! */

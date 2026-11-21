@@ -59,7 +59,7 @@ typedef struct {
 } MountCtx;
 static int hex_is_safe( int x, int y, void *_ctx )
 {
-    MountCtx *ctx = _ctx;
+    MountCtx *ctx = (MountCtx*)_ctx;
     if ( !mask[x][y].spot ) {
         ctx->unsafe = 1;
         return 0;
@@ -90,7 +90,7 @@ typedef struct {
 } DefCtx;
 static int hex_df_unit( int x, int y, void *_ctx )
 {
-    DefCtx *ctx = _ctx;
+    DefCtx *ctx = (DefCtx*)_ctx;
     if ( map[x][y].g_unit ) {
         if ( ctx->unit->sel_prop->flags & FLYING ) {
             if ( map[x][y].g_unit->sel_prop->flags & AIR_DEFENSE )
@@ -126,7 +126,7 @@ typedef struct {
 } GatherCtx;
 static int hex_add_targets( int x, int y, void *_ctx )
 {
-    GatherCtx *ctx = _ctx;
+    GatherCtx *ctx = (GatherCtx*)_ctx;
     if ( mask[x][y].spot ) {
         if ( map[x][y].a_unit && unit_check_attack( ctx->unit, map[x][y].a_unit, UNIT_ACTIVE_ATTACK ) )
             list_add( ctx->targets, map[x][y].a_unit );
@@ -208,7 +208,7 @@ static int ai_get_best_target( Unit *unit, int x, int y, AI_Group *group, Unit *
     /* evaluate all attacks */
     if ( targets ) {
         list_reset( targets ); 
-        while ( ( entry = list_next( targets ) ) ) {
+        while ( ( entry = (Unit*)list_next( targets ) ) ) {
             int entry_score;
             if ( !unit_evaluate_attack( unit, entry, score_atk_base, score_rugged,
                                         score_kill, score_loss, &entry_score ) )
@@ -219,14 +219,14 @@ static int ai_get_best_target( Unit *unit, int x, int y, AI_Group *group, Unit *
         /* check whether any positive targets exist */
         pos_targets = 0;
         list_reset( targets ); 
-        while ( ( entry = list_next( targets ) ) )
+        while ( ( entry = (Unit*)list_next( targets ) ) )
             if ( entry->target_score > 0 ) {
                 pos_targets = 1;
                 break;
             }
         /* get best target */
         list_reset( targets ); 
-        while ( ( entry = list_next( targets ) ) ) {
+        while ( ( entry = (Unit*)list_next( targets ) ) ) {
             /* if unit is on an objective or center of interest give a bonus
             as this tile must be captured by all means. but only do so if there
             is no other target with a positive value */
@@ -264,7 +264,7 @@ typedef struct {
 } AI_Eval;
 static AI_Eval *ai_create_eval( Unit* unit, AI_Group *group, int x, int y )
 {
-    AI_Eval *eval = calloc( 1, sizeof( AI_Eval ) );
+    AI_Eval *eval = (AI_Eval*)calloc( 1, sizeof( AI_Eval ) );
     eval->unit = unit; eval->group = group;
     eval->x = x; eval->y = y;
     return eval;
@@ -408,7 +408,7 @@ void ai_handle_unit( Unit *unit, AI_Group *group )
     /* evaluate all positions */
     list_add( list, ai_create_eval( unit, group, unit->x, unit->y ) );
     while ( list->count > 0 ) {
-        eval = list_dequeue( list );
+        eval = (AI_Eval*)list_dequeue( list );
         if ( ai_evaluate_hex( eval ) ) {
             /* movement evaluation */
             if ( eval->mov_score > score ) {
@@ -487,7 +487,7 @@ Create/Delete a group
 */
 AI_Group *ai_group_create( int order, int x, int y )
 {
-    AI_Group *group = calloc( 1, sizeof( AI_Group ) );
+    AI_Group *group = (AI_Group*)calloc( 1, sizeof( AI_Group ) );
     group->state = GS_ART_FIRE; 
     group->order = order;
     group->x = x; group->y = y;
@@ -589,7 +589,7 @@ void ai_group_delete_unit( AI_Group *group, Unit *unit )
 }
 void ai_group_delete( void *ptr )
 {
-    AI_Group *group = ptr;
+    AI_Group *group = (AI_Group*)ptr;
     if ( group ) {
         if ( group->units )
             list_delete( group->units );
@@ -604,7 +604,7 @@ unit actions. If group is completely handled, it returns False.
 */
 int ai_group_handle_next_unit( AI_Group *group )
 {
-    Unit *unit = list_next( group->units );
+    Unit *unit = (Unit*)list_next( group->units );
     if ( unit == 0 ) 
     {
         if ( group->state == GS_MOVE )
@@ -613,7 +613,7 @@ int ai_group_handle_next_unit( AI_Group *group )
         {
             group->state = GS_MOVE;
             list_reset( group->units );
-            unit = list_next( group->units );
+            unit = (Unit*)list_next( group->units );
             if ( unit == 0 ) return 0;
         }
     }

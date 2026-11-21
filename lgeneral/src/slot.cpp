@@ -195,7 +195,7 @@ static inline void *load_pointer( FILE *file )
 Save/load a string to/from file.
 ====================================================================
 */
-static void save_string( FILE *file, char *str )
+static void save_string( FILE *file, const char *str )
 {
     int length;
     /* save length and then string itself */
@@ -209,7 +209,7 @@ static char* load_string( FILE *file )
     int length;
 
     _fread( &length, sizeof( int ), 1, file );
-    str = calloc( length + 1, sizeof( char ) );
+    str = (char*)calloc( length + 1, sizeof( char ) );
     _fread( str, sizeof( char ), length, file );
     str[length] = 0;
     return str;
@@ -498,7 +498,7 @@ Unit* load_unit( FILE *file )
     int unit_store_version;
     int val;
 
-    unit = calloc( 1, sizeof( Unit ) );
+    unit = (Unit*)calloc( 1, sizeof( Unit ) );
     /* read each member */
     /* prop */
     load_unit_lib_entry(file, &unit->prop);
@@ -576,7 +576,7 @@ Unit* load_unit( FILE *file )
     /* reserved (was: target_score) */
     load_int(file);
 
-    unit->backup = calloc( 1, sizeof( Unit ) );
+    unit->backup = (Unit*)calloc( 1, sizeof( Unit ) );
     /* sel_prop */
     if ( unit->embark == EMBARK_NONE )
         unit->sel_prop = &unit->prop;
@@ -686,11 +686,11 @@ static void load_map_tile_units( FILE *file, Unit **unit, Unit **air_unit )
     index = load_int( file );
     if ( index == -1 ) *unit = 0;
     else
-        *unit = list_get( units, index );
+        *unit = (Unit*)list_get( units, index );
     index = load_int( file );
     if ( index == -1 ) *air_unit = 0;
     else
-        *air_unit = list_get( units, index );
+        *air_unit = (Unit*)list_get( units, index );
 }
 /*
 ====================================================================
@@ -748,7 +748,7 @@ static void save_prev_scen_core_units( FILE *file )
 
 	/* save entries */
 	list_reset(prev_scen_core_units);
-	while ((prop = list_next(prev_scen_core_units))) {
+	while ((prop = (transferredUnitProp*)list_next(prev_scen_core_units))) {
 		save_unit_lib_entry(file, &prop->prop);
 		save_unit_lib_entry(file, &prop->trsp_prop);
 		save_string(file, prop->prop_id);
@@ -788,7 +788,7 @@ static void load_prev_scen_core_units( FILE *file )
 
 	/* create and push entries to list */
 	for (i = 0; i < num; i++) {
-		prop = calloc( 1, sizeof( transferredUnitProp ) );
+		prop = (transferredUnitProp*)calloc( 1, sizeof( transferredUnitProp ) );
 		
 		load_unit_lib_entry(file, &prop->prop);
 		load_unit_lib_entry(file, &prop->trsp_prop);
@@ -895,7 +895,7 @@ char *slot_get_fname( int id )
 Save/load game to/from file.
 ====================================================================
 */
-int slot_save( int id, char *name )
+int slot_save( int id, const char *name )
 {
     FILE *file = 0;
     char path[1024];
@@ -964,21 +964,21 @@ int slot_save( int id, char *name )
     /* players */
     list_reset( players );
     for ( i = 0; i < players->count; i++ )
-        save_player( file, list_next( players ) );
+        save_player( file, (Player*)list_next( players ) );
     /* units */
     list_reset( units );
     save_int( file, units->count );
     for ( i = 0; i < units->count; i++ )
-        save_unit( file, list_next( units ) );
+        save_unit( file, (Unit*)list_next( units ) );
     /* reinforcements */
     list_reset( reinf );
     save_int( file, reinf->count );
     for ( i = 0; i < reinf->count; i++ )
-        save_unit( file, list_next( reinf ) );
+        save_unit( file, (Unit*)list_next( reinf ) );
     list_reset( avail_units );
     save_int( file, avail_units->count );
     for ( i = 0; i < avail_units->count; i++ )
-        save_unit( file, list_next( avail_units ) );
+        save_unit( file, (Unit*)list_next( avail_units ) );
     /* map stuff */
     save_int( file, map_w );
     save_int( file, map_h );
@@ -1018,7 +1018,7 @@ int slot_load( int id )
     /* check for endianness */
     endian_need_swap = !!(store_version & 0xFFFF0000);
     if (endian_need_swap)
-        store_version = SDL_Swap32(store_version);
+        store_version = (StorageVersion)SDL_Swap32(store_version);
 
     /* reject game if it's too new */
     if (store_version > StoreHighestSupportedVersion) {
@@ -1085,7 +1085,7 @@ int slot_load( int id )
     /* players */
     list_reset( players );
     for ( i = 0; i < players->count; i++ )
-        load_player( file, list_next( players ) );
+        load_player( file, (Player*)list_next( players ) );
     /* unit stuff */
     list_clear( units );
     unit_count = load_int( file );

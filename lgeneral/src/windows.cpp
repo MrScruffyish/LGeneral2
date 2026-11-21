@@ -51,7 +51,7 @@ The current draw position is x,y in 'surf'.
 */
 Label *label_create( SDL_Surface *frame, int alpha, Font *def_font, SDL_Surface *surf, int x, int y )
 {
-    Label *label = calloc( 1, sizeof( Label ) );
+    Label *label = (Label*)calloc( 1, sizeof( Label ) );
     if ( ( label->frame = frame_create( frame, alpha, surf, x, y ) ) == 0 ) {
         free( label );
         return 0;
@@ -95,7 +95,7 @@ An actual button id is computed as base_id + id.
 Group *group_create( SDL_Surface *frame, int alpha, SDL_Surface *img, int w, int h, int limit, int base_id, 
                      Label *label, SDL_Surface *surf, int x, int y )
 {
-    Group *group = calloc( 1, sizeof( Group ) );
+    Group *group = (Group*)calloc( 1, sizeof( Group ) );
     if ( ( group->frame = frame_create( frame, alpha, surf, x, y ) ) == 0 ) goto failure;
     if ( img == 0 ) {
         fprintf( stderr, "group_create: passed button surface is NULL: %s\n", SDL_GetError() );
@@ -106,7 +106,7 @@ Group *group_create( SDL_Surface *frame, int alpha, SDL_Surface *img, int w, int
     group->w = w; group->h = h;
     group->base_id = base_id;
     group->button_limit = limit;
-    if ( ( group->buttons = calloc( group->button_limit, sizeof( Button ) ) ) == 0 ) {
+    if ( ( group->buttons = (Button*)calloc( group->button_limit, sizeof( Button ) ) ) == 0 ) {
         fprintf( stderr, tr("Out of memory\n") );
         goto failure;
     }
@@ -331,9 +331,9 @@ Created edit.
 */
 Edit *edit_create( SDL_Surface *frame, int alpha, Font *font, int limit, SDL_Surface *surf, int x, int y )
 {
-    Edit *edit = calloc( 1, sizeof( Edit ) );
+    Edit *edit = (Edit*)calloc( 1, sizeof( Edit ) );
     if ( ( edit->label = label_create( frame, alpha, font, surf, x, y ) ) == 0 ) goto failure;
-    if ( ( edit->text = calloc( limit + 1, sizeof( char ) ) ) == 0 ) goto failure;
+    if ( ( edit->text = (char*)calloc( limit + 1, sizeof( char ) ) ) == 0 ) goto failure;
     edit->limit = limit;
     edit->cursor_pos = 0;
     edit->cursor_x = frame->w / 2;
@@ -407,7 +407,7 @@ void edit_handle_key( Edit *edit, int keysym, int modifier, int unicode )
     int i, changed = 0;
     switch ( keysym ) {
         case SDLK_RIGHT:
-            if ( edit->cursor_pos < strlen( edit->text ) ){
+            if ( edit->cursor_pos < (int)strlen( edit->text ) ){
                 changed = 1;
                 edit->cursor_pos++;
             }
@@ -429,15 +429,15 @@ void edit_handle_key( Edit *edit, int keysym, int modifier, int unicode )
         case SDLK_BACKSPACE:
             if ( edit->cursor_pos > 0 ) {
                 --edit->cursor_pos;
-                for ( i = edit->cursor_pos; i < strlen( edit->text ) - 1; i++ )
+                for ( i = edit->cursor_pos; i < (int)strlen( edit->text ) - 1; i++ )
                     edit->text[i] = edit->text[i + 1];
                 edit->text[i] = 0;
                 changed = 1;
             }
             break;
         case SDLK_DELETE:
-            if ( edit->cursor_pos < strlen( edit->text ) ) {
-                for ( i = edit->cursor_pos; i < strlen( edit->text ) - 1; i++ )
+            if ( edit->cursor_pos < (int)strlen( edit->text ) ) {
+                for ( i = edit->cursor_pos; i < (int)strlen( edit->text ) - 1; i++ )
                     edit->text[i] = edit->text[i + 1];
                 edit->text[i] = 0;
                 changed = 1;
@@ -456,7 +456,7 @@ void edit_handle_key( Edit *edit, int keysym, int modifier, int unicode )
                 break;
             }
 
-            if ( unicode >= 32 && edit->cursor_pos < edit->limit && strlen( edit->text ) < edit->limit ) {
+            if ( unicode >= 32 && edit->cursor_pos < edit->limit && (int)strlen( edit->text ) < edit->limit ) {
                 for ( i = edit->limit - 1; i > edit->cursor_pos; i-- )
                     edit->text[i] = edit->text[i - 1];
                 edit->text[edit->cursor_pos++] = unicode;
@@ -517,7 +517,7 @@ LBox *lbox_create( SDL_Surface *frame, int alpha, int border, SDL_Surface *butto
                    SDL_Surface *surf, int x, int y )
 {
     int bx, by;
-    LBox *lbox = calloc( 1, sizeof( LBox ) );
+    LBox *lbox = (LBox*)calloc( 1, sizeof( LBox ) );
     /* group */
     if ( ( lbox->group = group_create( frame , alpha, buttons, button_w, button_h, 2, ID_INTERN_UP, label, surf, x, y ) ) == 0 )
         goto failure;
@@ -737,7 +737,7 @@ FDlg *fdlg_create(
 {
     int info_w, info_h, button_count;
     int cell_count, cell_w;
-    FDlg *dlg = calloc( 1, sizeof( FDlg ) );
+    FDlg *dlg = (FDlg*)calloc( 1, sizeof( FDlg ) );
     /* listbox */
     cell_w = lbox_frame->w - 2 * border;
     cell_count = ( lbox_frame->h - 2 * border - lbox_button_h ) / ( cell_h + 1 );
@@ -953,7 +953,7 @@ SDlg *sdlg_create(
 {
     int px, py;
 
-    SDlg *sdlg = calloc( 1, sizeof( SDlg ) );
+    SDlg *sdlg = (SDlg*)calloc( 1, sizeof( SDlg ) );
 
     if ((sdlg->fdlg = fdlg_create(lbox_frame, alpha, border,
                    lbox_buttons, lbox_button_w, lbox_button_h, cell_h,
@@ -1157,7 +1157,7 @@ SelectDlg *select_dlg_create(
 	SelectDlg *sdlg = NULL;
 	int sx, sy;
 	
-	sdlg = calloc(1, sizeof(SelectDlg));
+	sdlg = (SelectDlg*)calloc(1, sizeof(SelectDlg));
 	if (sdlg == NULL)
 		goto failure;
 	
@@ -1266,7 +1266,7 @@ extern int map_w, map_h;
 
 MMView *mmview_create(int w, int h)
 {
-	MMView *mmv = calloc(1, sizeof(MMView));
+	MMView *mmv = (MMView*)calloc(1, sizeof(MMView));
 	if (mmv == 0)
 		fprintf(stderr,"mmview_create: Out of memory\n");
 	mmv->w = w;

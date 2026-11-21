@@ -178,7 +178,7 @@ static void ai_eval_units()
 {
     Unit *unit;
     list_reset( units );
-    while ( ( unit = list_next( units ) ) ) {
+    while ( ( unit = (Unit*)list_next( units ) ) ) {
         if ( unit->killed ) continue;
         unit->eval_score = 0;
         if ( unit->prop.ammo > 0 ) {
@@ -230,7 +230,7 @@ typedef struct {
 } CtrlCtx;
 static int ai_eval_ctrl( int x, int y, void *_ctx )
 {
-    CtrlCtx *ctx = _ctx;
+    CtrlCtx *ctx = (CtrlCtx*)_ctx;
     /* our main function ai_get_ctrl_masks() adds the score
        for all tiles in range and as we only want to add score
        once we have to check only tiles in attack range that
@@ -252,7 +252,7 @@ void ai_get_ctrl_masks()
     Unit *unit;
     map_clear_mask( F_CTRL_GRND | F_CTRL_AIR | F_CTRL_SEA );
     list_reset( units );
-    while ( ( unit = list_next( units ) ) ) {
+    while ( ( unit = (Unit*)list_next( units ) ) ) {
         if ( unit->killed ) continue;
         map_get_unit_move_mask( unit );
         /* build context */
@@ -287,7 +287,7 @@ Unit_Lib_Entry *get_cannonfodder( List *ulist, int flag )
 	Unit_Lib_Entry *e, *u = NULL;
 	
 	list_reset(ulist);
-	while ((e = list_next(ulist))) {
+	while ((e = (Unit_Lib_Entry*)list_next(ulist))) {
 		if (!(e->flags & flag))
 			continue;
 		if (u == NULL) {
@@ -308,7 +308,7 @@ Unit_Lib_Entry *get_good_unit( List *ulist, int flag )
 	Unit_Lib_Entry *e, *u = NULL;
 	
 	list_reset(ulist);
-	while ((e = list_next(ulist))) {
+	while ((e = (Unit_Lib_Entry*)list_next(ulist))) {
 		if (!(e->flags & flag))
 			continue;
 		if (u == NULL) {
@@ -359,13 +359,13 @@ static void ai_purchase_units()
 	
 	/* remove all entries from ulist that do not have one of our nations */
 	list_reset(ulist);
-	while ((e = list_next(ulist))) {
+	while ((e = (Unit_Lib_Entry*)list_next(ulist))) {
 		if (e->nation == -1) {
 			list_delete_current(ulist); /* not purchasable */
 			continue;
 		}
 		list_reset(nlist);
-		while ((n = list_next(nlist)))
+		while ((n = (Nation*)list_next(nlist)))
 			if (&nations[e->nation] == n)
 				break;
 		if (n == NULL) {
@@ -480,18 +480,18 @@ void ai_init( void )
     /* get all cur_player units, those with defensive fire come first */
     list = list_create( LIST_NO_AUTO_DELETE, LIST_NO_CALLBACK );
     list_reset( units );
-    while ( ( unit = list_next( units ) ) )
+    while ( ( unit = (Unit*)list_next( units ) ) )
         if ( unit->player == cur_player )
             list_add( list, unit );
     ai_units = list_create( LIST_NO_AUTO_DELETE, LIST_NO_CALLBACK );
     list_reset( list );
-    while ( ( unit = list_next( list ) ) )
+    while ( ( unit = (Unit*)list_next( list ) ) )
         if ( unit->sel_prop->flags & ARTILLERY || unit->sel_prop->flags & AIR_DEFENSE ) {
             list_add( ai_units, unit );
             list_delete_item( list, unit );
         }
     list_reset( list );
-    while ( ( unit = list_next( list ) ) ) {
+    while ( ( unit = (Unit*)list_next( list ) ) ) {
         if ( unit->killed ) 
 		AI_DEBUG( 0, "!!Unit %s is dead!!\n", unit->name );
         list_add( ai_units, unit );
@@ -528,7 +528,7 @@ void ai_run( void )
     switch ( ai_status ) {
         case AI_STATUS_DEPLOY:
             /* deploy unit? */
-            if ( avail_units->count > 0 && ( unit = list_next( avail_units ) ) ) {
+            if ( avail_units->count > 0 && ( unit = (Unit*)list_next( avail_units ) ) ) {
                 if ( deploy_turn ) {
                     x = unit->x; y = unit->y;
                     assert( x >= 0 && y >= 0 );
@@ -573,14 +573,14 @@ void ai_run( void )
             break;
         case AI_STATUS_SUPPLY:
             /* get next unit */
-            if ( ( unit = list_next( ai_units ) ) == 0 ) {
+            if ( ( unit = (Unit*)list_next( ai_units ) ) == 0 ) {
                 ai_status = AI_STATUS_GROUP;
                 /* build a group with all units, -1,-1 as destination means it will
                    simply attack/defend the nearest target. later on this should
                    split up into several groups with different target and strategy */
                 ai_group = ai_group_create( cur_player->strat, -1, -1 );
                 list_reset( ai_units );
-                while ( ( unit = list_next( ai_units ) ) )
+                while ( ( unit = (Unit*)list_next( ai_units ) ) )
                     ai_group_add_unit( ai_group, unit );
                 AI_DEBUG( 0, "*** MOVE & ATTACK ***\n" );
             }
@@ -609,7 +609,7 @@ void ai_run( void )
             }
             break;
         case AI_STATUS_MERGE:
-            if ( ( unit = list_next( ai_units ) ) ) {
+            if ( ( unit = (Unit*)list_next( ai_units ) ) ) {
                 map_get_merge_units( unit, partners, &partner_count );
                 best = 0; /* merge with the one that has the most strength points */
                 for ( i = 0; i < partner_count; i++ )

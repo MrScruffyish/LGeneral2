@@ -163,7 +163,7 @@ void fill_surf(int c)
 /* set clipping rect */
 void set_surf_clip( SDL_Surface *surf, int x, int y, int w, int h )
 {
-    SDL_Rect rect = { x, y, w, h };
+    SDL_Rect rect = { (Sint16)x, (Sint16)y, (Uint16)w, (Uint16)h };
     if ( w == h || h == 0 )
         SDL_SetClipRect( surf, 0 );
     else
@@ -179,7 +179,7 @@ Uint32 set_pixel( SDL_Surface *surf, int x, int y, int pixel )
 	    return pixel;
 
     pos = y * surf->pitch + x * surf->format->BytesPerPixel;
-    memcpy( surf->pixels + pos, &pixel, surf->format->BytesPerPixel );
+    memcpy( (char*)surf->pixels + pos, &pixel, surf->format->BytesPerPixel );
     return pixel;
 }
 
@@ -190,7 +190,7 @@ Uint32 get_pixel( SDL_Surface *surf, int x, int y )
     Uint32 pixel = 0;
 
     pos = y * surf->pitch + x * surf->format->BytesPerPixel;
-    memcpy( &pixel, surf->pixels + pos, surf->format->BytesPerPixel );
+    memcpy( &pixel, (char*)surf->pixels + pos, surf->format->BytesPerPixel );
     return pixel;
 }
 
@@ -390,7 +390,7 @@ void font_load_glyphs(Font *font, const char *fname)
  */
 Font* load_font(const char *fname)
 {
-    Font *fnt = calloc(1, sizeof(Font));
+    Font *fnt = (Font*)calloc(1, sizeof(Font));
     if (fnt == 0) {
         fprintf(stderr, tr("ERR: %s: not enough memory\n"), __FUNCTION__);
         exit(1);
@@ -497,7 +497,7 @@ void unlock_font(Font *fnt)
 */
 SDL_Rect last_write_rect(Font *fnt)
 {
-    SDL_Rect    rect={fnt->last_x, fnt->last_y, fnt->last_width, fnt->last_height};
+    SDL_Rect    rect={(Sint16)fnt->last_x, (Sint16)fnt->last_y, (Uint16)fnt->last_width, (Uint16)fnt->last_height};
     return rect;
 }
 
@@ -590,7 +590,7 @@ int get_video_modes( VideoModeInfo **vmi )
 		fprintf(stderr,"No video modes available or specified.\n");
 		/* offer at least 800x600 */
 		nmodes = 2;
-		*vmi = calloc(nmodes,sizeof(VideoModeInfo));
+		*vmi = (VideoModeInfo*)calloc(nmodes,sizeof(VideoModeInfo));
 		(*vmi)[0] = stdvmi[0];
 		(*vmi)[1] = stdvmi[1];
 		return nmodes;
@@ -600,7 +600,7 @@ int get_video_modes( VideoModeInfo **vmi )
 	for (nmodes = 0; modes[nmodes]; nmodes++);
 	nmodes *= 2; /* each as window and fullscreen */
 	
-	*vmi = calloc(nmodes,sizeof(VideoModeInfo));
+	*vmi = (VideoModeInfo*)calloc(nmodes,sizeof(VideoModeInfo));
 	for (i = 0; i < nmodes/2; i++) {
 		VideoModeInfo *info = &((*vmi)[i*2]);
 		info->width = modes[i]->w;
@@ -628,7 +628,7 @@ int set_video_mode( int width, int height, int fullscreen )
     /* if screen does exist check if this is mayby exactly the same resolution */
     if ( sdl.screen ) {
         if ( sdl.screen->w == width && sdl.screen->h == height )
-            if ( ( sdl.screen->flags & SDL_FULLSCREEN ) == fullscreen )
+            if ( ( sdl.screen->flags & SDL_FULLSCREEN ) == (Uint32)fullscreen )
                 return 1;
     }
     /* free old screen */
@@ -673,7 +673,7 @@ int set_video_mode( int width, int height, int fullscreen )
 void hardware_cap()
 {
     const SDL_VideoInfo	*vi = SDL_GetVideoInfo();
-    char *ny[2] = {"No", "Yes"};
+    const char *ny[2] = {"No", "Yes"};
 
     printf("video hardware capabilities:\n");
     printf("Hardware Surfaces: %s\n", ny[vi->hw_available]);
@@ -882,8 +882,8 @@ SDL_Cursor* create_cursor( int width, int height, int hot_x, int hot_y, const ch
         b : black, w: white, ' ':transparent */
 
     /* create mask&data */
-    mask = malloc( width * height * sizeof ( char ) / 8 );
-    data = malloc( width * height * sizeof ( char ) / 8 );
+    mask = (unsigned char*)malloc( width * height * sizeof ( char ) / 8 );
+    data = (unsigned char*)malloc( width * height * sizeof ( char ) / 8 );
 
     k = 0;
     for (j = 0; j < width * height; j += 8, k++) {

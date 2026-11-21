@@ -53,10 +53,10 @@ def main():
         raise SystemExit("usage: instrument.py <lgeneral-build-dir>")
     root = Path(sys.argv[1]) / "src"
 
-    for name in ("config.c", "scenario.cpp", "engine.c", "gui.c", "player.cpp"):
+    for name in ("config.cpp", "scenario.cpp", "engine.cpp", "gui.cpp", "player.cpp"):
         ensure_include(root / name)
 
-    config = root / "config.c"
+    config = root / "config.cpp"
     insert_after(
         config,
         "reset_config();",
@@ -96,13 +96,13 @@ def main():
          '  } }'],
     )
 
-    engine = root / "engine.c"
+    engine = root / "engine.cpp"
     replace_once(
         engine,
         """
     list_reset( reinf );
     for ( i = 0; i < reinf->count; i++ ) {
-        unit = list_next( reinf );
+        unit = (Unit*)list_next( reinf );
         if ( !(unit->sel_prop->flags & FLYING) && unit->player == cur_player && unit->delay <= turn ) {
             list_transfer( reinf, avail_units, unit );
             /* index must be reset if unit was added */
@@ -114,7 +114,7 @@ def main():
         """
     list_reset( reinf );
     for ( i = 0; i < reinf->count; i++ ) {
-        unit = list_next( reinf );
+        unit = (Unit*)list_next( reinf );
         if ( !(unit->sel_prop->flags & FLYING) && unit->player == cur_player && unit->delay <= turn ) {
             list_transfer( reinf, avail_units, unit );
             /* index must be reset if unit was added */
@@ -148,13 +148,13 @@ def main():
     replace_once(
         engine,
         """
-            while ( ( unit = list_next( units ) ) ) {
+            while ( ( unit = (Unit*)list_next( units ) ) ) {
                 if ( unit->player == cur_player )
                 if ( mask[unit->x][unit->y].deploy )
                 if ( unit_supports_deploy(unit) ) {
 """,
         """
-            while ( ( unit = list_next( units ) ) ) {
+            while ( ( unit = (Unit*)list_next( units ) ) ) {
                 if ( unit->player == cur_player )
                 lgtrace("[trace] deploy candidate %s pos=%d,%d mask=%d supports=%d\\n",
                         unit->name, unit->x, unit->y,
@@ -164,10 +164,10 @@ def main():
 """,
     )
 
-    gui = root / "gui.c"
+    gui = root / "gui.cpp"
     insert_after(
         gui,
-        "deploy_unit = list_get( avail_units, 0 );",
+        "deploy_unit = (Unit*)list_get( avail_units, 0 );",
         ['lgtrace("[trace] deploy window avail=%d first=%s\\n",',
          '        avail_units ? avail_units->count : -1,',
          '        deploy_unit ? deploy_unit->name : "(none)");'],

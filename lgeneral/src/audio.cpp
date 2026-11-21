@@ -102,7 +102,7 @@ Wav* wav_load( char *fname, int channel )
     char path[512];
     Wav *wav = 0;
     if ( !audio_ok ) return 0;
-    wav = calloc( 1, sizeof( Wav ) );
+    wav = (Wav*)calloc( 1, sizeof( Wav ) );
     /* use SRCDIR/sounds as source directory */
     sprintf( path, "%s/sounds/%s", get_gamedir(), fname );
     wav->chunk = Mix_LoadWAV( path );

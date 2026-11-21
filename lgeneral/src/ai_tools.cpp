@@ -31,7 +31,7 @@ If 'eval_func' returns False the evaluation is broken up.
 */
 static AI_Pos *ai_create_pos( int x, int y )
 {
-    AI_Pos *pos = calloc( 1, sizeof( AI_Pos ) );
+    AI_Pos *pos = (AI_Pos*)calloc( 1, sizeof( AI_Pos ) );
     pos->x = x; pos->y = y;
     return pos;
 }
@@ -46,7 +46,7 @@ void ai_eval_hexes( int x, int y, int range, int(*eval_func)(int,int,void*), voi
     list_add( list, ai_create_pos( x, y ) ); mask[x][y].aux = 1;
     list_reset( list );
     while ( list->count > 0 ) {
-        pos = list_dequeue( list );
+        pos = (AI_Pos*)list_dequeue( list );
         if ( !eval_func( pos->x, pos->y, ctx ) ) {
             free( pos );
             break;

@@ -3,14 +3,14 @@ DEFS = @DEFS@ @sound_flag@ @dl_flag@ @inst_flag@
 bin_PROGRAMS = lgeneral
 
 AM_CPPFLAGS = -I$(top_srcdir)/util $(INTLINCLUDES)
-lgeneral_SOURCES = main.c \
-config.c date.cpp \
+lgeneral_SOURCES = main.cpp \
+config.cpp date.cpp \
 file.cpp map.cpp nation.cpp \
-player.cpp scenario.cpp lg-sdl.c misc.c unit.c \
-audio.c parser.cpp list.cpp unit_lib.c \
-terrain.c image.c slot.c gui.c purchase_dlg.c \
-event.c windows.c action.c campaign.c \
-strat_map.c ai.c engine.c ai_group.c ai_tools.c \
+player.cpp scenario.cpp lg-sdl.cpp misc.cpp unit.cpp \
+audio.cpp parser.cpp list.cpp unit_lib.cpp \
+terrain.cpp image.cpp slot.cpp gui.cpp purchase_dlg.cpp \
+event.cpp windows.cpp action.cpp campaign.cpp \
+strat_map.cpp ai.cpp engine.cpp ai_group.cpp ai_tools.cpp \
 lgeneral.6
 
 AM_CFLAGS = @SDL_CFLAGS@
@@ -33,7 +33,7 @@ scenarios ai_modules terrain
 check_PROGRAMS = testfile
 
 testfile_CFLAGS = -DTESTFILE @SDL_CFLAGS@
-testfile_SOURCES = file.cpp list.cpp misc.c
+testfile_SOURCES = file.cpp list.cpp misc.cpp
 testfile_LDADD = $(top_builddir)/util/libutil.a
 
 install-data-local:

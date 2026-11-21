@@ -53,7 +53,7 @@ char *slot_get_fname( int id );
 Save/load game
 ====================================================================
 */
-int slot_save( int id, char *name );
+int slot_save( int id, const char *name );
 int slot_load( int id );
 
 /*

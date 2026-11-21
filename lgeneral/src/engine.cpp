@@ -299,7 +299,7 @@ static Player *engine_human_player(int *human_count)
     int count = 0;
     int i;
     for ( i = 0; i < players->count; i++ ) {
-        Player *player = list_get( players, i );
+        Player *player = (Player*)list_get( players, i );
         if ( player->ctrl == PLAYER_CTRL_HUMAN ) {
             if ( count == 0 )
                 human = player;
@@ -431,7 +431,7 @@ static void engine_prep_camp_brief()
     camp_pane = gui_create_message_pane();
     /* make up scenario text */
     {
-        char *txt = alloca((camp_cur_scen->title ? strlen(camp_cur_scen->title) + 2 : 0)
+        char *txt = (char*)alloca((camp_cur_scen->title ? strlen(camp_cur_scen->title) + 2 : 0)
                            + (last_debriefing ? strlen(last_debriefing) + 1 : 0)
                            + (camp_cur_scen->brief ? strlen(camp_cur_scen->brief) : 0) + 2 + 1);
         strcpy(txt, "");
@@ -459,7 +459,7 @@ static void engine_prep_camp_brief()
       char *result;
       
       list_reset(ids);
-      while ((result = list_next(ids))) {
+      while ((result = (char*)list_next(ids))) {
           const char *desc = camp_get_description(result);
           list_add(vals, desc ? (void *)desc : (void *)result);
       }
@@ -469,7 +469,7 @@ static void engine_prep_camp_brief()
           gui_set_message_pane_default(camp_pane, " ");
       /* don't provide explicit selection if there is only one id */
       else if (ids->count == 1)
-          gui_set_message_pane_default(camp_pane, list_first(ids));
+          gui_set_message_pane_default(camp_pane, (const char*)list_first(ids));
       else
           gui_set_message_pane_options(camp_pane, ids, vals);
       
@@ -992,7 +992,7 @@ static void engine_update_avail_reinf_list()
     /* add all units from scen::reinf whose delay <= cur_turn */
     list_reset( reinf );
     for ( i = 0; i < reinf->count; i++ ) {
-        unit = list_next( reinf );
+        unit = (Unit*)list_next( reinf );
         if ( unit->sel_prop->flags & FLYING && unit->player == cur_player && unit->delay <= turn ) {
             list_transfer( reinf, avail_units, unit );
             /* index must be reset if unit was added */
@@ -1001,7 +1001,7 @@ static void engine_update_avail_reinf_list()
     }
     list_reset( reinf );
     for ( i = 0; i < reinf->count; i++ ) {
-        unit = list_next( reinf );
+        unit = (Unit*)list_next( reinf );
         if ( !(unit->sel_prop->flags & FLYING) && unit->player == cur_player && unit->delay <= turn ) {
             list_transfer( reinf, avail_units, unit );
             /* index must be reset if unit was added */
@@ -1033,7 +1033,7 @@ static void engine_select_player( Player *player, int skip_unit_prep )
         /* prepare units for turn -- fuel, mov-points, entr, weather etc */
         list_reset( units );
         for ( i = 0; i < units->count; i++ ) {
-            unit = list_next( units );
+            unit = (Unit*)list_next( units );
             if ( unit->player == cur_player ) {
                 if ( turn == 0 )
                     scen_prep_unit( unit, SCEN_PREP_UNIT_FIRST );
@@ -1095,7 +1095,7 @@ static void engine_select_player( Player *player, int skip_unit_prep )
         {
             map_get_deploy_mask(cur_player,0,1);
             list_reset( units );
-            while ( ( unit = list_next( units ) ) ) {
+            while ( ( unit = (Unit*)list_next( units ) ) ) {
                 if ( unit->player == cur_player )
                 if ( mask[unit->x][unit->y].deploy )
                 if ( unit_supports_deploy(unit) ) {
@@ -1107,7 +1107,7 @@ static void engine_select_player( Player *player, int skip_unit_prep )
 
         /* supply levels */
         list_reset( units );
-        while ( ( unit = list_next( units ) ) )
+        while ( ( unit = (Unit*)list_next( units ) ) )
             if ( unit->player == cur_player )
                 scen_adjust_unit_supply_level( unit );
 
@@ -1262,7 +1262,7 @@ static void engine_end_turn()
     }
     /* fuel up and kill crashed aircrafts*/
     list_reset( units );
-    while ( (unit=list_next(units)) )
+    while ( (unit=(Unit*)list_next(units)) )
     {
         if ( unit->player != cur_player ) continue;
         /* supply unused ground units just as if it were done manually and
@@ -1296,7 +1296,7 @@ static void engine_end_turn()
     list_reset( units );
     for ( i = 0; i < units->count; i++ ) 
     {
-        unit = list_next(units);
+        unit = (Unit*)list_next(units);
         if ( unit->killed ) {
             engine_remove_unit( unit );
             list_delete_item( units, unit );
@@ -1550,9 +1550,10 @@ static void engine_draw_map()
     int start_map_x, start_map_y, end_map_x, end_map_y;
     int buffer_height, buffer_width, buffer_offset;
     int use_frame = ( cur_ctrl != PLAYER_CTRL_CPU );
-    enum Stage { DrawTerrain, DrawUnits, DrawDangerZone } stage = DrawTerrain;
-    enum Stage top_stage = has_danger_zone ? DrawDangerZone : DrawUnits;
-    SDL_Rect cr = {0,0,mapview_w,sdl.screen->h};
+    enum { DrawTerrain, DrawUnits, DrawDangerZone };
+    int stage = DrawTerrain;
+    int top_stage = has_danger_zone ? DrawDangerZone : DrawUnits;
+    SDL_Rect cr = {0,0,(Uint16)mapview_w,(Uint16)sdl.screen->h};
     
     /* reset_timer(); */
     
@@ -2551,7 +2552,7 @@ static void engine_handle_button( int id )
             /* transfer all units with x != -1 */
             list_reset( avail_units );
             last_act = actions_top();
-            while ( ( unit = list_next( avail_units ) ) )
+            while ( ( unit = (Unit*)list_next( avail_units ) ) )
                 if ( unit->x != -1 )
                     action_queue_deploy( unit, unit->x, unit->y );
             if ( cur_ctrl == PLAYER_CTRL_HUMAN ) {
@@ -2571,7 +2572,7 @@ static void engine_handle_button( int id )
             break;
         case ID_CANCEL_DEPLOY:
             list_reset( avail_units );
-            while ( ( unit = list_next( avail_units ) ) )
+            while ( ( unit = (Unit*)list_next( avail_units ) ) )
                 if ( unit->x != -1 )
                     map_remove_unit( unit );
             draw_map = 1;
@@ -3059,11 +3060,11 @@ static void engine_check_events(int *reinit)
                            or attack left */
                         list_reset( units );
                         if ( cur_unit != 0 )
-                            while ( ( unit = list_next( units ) ) )
+                            while ( ( unit = (Unit*)list_next( units ) ) )
                                 if ( cur_unit == unit ) 
                                     break;
                         /* get next unit */
-                        while ( ( unit = list_next( units ) ) ) {
+                        while ( ( unit = (Unit*)list_next( units ) ) ) {
                             if ( unit->killed ) continue;
                             if ( unit->is_guarding ) continue;
                             if ( unit->player == cur_player )
@@ -3074,7 +3075,7 @@ static void engine_check_events(int *reinit)
                         if ( unit == 0 ) {
                             /* search again from beginning of list */
                             list_reset( units );
-                            while ( ( unit = list_next( units ) ) ) {
+                            while ( ( unit = (Unit*)list_next( units ) ) ) {
                                 if ( unit->killed ) continue;
                                 if ( unit->is_guarding ) continue;
                                 if ( unit->player == cur_player )
@@ -3102,11 +3103,11 @@ static void engine_check_events(int *reinit)
                            or attack left */
                         list_reset( units );
                         if ( cur_unit != 0 )
-                            while ( ( unit = list_next( units ) ) )
+                            while ( ( unit = (Unit*)list_next( units ) ) )
                                 if ( cur_unit == unit ) 
                                     break;
                         /* get previous unit */
-                        while ( ( unit = list_prev( units ) ) ) {
+                        while ( ( unit = (Unit*)list_prev( units ) ) ) {
                             if ( unit->killed ) continue;
                             if ( unit->is_guarding ) continue;
                             if ( unit->player == cur_player )
@@ -3117,7 +3118,7 @@ static void engine_check_events(int *reinit)
                         if ( unit == 0 ) {
                             /* search again from end of list */
                             units->cur_entry = &units->tail;
-                            while ( ( unit = list_prev( units ) ) ) {
+                            while ( ( unit = (Unit*)list_prev( units ) ) ) {
                                 if ( unit->killed ) continue;
                                 if ( unit->is_guarding ) continue;
                                 if ( unit->player == cur_player )
@@ -3236,7 +3237,7 @@ static int engine_get_next_combatants()
     /* check if there are supporting units; if so initate fight 
        between attacker and these units */
     if ( df_units->count > 0 ) {
-        cur_atk = list_first( df_units );
+        cur_atk = (Unit*)list_first( df_units );
         cur_def = cur_unit;
         fight = 1;
         defFire = 1;
@@ -4430,7 +4431,7 @@ int engine_init()
                 /* player control */
                 list_reset( players );
                 for ( i = 0; i < setup.player_count; i++ ) {
-                    player = list_next( players );
+                    player = (Player*)list_next( players );
                     player->ctrl = setup.ctrl[i];
                     free( player->ai_fname );
                     player->ai_fname = strdup( setup.modules[i] );
@@ -4444,7 +4445,7 @@ int engine_init()
     /* load the ai modules */
     list_reset( players );
     for ( i = 0; i < players->count; i++ ) {
-        player = list_next( players );
+        player = (Player*)list_next( players );
         /* clear callbacks */
         player->ai_init = 0;
         player->ai_run = 0;
@@ -4494,7 +4495,7 @@ int engine_init()
     /* tile mask */
     /*  1 = map tile directly hit
         0 = neighbor */
-    hex_mask = calloc( hex_w * hex_h, sizeof ( int ) );
+    hex_mask = (int*)calloc( hex_w * hex_h, sizeof ( int ) );
     for ( j = 0; j < hex_h; j++ )
         for ( i = 0; i < hex_w; i++ )
             if ( get_pixel( terrain_icons->fog, i, j ) )

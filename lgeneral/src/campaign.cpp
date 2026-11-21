@@ -74,11 +74,11 @@ static void camp_verify_tree()
 
     for ( i = 0; i < camp_entries->count; i++ )
     {
-        entry = list_get( camp_entries, i );
+        entry = (Camp_Entry*)list_get( camp_entries, i );
         if ( entry->nexts && entry->nexts->count > 0 )
         {
             list_reset( entry->nexts );
-            while ( (next = list_next(entry->nexts)) )
+            while ( (next = (char*)list_next(entry->nexts)) )
             {
                 ptr = strchr( next, '>' ); 
                 if ( ptr ) 
@@ -175,9 +175,9 @@ int camp_load( const char *fname )
     entries = scen_ent->entries;
     list_reset( entries );
     camp_entries = list_create( LIST_AUTO_DELETE, camp_delete_entry );
-    while ( ( sub = list_next( entries ) ) ) {
+    while ( ( sub = (PData*)list_next( entries ) ) ) {
         if (!camp_first) camp_first = strdup(sub->name);
-        centry = calloc( 1, sizeof( Camp_Entry ) );
+        centry = (Camp_Entry*)calloc( 1, sizeof( Camp_Entry ) );
         centry->id = strdup( sub->name );
         parser_get_string( sub, "scenario", &centry->scen );
         centry->title = camp_resolve_ref_localized(scen_ent, "title", centry->id, domain);
@@ -190,9 +190,9 @@ int camp_load( const char *fname )
         if ( parser_get_entries( sub, "next", &next_entries ) ) {
             centry->nexts = list_create( LIST_AUTO_DELETE, LIST_NO_CALLBACK );
             list_reset( next_entries );
-            while ( ( subsub = list_next( next_entries ) ) ) {
+            while ( ( subsub = (PData*)list_next( next_entries ) ) ) {
                 result = subsub->name;
-                next_scen = list_first( subsub->values );
+                next_scen = (char*)list_first( subsub->values );
                 snprintf( str, sizeof(str), "%s>%s", result, next_scen );
                 list_add( centry->nexts, strdup( str ) );
             }
@@ -205,13 +205,13 @@ int camp_load( const char *fname )
             next_entries = pdent->entries;
             centry->descs = list_create( LIST_AUTO_DELETE, LIST_NO_CALLBACK );
             list_reset( next_entries );
-            while ( ( subsub = list_next( next_entries ) ) ) {
+            while ( ( subsub = (PData*)list_next( next_entries ) ) ) {
                 char key[1024];
                 const char *result = subsub->name;
                 const char *next_desc;
                 snprintf(key, sizeof key, "%s/%s", pdent->name, subsub->name);
                 next_desc = camp_resolve_ref(scen_ent, key, centry->id);
-                next_desc = trd(domain, next_desc ? next_desc : list_first(subsub->values));
+                next_desc = trd(domain, next_desc ? next_desc : (const char*)list_first(subsub->values));
                 snprintf( str, sizeof(str), "%s>%s", result, next_desc );
                 list_add( centry->descs, strdup( str ) );
             }
@@ -251,7 +251,7 @@ char* camp_load_info( const char *fname )
     name = (char *)trd(domain, name);
     if ( !parser_get_value( pd, "desc", &desc, 0 ) ) goto parser_failure;
     desc = (char *)trd(domain, desc);
-    if ( ( info = calloc( strlen( name ) + strlen( desc ) + 3, sizeof( char ) ) ) == 0 ) {
+    if ( ( info = (char*)calloc( strlen( name ) + strlen( desc ) + 3, sizeof( char ) ) ) == 0 ) {
         fprintf( stderr, tr("Out of memory\n") );
         goto failure;
     }
@@ -299,7 +299,7 @@ Camp_Entry *camp_get_entry( const char *id )
     const char *search_str = id ? id : camp_first;
     Camp_Entry *entry;
     list_reset( camp_entries );
-    while ( ( entry = list_next( camp_entries ) ) )
+    while ( ( entry = (Camp_Entry*)list_next( camp_entries ) ) )
         if ( strcmp( entry->id, search_str ) == 0 ) {
             return entry;
         }
@@ -319,10 +319,10 @@ List *camp_get_result_list()
     if (camp_cur_scen->nexts) {
         const char *str;
         list_reset( camp_cur_scen->nexts );
-        while ( ( str = list_next( camp_cur_scen->nexts ) ) ) {
+        while ( ( str = (const char*)list_next( camp_cur_scen->nexts ) ) ) {
             List *tokens;
             if ( ( tokens = parser_split_string( str, ">" ) ) ) {
-                list_add( list, strdup(list_first( tokens )) );
+                list_add( list, strdup((const char*)list_first( tokens )) );
                 list_delete( tokens );
             }
         }
@@ -342,11 +342,11 @@ const char *camp_get_description(const char *result)
     if (camp_cur_scen->descs) {
         const char *str;
         list_reset( camp_cur_scen->descs );
-        while ( ( str = list_next( camp_cur_scen->descs ) ) ) {
+        while ( ( str = (const char*)list_next( camp_cur_scen->descs ) ) ) {
             List *tokens;
             if ( ( tokens = parser_split_string( str, ">" ) ) ) {
                 int found = 0;
-                if ( STRCMP( result, list_first( tokens ) ) ) {
+                if ( STRCMP( result, (const char*)list_first( tokens ) ) ) {
                     ret = strchr( str, '>' ) + 1;
                     found = 1;
                 }
@@ -374,10 +374,10 @@ int camp_set_next( const char *id )
     else {
         if (!camp_cur_scen->nexts) return 0;
         list_reset( camp_cur_scen->nexts );
-        while ( ( next_str = list_next( camp_cur_scen->nexts ) ) ) {
+        while ( ( next_str = (char*)list_next( camp_cur_scen->nexts ) ) ) {
             if ( ( tokens = parser_split_string( next_str, ">" ) ) ) {
-                if ( STRCMP( id, list_first( tokens ) ) ) {
-                    camp_cur_scen = camp_get_entry( list_get( tokens, 2 ) );
+                if ( STRCMP( id, (const char*)list_first( tokens ) ) ) {
+                    camp_cur_scen = camp_get_entry( (const char*)list_get( tokens, 2 ) );
                     found = 1;
                 }
                 list_delete( tokens );

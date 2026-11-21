@@ -177,7 +177,7 @@ void gui_add_deploy_units( SDL_Surface *contents )
     int sx = deploy_border, sy = deploy_border;
     SDL_FillRect( contents, 0, 0x0 );
     for ( i = 0; i < deploy_show_count; i++ ) {
-        unit = list_get( left_deploy_units, deploy_offset + i );
+        unit = (Unit*)list_get( left_deploy_units, deploy_offset + i );
         if ( unit ) {
             if ( unit == deploy_unit ) {
                 DEST( contents, sx, sy, hex_w, hex_h );
@@ -213,7 +213,7 @@ int gui_load( const char *dir )
     char path[256], path2[256], path3[256];
 	
     gui_delete();
-    gui = calloc( 1, sizeof( GUI ) );
+    gui = (GUI*)calloc( 1, sizeof( GUI ) );
     /* name */
     gui->name = strdup( dir );
     /* frame tiles */
@@ -1272,10 +1272,10 @@ void gui_show_deploy_window()
     SDL_Surface *contents = gui->deploy_window->frame->contents;
     SDL_FillRect( contents, 0, 0x0 );
     deploy_offset = 0;
-    deploy_unit = list_get( avail_units, 0 );
+    deploy_unit = (Unit*)list_get( avail_units, 0 );
     list_reset( avail_units );
     list_clear( left_deploy_units );
-    while ( ( unit = list_next( avail_units ) ) ) {
+    while ( ( unit = (Unit*)list_next( avail_units ) ) ) {
         unit->x = -1;
         list_add( left_deploy_units, unit );
     }
@@ -1316,7 +1316,7 @@ int gui_handle_deploy_click(int button, int cx, int cy)
                     gui->deploy_window->frame->img->bkgnd->surf_rect.y + deploy_border + i * hex_h,
                     hex_w, hex_h ) ) {
             if ( i + deploy_offset < left_deploy_units->count ) {
-                deploy_unit = list_get( left_deploy_units, i + deploy_offset );
+                deploy_unit = (Unit*)list_get( left_deploy_units, i + deploy_offset );
                 gui_add_deploy_units( gui->deploy_window->frame->contents );
                 frame_apply( gui->deploy_window->frame );
                 return 1;
@@ -1334,7 +1334,7 @@ void gui_handle_deploy_motion( int cx, int cy, Unit **unit )
                     gui->deploy_window->frame->img->bkgnd->surf_rect.x + deploy_border,
                     gui->deploy_window->frame->img->bkgnd->surf_rect.y + deploy_border + i * hex_h,
                     hex_w, hex_h ) ) {
-            *unit = list_get( left_deploy_units, i + deploy_offset );
+            *unit = (Unit*)list_get( left_deploy_units, i + deploy_offset );
         }
 }
 
@@ -1375,10 +1375,10 @@ void gui_remove_deploy_unit( Unit *unit )
     Unit *next_unit;
     entry = list_entry( left_deploy_units, unit );
     if ( entry->next->item )
-        next_unit = entry->next->item;
+        next_unit = (Unit*)entry->next->item;
     else
         if ( entry->prev->item )
-            next_unit = entry->prev->item;
+            next_unit = (Unit*)entry->prev->item;
         else
             next_unit = 0;
     list_delete_item( left_deploy_units, unit );
@@ -1552,7 +1552,7 @@ Creates a new message pane structure.
 */
 MessagePane *gui_create_message_pane()
 {
-    MessagePane *pane = calloc(1, sizeof(MessagePane));
+    MessagePane *pane = (MessagePane*)calloc(1, sizeof(MessagePane));
     pane->focus_idx = -1;
     pane->refresh_x2 = sdl.screen->w;
     pane->refresh_y2 = sdl.screen->h;
@@ -1619,13 +1619,13 @@ descs const char * list of textual description being mapped to ids.
 void gui_set_message_pane_options( MessagePane *pane, List *ids, List *descs ) {
     unsigned i;
     pane->options_count = (unsigned)ids->count;
-    pane->options = calloc(pane->options_count, sizeof(MessagePane_Option));
+    pane->options = (MessagePane_Option*)calloc(pane->options_count, sizeof(MessagePane_Option));
     list_reset(ids);
     list_reset(descs);
     for (i = 0; i < pane->options_count; i++) {
         MessagePane_Option *opt = &pane->options[i];
-        opt->id = strdup(list_next(ids));
-        opt->desc = strdup(list_next(descs));
+        opt->id = strdup((const char*)list_next(ids));
+        opt->desc = strdup((const char*)list_next(descs));
     }
 }
 
@@ -1655,7 +1655,7 @@ void gui_draw_message_pane( MessagePane *pane )
     delete_text( text );
     checkbox_indent = text_width(gui->font_brief, checkbox_indent_str);
     /* draw options and redetermine hit-rectangles */
-    for (j = 0; j < pane->options_count; j++) {
+    for (j = 0; j < (int)pane->options_count; j++) {
         MessagePane_Option *opt = pane->options + j;
         int old_y = y;
         const int indent_x = x + checkbox_indent;
@@ -1684,7 +1684,7 @@ Returns the index of the focused option under (mx, my) or -1
 static int gui_map_message_pane_focus_index( MessagePane *pane, int mx, int my )
 {
     int i;
-    for (i = 0; i < pane->options_count; i++) {
+    for (i = 0; i < (int)pane->options_count; i++) {
         MessagePane_Option *opt = pane->options + i;
         if (mx >= opt->x1 && mx < opt->x2 && my >= opt->y1 && my < opt->y2)
             return i;
@@ -1720,13 +1720,13 @@ void gui_handle_message_pane_event( MessagePane *pane, int mx, int my, int butto
     
     /* determine new repaint rectangle if focus changed */
     if (new_focus_idx != pane->focus_idx) {
-        if (pane->focus_idx >= 0 && pane->focus_idx < pane->options_count)
+        if (pane->focus_idx >= 0 && pane->focus_idx < (int)pane->options_count)
             message_pane_unite_repaint_rect(pane,
                                             pane->options[pane->focus_idx].x1,
                                             pane->options[pane->focus_idx].y1,
                                             pane->options[pane->focus_idx].x2,
                                             pane->options[pane->focus_idx].y2);
-        if (new_focus_idx >= 0 && new_focus_idx < pane->options_count)
+        if (new_focus_idx >= 0 && new_focus_idx < (int)pane->options_count)
             message_pane_unite_repaint_rect(pane,
                                             pane->options[new_focus_idx].x1,
                                             pane->options[new_focus_idx].y1,
@@ -1744,9 +1744,9 @@ void gui_handle_message_pane_event( MessagePane *pane, int mx, int my, int butto
         }
         else if (!pressed && pane->button_pressed) {
             if (new_focus_idx == pane->pressed_focus_idx
-                && pane->pressed_focus_idx >= 0 && pane->pressed_focus_idx < pane->options_count) {
+                && pane->pressed_focus_idx >= 0 && pane->pressed_focus_idx < (int)pane->options_count) {
                 pane->selected_id = pane->options[pane->pressed_focus_idx].id;
-            } else if ((new_focus_idx < 0 || new_focus_idx >= pane->options_count)
+            } else if ((new_focus_idx < 0 || new_focus_idx >= (int)pane->options_count)
                        && pane->options_count == 0) {
                 pane->selected_id = pane->default_id;
             }
@@ -1948,7 +1948,7 @@ void gui_render_unit_list( SDL_Surface *contents, List * units)
                     if(unit->prop.unit_class>class_count)
                         class_count=unit->prop.unit_class;
                 }
-            unit=list_next(units);
+            unit=(Unit*)list_next(units);
         }
     sprintf(tags+last_tag,"[untagged]");
     last_tag+=11;
@@ -1974,7 +1974,7 @@ void gui_render_unit_list( SDL_Surface *contents, List * units)
                                             y+=hex_h*3/2;
                                         }
                                 }
-                            unit=list_next(units);
+                            unit=(Unit*)list_next(units);
                         }
                 }
             if(x>hex_w/2)
@@ -2038,7 +2038,7 @@ Unit *gui_unit_list_unit_clicked( List * units ,int cx,int cy)
                     if(unit->prop.unit_class>class_count)
                         class_count=unit->prop.unit_class;
                 }
-            unit=list_next(units);
+            unit=(Unit*)list_next(units);
         }
     sprintf(tags+last_tag,"[untagged]");
     last_tag+=11;
@@ -2067,7 +2067,7 @@ Unit *gui_unit_list_unit_clicked( List * units ,int cx,int cy)
                                             y+=hex_h*3/2;
                                         }
                                 }
-                            unit=list_next(units);
+                            unit=(Unit*)list_next(units);
                         }
                 }
             if(x>hex_w/2)

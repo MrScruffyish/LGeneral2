@@ -96,14 +96,14 @@ int terrain_load( char *fname )
     /* get weather */
     if ( !parser_get_entries( pd, "weather", &entries ) ) goto parser_failure;
     weather_type_count = entries->count;
-    weather_types = calloc( weather_type_count, sizeof( Weather_Type ) );
+    weather_types = (Weather_Type*)calloc( weather_type_count, sizeof( Weather_Type ) );
     list_reset( entries ); i = 0;
-    while ( ( sub = list_next( entries ) ) ) {
+    while ( ( sub = (PData*)list_next( entries ) ) ) {
         weather_types[i].id = strdup( sub->name );
         if ( !parser_get_localized_string( sub, "name", domain, &weather_types[i].name ) ) goto parser_failure;
         if ( !parser_get_values( sub, "flags", &flags ) ) goto parser_failure;
         list_reset( flags );
-        while ( ( flag = list_next( flags ) ) )
+        while ( ( flag = (char*)list_next( flags ) ) )
             weather_types[i].flags |= check_flag( flag, fct_terrain );
         i++;
     }
@@ -113,7 +113,7 @@ int terrain_load( char *fname )
     if ( !parser_get_int( pd, "hex_x_offset", &hex_x_offset ) ) goto parser_failure;
     if ( !parser_get_int( pd, "hex_y_offset", &hex_y_offset ) ) goto parser_failure;
     /* terrain icons */
-    terrain_icons = calloc( 1, sizeof( Terrain_Icons ) );
+    terrain_icons = (Terrain_Icons*)calloc( 1, sizeof( Terrain_Icons ) );
     if ( !parser_get_value( pd, "fog", &str, 0 ) ) goto parser_failure;
     sprintf( path, "terrain/%s", str );
     if ( ( terrain_icons->fog = load_surf( path, SDL_SWSURFACE ) ) == 0 ) goto failure;
@@ -149,16 +149,16 @@ int terrain_load( char *fname )
     /* terrain types */
     if ( !parser_get_entries( pd, "terrain", &entries ) ) goto parser_failure;
     terrain_type_count = entries->count;
-    terrain_types = calloc( terrain_type_count, sizeof( Terrain_Type ) );
+    terrain_types = (Terrain_Type*)calloc( terrain_type_count, sizeof( Terrain_Type ) );
     list_reset( entries ); i = 0;
-    while ( ( sub = list_next( entries ) ) ) {
+    while ( ( sub = (PData*)list_next( entries ) ) ) {
         /* id */
         terrain_types[i].id = sub->name[0];
         /* name */
         if ( !parser_get_localized_string( sub, "name", domain, &terrain_types[i].name ) ) goto parser_failure;
         /* each weather type got its own image -- if it's named 'default' we
            point towards the image of weather_type 0 */
-        terrain_types[i].images = calloc( weather_type_count, sizeof( SDL_Surface* ) );
+        terrain_types[i].images = (SDL_Surface**)calloc( weather_type_count, sizeof( SDL_Surface* ) );
         for ( j = 0; j < weather_type_count; j++ ) {
             sprintf( path, "image/%s", weather_types[j].id );
             if ( !parser_get_value( sub, path, &str, 0 ) ) goto parser_failure;
@@ -174,7 +174,7 @@ int terrain_load( char *fname )
             }
         }
         /* fog image */
-        terrain_types[i].images_fogged = calloc( weather_type_count, sizeof( SDL_Surface* ) );
+        terrain_types[i].images_fogged = (SDL_Surface**)calloc( weather_type_count, sizeof( SDL_Surface* ) );
         for ( j = 0; j < weather_type_count; j++ ) {
             if ( terrain_types[i].images[j] == terrain_types[i].images[0] && j > 0 ) {
                 /* just a pointer */
@@ -195,12 +195,12 @@ int terrain_load( char *fname )
             }
         }
         /* spot cost */
-        terrain_types[i].spt = calloc( weather_type_count, sizeof( int ) );
+        terrain_types[i].spt = (int*)calloc( weather_type_count, sizeof( int ) );
         if ( !parser_get_pdata( sub, "spot_cost",  &subsub ) ) goto parser_failure;
         for ( j = 0; j < weather_type_count; j++ )
             if ( !parser_get_int( subsub, weather_types[j].id, &terrain_types[i].spt[j] ) ) goto parser_failure;
         /* mov cost */
-        terrain_types[i].mov = calloc( mov_type_count * weather_type_count, sizeof( int ) );
+        terrain_types[i].mov = (int*)calloc( mov_type_count * weather_type_count, sizeof( int ) );
         if ( !parser_get_pdata( sub, "move_cost",  &subsub ) ) goto parser_failure;
         for ( k = 0; k < mov_type_count; k++ ) {
             if ( !parser_get_pdata( subsub, mov_types[k].id,  &subsubsub ) ) goto parser_failure;
@@ -221,12 +221,12 @@ int terrain_load( char *fname )
         /* initiative modification */
         if ( !parser_get_int( sub, "max_init",  &terrain_types[i].max_ini ) ) goto parser_failure;
         /* flags */
-        terrain_types[i].flags = calloc( weather_type_count, sizeof( int ) );
+        terrain_types[i].flags = (int*)calloc( weather_type_count, sizeof( int ) );
         if ( !parser_get_pdata( sub, "flags",  &subsub ) ) goto parser_failure;
         for ( j = 0; j < weather_type_count; j++ ) {
             if ( !parser_get_values( subsub, weather_types[j].id, &flags ) ) goto parser_failure;
             list_reset( flags );
-            while ( ( flag = list_next( flags ) ) )
+            while ( ( flag = (char*)list_next( flags ) ) )
                 terrain_types[i].flags[j] |= check_flag( flag, fct_terrain );
         }
         /* next terrain */

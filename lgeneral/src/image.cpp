@@ -36,7 +36,7 @@ Buffer* buffer_create( int w, int h, SDL_Surface *surf, int x, int y )
         fprintf( stderr, "buffer_create: video display not available\n" );
         return 0;
     }
-    buffer = calloc( 1, sizeof( Buffer ) );
+    buffer = (Buffer*)calloc( 1, sizeof( Buffer ) );
     buffer->buf = SDL_CreateRGBSurface( SDL_SWSURFACE, w, h, 
                                            format->BitsPerPixel,
                                            format->Rmask, format->Gmask, format->Bmask,
@@ -165,7 +165,7 @@ Image *image_create( SDL_Surface *img, int buf_w, int buf_h, SDL_Surface *surf, 
         fprintf( stderr, "image_create: passed graphic is NULL: %s\n", SDL_GetError() );
         return 0;
     }
-    image = calloc( 1, sizeof( Image ) );
+    image = (Image*)calloc( 1, sizeof( Image ) );
     image->img = img;
     if ( buf_w == 0 || buf_h == 0 ) {
         buf_w = image->img->w;
@@ -235,7 +235,7 @@ Animation is hidden per default.
 */
 Anim* anim_create( SDL_Surface *gfx, int speed, int frame_w, int frame_h, SDL_Surface *surf, int x, int y )
 {
-    Anim *anim = calloc( 1, sizeof( Anim ) );
+    Anim *anim = (Anim*)calloc( 1, sizeof( Anim ) );
     if ( ( anim->img = image_create( gfx, frame_w, frame_h, surf, x, y ) ) == 0 ) {
         free( anim );
         return 0;
@@ -330,7 +330,7 @@ Frame *frame_create( SDL_Surface *img, int alpha, SDL_Surface *surf, int x, int 
         fprintf( stderr, "buffer_create: video display not available\n" );
         return 0;
     }
-    frame = calloc( 1, sizeof( Frame ) );
+    frame = (Frame*)calloc( 1, sizeof( Frame ) );
     /* frame */
     if ( img == 0 ) {
         fprintf( stderr, "frame_create: passed graphic is NULL: %s\n", SDL_GetError() );

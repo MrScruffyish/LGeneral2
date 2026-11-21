@@ -145,7 +145,7 @@ To simplify conversion from string to flag tables of these
 entries are used.
 ====================================================================
 */
-typedef struct { char *string; int flag; } StrToFlag;
+typedef struct { const char *string; int flag; } StrToFlag;
 /*
 ====================================================================
 This function checks if 'name' occurs in fct and return the flag

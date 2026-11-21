@@ -111,14 +111,14 @@ set_target_properties(util PROPERTIES
 )
 
 set(LGENERAL_GAME_SOURCES
-    src/main.c
-    src/config.c src/date.cpp
+    src/main.cpp
+    src/config.cpp src/date.cpp
     src/file.cpp src/map.cpp src/nation.cpp
-    src/player.cpp src/scenario.cpp src/lg-sdl.c src/misc.c src/unit.c
-    src/audio.c src/parser.cpp src/list.cpp src/unit_lib.c
-    src/terrain.c src/image.c src/slot.c src/gui.c src/purchase_dlg.c
-    src/event.c src/windows.c src/action.c src/campaign.c
-    src/strat_map.c src/ai.c src/engine.c src/ai_group.c src/ai_tools.c
+    src/player.cpp src/scenario.cpp src/lg-sdl.cpp src/misc.cpp src/unit.cpp
+    src/audio.cpp src/parser.cpp src/list.cpp src/unit_lib.cpp
+    src/terrain.cpp src/image.cpp src/slot.cpp src/gui.cpp src/purchase_dlg.cpp
+    src/event.cpp src/windows.cpp src/action.cpp src/campaign.cpp
+    src/strat_map.cpp src/ai.cpp src/engine.cpp src/ai_group.cpp src/ai_tools.cpp
 )
 
 add_executable(lgeneral ${LGENERAL_GAME_SOURCES})

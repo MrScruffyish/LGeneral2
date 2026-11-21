@@ -49,7 +49,7 @@ Convert a tile_id in the PG image into a map tile string
   terrain_type_char+tile_id
 ====================================================================
 */
-static void tile_get_id_string( int id, char *string )
+static void tile_get_id_string( int id, char *string, size_t size )
 {
     char type;
     int i;
@@ -58,7 +58,7 @@ static void tile_get_id_string( int id, char *string )
     for ( i = 0; i < id; i++ )
         if ( tile_type[i] == type )
             sub_id++;
-    sprintf( string, "%c%i", type, sub_id );
+    snprintf( string, size, "%c%i", type, sub_id );
 }
 
 /*
@@ -96,7 +96,7 @@ int maps_convert( int map_id )
     FILE *dest_file, *source_file, *name_file;
     int width, height;
     int tile_id;
-    char map_tile_str[8];
+    char map_tile_str[12];
     char name_buf[24];
     int x, y, ibuf;
 
@@ -185,7 +185,7 @@ int maps_convert( int map_id )
                 tile_id = 0;
                 _fread( &tile_id, 2, 1, source_file ); 
                 tile_id = SDL_SwapLE16( tile_id );
-                tile_get_id_string( tile_id, map_tile_str );
+                tile_get_id_string( tile_id, map_tile_str, sizeof map_tile_str );
                 fprintf( dest_file, "%s", map_tile_str );
                 if ( y < height - 1 || x < width - 1 )
                     fprintf( dest_file, "&" );

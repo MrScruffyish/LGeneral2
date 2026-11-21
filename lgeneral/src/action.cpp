@@ -34,7 +34,7 @@ Create basic action.
 */
 static Action *action_create( int type ) 
 {
-    Action *action = calloc( 1, sizeof( Action ) );
+    Action *action = (Action*)calloc( 1, sizeof( Action ) );
     action->type = type;
     return action;
 }
@@ -81,12 +81,12 @@ must be cleared by engine after usage.
 */
 Action* actions_dequeue()
 {
-    return list_dequeue( actions );
+    return (Action*)list_dequeue( actions );
 }
 void actions_clear()
 {
     Action *action = 0;
-    while ( ( action = list_dequeue( actions ) ) )
+    while ( ( action = (Action*)list_dequeue( actions ) ) )
         free( action );
 }
 
@@ -97,7 +97,7 @@ Returns topmost action in queue or 0 if none available.
 */
 Action *actions_top(void)
 {
-    return list_last( actions );
+    return (Action*)list_last( actions );
 }
 
 /*
@@ -109,7 +109,7 @@ void action_remove_last()
 {
     Action *action = 0;
     if ( actions->count == 0 ) return;
-    action = list_last( actions );
+    action = (Action*)list_last( actions );
     list_delete_item( actions, action );
     free( action );
 }

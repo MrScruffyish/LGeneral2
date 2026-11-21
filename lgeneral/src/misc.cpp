@@ -92,7 +92,7 @@ void set_random_seed()
 /* get coordinates from string */
 void get_coord( const char *str, int *x, int *y )
 {
-    int i;
+    size_t i;
     char *cur_arg;
 
     *x = *y = 0;
@@ -119,7 +119,7 @@ void get_coord( const char *str, int *x, int *y )
 /* replace new_lines with spaces in text */
 void repl_new_lines( char *text )
 {
-    int i;
+    size_t i;
     for ( i = 0; i < strlen( text ); i++ )
         if ( (unsigned char)text[i] < 32 )
             text[i] = 32;
@@ -156,10 +156,10 @@ static void text_add_line(struct TextData *td, const char *begin, const char *en
     if (idx == td->reserved) {
         if (td->reserved == 0) td->reserved = 1;
         td->reserved *= 2;
-        td->text->lines = realloc(td->text->lines, td->reserved * sizeof td->text->lines[0]);
+        td->text->lines = (char**)realloc(td->text->lines, td->reserved * sizeof td->text->lines[0]);
     }
 
-    out = td->text->lines[idx] = malloc(end - begin + 1);
+    out = td->text->lines[idx] = (char*)malloc(end - begin + 1);
     for (; begin != end; ++begin, ++out) {
         switch (*begin) {
             case '\n':
@@ -189,7 +189,7 @@ Text* create_text( struct _Font *fnt, const char *orig_str, int width )
     if (width < 0) width = 0;
 
     memset(&td, 0, sizeof(td));
-    td.text = calloc ( 1, sizeof( Text ) );
+    td.text = (Text*)calloc ( 1, sizeof( Text ) );
 
     while (*committed) {
         int ch_width = char_width(fnt, *head);

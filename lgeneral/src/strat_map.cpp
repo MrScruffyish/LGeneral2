@@ -271,7 +271,7 @@ void strat_map_create()
     strat_tile_y_offset = hex_y_offset / scale;
     /* create strat tile array */
     tile_count = terrain_type_count;
-    strat_tile_pic = calloc( tile_count, sizeof( SDL_Surface* ) );
+    strat_tile_pic = (SDL_Surface**)calloc( tile_count, sizeof( SDL_Surface* ) );
     /* create strat tiles */
     for ( i = 0; i < tile_count; i++ ) {
         /* how many tiles are rowed? */
@@ -458,7 +458,7 @@ void strat_map_update_unit_layer()
                 if ( cur_player == unit->player )
                 if ( unit->cur_mov > 0 ) {
                     /* unit needs a blinking spot */
-                    dotpos = calloc( 1, sizeof( DotPos ) );
+                    dotpos = (DotPos*)calloc( 1, sizeof( DotPos ) );
                     dotpos->x = sm_x_offset + i * strat_tile_x_offset + 1/* +
                                 ( strat_flag_width - blink_dot->w ) / 2*/;
                     dotpos->y = sm_y_offset + j * strat_tile_height + ( i & 1 ) * strat_tile_y_offset + 1/* +
@@ -542,7 +542,7 @@ void strat_map_blink()
     DotPos *pos;
     blink_on = !blink_on;
     list_reset( dots );
-    while ( ( pos = list_next( dots ) ) ) {
+    while ( ( pos = (DotPos*)list_next( dots ) ) ) {
         if ( blink_on ) {
             DEST( sdl.screen, screen_x + pos->x, screen_y + pos->y, strat_flag_width, strat_flag_height );
             SOURCE( strat_flags, 0, nation_get_index( pos->nation ) * strat_flag_height );

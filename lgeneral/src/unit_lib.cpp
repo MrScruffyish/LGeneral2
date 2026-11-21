@@ -273,9 +273,9 @@ int unit_lib_load( char *fname, int main )
             fprintf( stderr, tr("%i target types is the limit!\n"), TARGET_TYPE_LIMIT );
             trgt_type_count = TARGET_TYPE_LIMIT;
         }
-        trgt_types = calloc( trgt_type_count, sizeof( Trgt_Type ) );
+        trgt_types = (Trgt_Type*)calloc( trgt_type_count, sizeof( Trgt_Type ) );
         list_reset( entries ); i = 0;
-        while ( ( sub = list_next( entries ) ) ) {
+        while ( ( sub = (PData*)list_next( entries ) ) ) {
             trgt_types[i].id = strdup( sub->name );
             if ( !parser_get_value( sub, "name", &str, 0 ) ) goto parser_failure;
             trgt_types[i].name = strdup(trd(domain, str));
@@ -283,9 +283,9 @@ int unit_lib_load( char *fname, int main )
         }
         /* movement types */
         if ( !parser_get_entries( pd, "move_types", &entries ) ) goto parser_failure;
-        mov_types = calloc( entries->count, sizeof( Mov_Type ) );
+        mov_types = (Mov_Type*)calloc( entries->count, sizeof( Mov_Type ) );
         list_reset( entries ); mov_type_count = 0;
-        while ( ( sub = list_next( entries ) ) ) {
+        while ( ( sub = (PData*)list_next( entries ) ) ) {
             mov_types[mov_type_count].id = strdup( sub->name );
             if ( !parser_get_value( sub, "name", &str, 0 ) ) goto parser_failure;
             mov_types[mov_type_count].name = strdup(trd(domain, str));
@@ -298,9 +298,9 @@ int unit_lib_load( char *fname, int main )
         }
         /* unit classes */
         if ( !parser_get_entries( pd, "unit_classes", &entries ) ) goto parser_failure;
-        unit_classes = calloc( entries->count, sizeof( Unit_Class ) );
+        unit_classes = (Unit_Class*)calloc( entries->count, sizeof( Unit_Class ) );
         list_reset( entries ); unit_class_count = 0;
-        while ( ( sub = list_next( entries ) ) ) {
+        while ( ( sub = (PData*)list_next( entries ) ) ) {
             unit_classes[unit_class_count].id = strdup( sub->name );
             if ( !parser_get_value( sub, "name", &str, 0 ) ) goto parser_failure;
             unit_classes[unit_class_count].name = strdup(trd(domain, str));
@@ -315,7 +315,7 @@ int unit_lib_load( char *fname, int main )
             /* ignore sounds so far */
         }
         /* unit map tile icons */
-        unit_info_icons = calloc( 1, sizeof( Unit_Info_Icons ) );
+        unit_info_icons = (Unit_Info_Icons*)calloc( 1, sizeof( Unit_Info_Icons ) );
         if ( !parser_get_value( pd, "strength_icons", &str, 0 ) ) goto parser_failure;
         sprintf( path, "units/%s", str );
         if ( ( unit_info_icons->str = load_surf( path, SDL_SWSURFACE ) ) == 0 ) goto failure; 
@@ -327,7 +327,7 @@ int unit_lib_load( char *fname, int main )
         if ( !parser_get_value( pd, "move_icon", &str, 0 ) ) goto parser_failure;
         sprintf( path, "units/%s", str );
         if ( ( unit_info_icons->mov = load_surf( path, SDL_SWSURFACE ) ) == 0 ) goto failure; 
-        if ( !parser_get_value( pd, "guard_icon", &str, 0 ) ) str = "pg_guard.bmp";
+        if ( !parser_get_value( pd, "guard_icon", &str, 0 ) ) str = (char*)"pg_guard.bmp";
         sprintf( path, "units/%s", str );
         if ( ( unit_info_icons->guard = load_surf( path, SDL_SWSURFACE ) ) == 0 ) goto failure; 
     }
@@ -351,9 +351,9 @@ int unit_lib_load( char *fname, int main )
       log_unit_count = 0;
       /* (LOG) */
     list_reset( entries );
-    while ( ( sub = list_next( entries ) ) ) {
+    while ( ( sub = (PData*)list_next( entries ) ) ) {
         /* read unit entry */
-        unit = calloc( 1, sizeof( Unit_Lib_Entry ) );
+        unit = (Unit_Lib_Entry*)calloc( 1, sizeof( Unit_Lib_Entry ) );
         /* identification */
         unit->id = strdup( sub->name );
         /* name */
@@ -417,7 +417,7 @@ int unit_lib_load( char *fname, int main )
         /* flags */
         if ( parser_get_values( sub, "flags", &flags ) ) {
             list_reset( flags ); 
-            while ( ( flag = list_next( flags ) ) )
+            while ( ( flag = (char*)list_next( flags ) ) )
                 unit->flags |= check_flag( flag, fct_units );
         }
         /* set the entrenchment rate */
@@ -478,16 +478,16 @@ int unit_lib_load( char *fname, int main )
             /* get format info */
             byte_size = icons->format->BytesPerPixel;
             y_offset = 0;
-            pix_buffer = calloc( byte_size, sizeof( char ) );
+            pix_buffer = (char*)calloc( byte_size, sizeof( char ) );
             /* get second by flipping first one */
             for ( j = 0; j < unit->icon_h; j++ ) {
                 for ( i = 0; i < unit->icon_w; i++ ) {
                     memcpy( pix_buffer,
-                            unit->icon->pixels +
+                            (char*)unit->icon->pixels +
                             y_offset +
                             ( unit->icon_w - 1 - i ) * byte_size,
                             byte_size );
-                    memcpy( unit->icon->pixels +
+                    memcpy( (char*)unit->icon->pixels +
                             y_offset +
                             unit->icon_w * byte_size +
                             i * byte_size,
@@ -549,7 +549,7 @@ int unit_lib_load( char *fname, int main )
     write_line( sdl.screen, log_font, log_str, log_x, &log_y ); refresh_screen( 0, 0, 0, 0 );
     /* relative evaluate of units */
     list_reset( unit_lib );
-    while ( ( unit = list_next( unit_lib ) ) ) {
+    while ( ( unit = (Unit_Lib_Entry*)list_next( unit_lib ) ) ) {
         if ( unit->flags & FLYING )
             best_air = MAXIMUM( unit->eval_score, best_air );
         else {
@@ -560,7 +560,7 @@ int unit_lib_load( char *fname, int main )
         }
     }
     list_reset( unit_lib );
-    while ( ( unit = list_next( unit_lib ) ) ) {
+    while ( ( unit = (Unit_Lib_Entry*)list_next( unit_lib ) ) ) {
         unit->eval_score *= 1000;
         if ( unit->flags & FLYING )
             unit->eval_score /= best_air;
@@ -644,7 +644,7 @@ Unit_Lib_Entry* unit_lib_find( char *id )
 {
     Unit_Lib_Entry *entry;
     list_reset( unit_lib );
-    while ( ( entry = list_next( unit_lib ) ) )
+    while ( ( entry = (Unit_Lib_Entry*)list_next( unit_lib ) ) )
         if ( STRCMP( entry->id, id ) )
             return entry;
     return 0;
