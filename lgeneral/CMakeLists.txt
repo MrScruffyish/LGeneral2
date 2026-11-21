@@ -16,6 +16,7 @@ option(LGENERAL_INSTALL "Use installed data paths" OFF)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL REQUIRED IMPORTED_TARGET sdl>=1.2.0)
+pkg_check_modules(SDL3 REQUIRED IMPORTED_TARGET sdl3)
 
 find_library(MATH_LIBRARY m)
 if(NOT MATH_LIBRARY)
@@ -146,7 +147,7 @@ target_include_directories(lgc-pg PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/lgc-pg
     ${CMAKE_CURRENT_SOURCE_DIR}/util
 )
-target_link_libraries(lgc-pg PRIVATE util PkgConfig::SDL ${MATH_LIBRARY})
+target_link_libraries(lgc-pg PRIVATE util PkgConfig::SDL3 ${MATH_LIBRARY})
 set_target_properties(lgc-pg PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lgc-pg
 )
@@ -158,7 +159,7 @@ target_include_directories(shptool PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/lgc-pg
     ${CMAKE_CURRENT_SOURCE_DIR}/util
 )
-target_link_libraries(shptool PRIVATE util PkgConfig::SDL ${MATH_LIBRARY})
+target_link_libraries(shptool PRIVATE util PkgConfig::SDL3 ${MATH_LIBRARY})
 set_target_properties(shptool PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lgc-pg
 )

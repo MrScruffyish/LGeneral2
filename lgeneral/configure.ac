@@ -127,6 +127,8 @@ AM_CONDITIONAL(compile_paths_linux, test x$ac_paths_determ = xlinux)
 dnl check SDL version via pkg-config; sdl12_compat provides the "sdl" module.
 PKG_CHECK_MODULES([SDL], [sdl >= 1.2.0], [],
                   [AC_MSG_ERROR([lib SDL >= 1.2 is needed])])
+PKG_CHECK_MODULES([SDL3], [sdl3], [],
+                  [AC_MSG_ERROR([lib SDL3 is needed for the converter])])
 
 dnl check sound
 sound_flag="-DWITH_SOUND"

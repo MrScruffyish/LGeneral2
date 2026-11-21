@@ -20,7 +20,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <SDL_endian.h>
+#include <SDL3/SDL_endian.h>
 #include "units.h"
 #include "misc.h"
 #include "scenarios.h"
@@ -262,9 +262,9 @@ int scen_add_flags( FILE *dest_file, FILE *scen_file, int id )
     fseek( scen_file, 37, SEEK_SET );
     for ( i = 0; i < 20; i++ ) {
         _fread( &vic_hexes[i * 2], 2, 1, scen_file );
-        vic_hexes[i * 2] = SDL_SwapLE16(vic_hexes[i * 2]);
+        vic_hexes[i * 2] = SDL_Swap16LE(vic_hexes[i * 2]);
         _fread( &vic_hexes[i * 2 + 1], 2, 1, scen_file );
-        vic_hexes[i * 2 + 1] = SDL_SwapLE16(vic_hexes[i * 2 + 1]);
+        vic_hexes[i * 2 + 1] = SDL_Swap16LE(vic_hexes[i * 2 + 1]);
         if ( vic_hexes[i * 2] >= 1000 || vic_hexes[i * 2] < 0 )
             break;
         obj_count++;
@@ -279,10 +279,10 @@ int scen_add_flags( FILE *dest_file, FILE *scen_file, int id )
     width = height = 0;
     fseek( map_file, 101, SEEK_SET );
     _fread( &width, 2, 1, map_file ); 
-    width = SDL_SwapLE16(width);
+    width = SDL_Swap16LE(width);
     fseek( map_file, 103, SEEK_SET );
     _fread( &height, 2, 1, map_file ); 
-    height = SDL_SwapLE16(height);
+    height = SDL_Swap16LE(height);
     width++; height++;
     /* owner info */
     fseek( map_file, 123 + 3 * width * height, SEEK_SET );
@@ -455,16 +455,16 @@ void scen_create_unit( int scen_id, FILE *dest_file, FILE *scen_file, int is_cor
     /* read unit -- 14 bytes */
     /* icon id */
     _fread( &id, 2, 1, scen_file ); /* icon id */
-    id = SDL_SwapLE16(id);
+    id = SDL_Swap16LE(id);
     _fread( &org_trsp_id, 2, 1, scen_file ); /* transporter of organic unit */
-    org_trsp_id = SDL_SwapLE16(org_trsp_id);
+    org_trsp_id = SDL_Swap16LE(org_trsp_id);
     _fread( &nation, 1, 1, scen_file ); nation--; /* nation + 1 */
     _fread( &trsp_id, 2, 1, scen_file ); /* sea/air transport */
-    trsp_id = SDL_SwapLE16(trsp_id);
+    trsp_id = SDL_Swap16LE(trsp_id);
     _fread( &x, 2, 1, scen_file ); /* x */
-    x = SDL_SwapLE16(x);
+    x = SDL_Swap16LE(x);
     _fread( &y, 2, 1, scen_file ); /* y */
-    y = SDL_SwapLE16(y);
+    y = SDL_Swap16LE(y);
     _fread( &str, 1, 1, scen_file ); /* strength */
     _fread( &entr, 1, 1, scen_file ); /* entrenchment */
     _fread( &exp, 1, 1, scen_file ); /* experience */
@@ -1119,13 +1119,13 @@ int scenarios_convert( int scen_id )
         /* air */
         fseek( scen_file, unit_offset - 8, SEEK_SET );
         ibuf = 0; _fread( &ibuf, 2, 1, scen_file );
-        ibuf = SDL_SwapLE16(ibuf);
+        ibuf = SDL_Swap16LE(ibuf);
         if ( ibuf )
             fprintf( dest_file, "<air\nunit=%i\ncount=50\n>\n", ibuf - 1 );
         /* sea */
         fseek( scen_file, unit_offset - 4, SEEK_SET );
         ibuf = 0; _fread( &ibuf, 2, 1, scen_file );
-        ibuf = SDL_SwapLE16(ibuf);
+        ibuf = SDL_Swap16LE(ibuf);
         if ( ibuf )
             fprintf( dest_file, "<sea\nunit=%i\ncount=50\n>\n", ibuf - 1 );
         fprintf( dest_file, ">\n" );
@@ -1171,13 +1171,13 @@ int scenarios_convert( int scen_id )
         /* air */
         fseek( scen_file, unit_offset - 6, SEEK_SET );
         ibuf = 0; _fread( &ibuf, 2, 1, scen_file );
-        ibuf = SDL_SwapLE16(ibuf);
+        ibuf = SDL_Swap16LE(ibuf);
         if ( ibuf )
             fprintf( dest_file, "<air\nunit=%i\ncount=50\n>\n", ibuf - 1 );
         /* sea */
         fseek( scen_file, unit_offset - 2, SEEK_SET );
         ibuf = 0; _fread( &ibuf, 2, 1, scen_file );
-        ibuf = SDL_SwapLE16(ibuf);
+        ibuf = SDL_Swap16LE(ibuf);
         if ( ibuf )
             fprintf( dest_file, "<sea\nunit=%i\ncount=50\n>\n", ibuf - 1 );
         fprintf( dest_file, ">\n" );
@@ -1207,15 +1207,15 @@ int scenarios_convert( int scen_id )
         /* deployment fields */
         fseek( scen_file, 117, SEEK_SET );
         ibuf = 0; _fread( &ibuf, 2, 1, scen_file );
-        deploy_fields_count = SDL_SwapLE16(ibuf);
+        deploy_fields_count = SDL_Swap16LE(ibuf);
         fprintf( dest_file, "<deployfields\n<player\nid=axis\ncoordinates=default&" );
         /* last coordinate is always (-1, -1) */
         for (j = 0; j < deploy_fields_count - 1; j++) {
             int x, y;
             ibuf = 0; _fread( &ibuf, 2, 1, scen_file );
-            x = SDL_SwapLE16(ibuf);
+            x = SDL_Swap16LE(ibuf);
             ibuf = 0; _fread( &ibuf, 2, 1, scen_file );
-            y = SDL_SwapLE16(ibuf);
+            y = SDL_Swap16LE(ibuf);
             fprintf( dest_file, "%s%d,%d", j ? "&" : "", x, y );
         }
         fprintf( dest_file, "\n>\n" );

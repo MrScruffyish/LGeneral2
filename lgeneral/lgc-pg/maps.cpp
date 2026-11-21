@@ -20,7 +20,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <SDL_endian.h>
+#include <SDL3/SDL_endian.h>
 #include "maps.h"
 #include "misc.h"
 #include "terrain.h"
@@ -171,10 +171,10 @@ int maps_convert( int map_id )
         width = height = 0;
         fseek( source_file, 101, SEEK_SET );
         _fread( &width, 2, 1, source_file ); 
-        width = SDL_SwapLE16( width );
+        width = SDL_Swap16LE( width );
         fseek( source_file, 103, SEEK_SET );
         _fread( &height, 2, 1, source_file ); 
-        height = SDL_SwapLE16( height );
+        height = SDL_Swap16LE( height );
         width++; height++;
         fprintf( dest_file, "width=%i\nheight=%i\n", width, height );
         /* picture ids */
@@ -184,7 +184,7 @@ int maps_convert( int map_id )
             for ( x = 0; x < width; x++ ) {
                 tile_id = 0;
                 _fread( &tile_id, 2, 1, source_file ); 
-                tile_id = SDL_SwapLE16( tile_id );
+                tile_id = SDL_Swap16LE( tile_id );
                 tile_get_id_string( tile_id, map_tile_str, sizeof map_tile_str );
                 fprintf( dest_file, "%s", map_tile_str );
                 if ( y < height - 1 || x < width - 1 )
@@ -197,7 +197,7 @@ int maps_convert( int map_id )
         for ( y = 0; y < height; y++ ) {
             for ( x = 0; x < width; x++ ) {
                 ibuf = 0; _fread( &ibuf, 2, 1, source_file );
-                ibuf = SDL_SwapLE16( ibuf );
+                ibuf = SDL_Swap16LE( ibuf );
                 tile_get_name( name_file, ibuf, name_buf );
                 fprintf( dest_file, "%s", name_buf );
                 if ( y < height - 1 || x < width - 1 )

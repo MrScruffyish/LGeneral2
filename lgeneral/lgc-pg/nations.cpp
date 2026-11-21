@@ -108,14 +108,12 @@ int nations_convert( void )
     for ( i = 0; i < nation_count; i++ )
         if ( shp->headers[i].valid )
             height += shp->headers[i].actual_height;
-    surf = SDL_CreateRGBSurface( SDL_SWSURFACE, shp->headers[0].actual_width, height, shp->surf->format->BitsPerPixel,
-                                 shp->surf->format->Rmask, shp->surf->format->Gmask, shp->surf->format->Bmask,
-                                 shp->surf->format->Amask );
+    surf = lg_create_surface_like( shp->headers[0].actual_width, height, shp->surf );
     if ( surf == 0 ) {
         fprintf( stderr, "error creating surface: %s\n", SDL_GetError() );
         goto failure;
     }
-    SDL_FillRect( surf, 0, ckey );
+    lg_fill_surface( surf, ckey );
     /* copy flags */
     srect.w = drect.w = shp->headers[0].actual_width;
     srect.h = drect.h = shp->headers[0].actual_height;
@@ -129,15 +127,15 @@ int nations_convert( void )
         height += shp->headers[i].actual_height;
     }
     snprintf( path, MAXPATHLEN, "%s/gfx/flags/%s.bmp", dest_path, target_name );
-    if ( SDL_SaveBMP( surf, path ) ) {
+    if ( !lg_save_rgb565_bmp( surf, path ) ) {
         fprintf( stderr, "%s: %s\n", path, SDL_GetError() );
         goto failure;
     }
-    SDL_FreeSurface( surf );
+    SDL_DestroySurface( surf );
     shp_free( &shp );
     return 1;
 failure:
-    if ( surf ) SDL_FreeSurface( surf );
+    if ( surf ) SDL_DestroySurface( surf );
     if ( shp ) shp_free( &shp );
     return 0;
 }

@@ -171,9 +171,6 @@ int parse_args( int argc, char **argv )
 
 int main( int argc, char **argv )
 {
-    char path[MAXPATHLEN];
-    SDL_Surface *title_image = NULL;
-
     /* info */
     printf( "LGeneral Converter for Panzer General (DOS version) v%s\n"
             "Copyright 2002-2012 Michael Speck\n"
@@ -184,22 +181,6 @@ int main( int argc, char **argv )
         print_help();
         exit( 1 );
     }
-    
-    /* SDL required for graphical conversion */
-    if (SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER ) < 0) {
-        printf( "lgc-pg requires a running graphical desktop environment. \n");
-        exit( 1 );
-    }
-    SDL_SetVideoMode( 320, 240, 16, SDL_SWSURFACE );
-    atexit( SDL_Quit );
-    /* show nice image */
-    snprintf( path, MAXPATHLEN, "%s/convdata/title.bmp", get_gamedir() );
-    if ((title_image = SDL_LoadBMP( path ))) {
-	    SDL_Surface *screen = SDL_GetVideoSurface();
-	    SDL_BlitSurface( title_image, NULL, screen, NULL);
-	    SDL_UpdateRect( screen, 0, 0, screen->w, screen->h );
-    }
-    SDL_WM_SetCaption( "lgc-pg", NULL );
     
     printf( "Converting:\n" );
     if ( single_scen ) {
@@ -245,7 +226,5 @@ int main( int argc, char **argv )
                     "scenario files should match. If they don't this might be an error.\n");
     }
     printf( "\nDone!\n" );
-    if (title_image)
-	    SDL_FreeSurface(title_image);
     return 0;
 }

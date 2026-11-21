@@ -199,18 +199,16 @@ static int terrain_convert_tiles( char id, PG_Shp *shp, const char *fname )
             count++;
 
     /* create surface */
-    surf = SDL_CreateRGBSurface( SDL_SWSURFACE, 60 * count, 50, shp->surf->format->BitsPerPixel,
-                                 shp->surf->format->Rmask, shp->surf->format->Gmask, shp->surf->format->Bmask,
-                                 shp->surf->format->Amask );
+    surf = lg_create_surface_like( 60 * count, 50, shp->surf );
     if ( surf == 0 ) {
         fprintf( stderr, "error creating surface: %s\n", SDL_GetError() );
         goto failure;
     }
 
     /* modified colors */
-    grass_pixel = SDL_MapRGB( surf->format, 192, 192, 112 );
-    snow_pixel = SDL_MapRGB( surf->format, 229, 229, 229 );
-    mud_pixel = SDL_MapRGB( surf->format, 206, 176, 101 );
+    grass_pixel = lg_map_rgb565( 192, 192, 112 );
+    snow_pixel = lg_map_rgb565( 229, 229, 229 );
+    mud_pixel = lg_map_rgb565( 206, 176, 101 );
 
     /* copy pics */
     srect.w = drect.w = 60;
@@ -239,7 +237,7 @@ static int terrain_convert_tiles( char id, PG_Shp *shp, const char *fname )
     /* default terrain */
     snprintf( path, MAXPATHLEN, "%s/gfx/terrain/%s/%s.bmp", 
                                             dest_path, target_name, fname );
-    if ( SDL_SaveBMP( surf, path ) != 0 ) {
+    if ( !lg_save_rgb565_bmp( surf, path ) ) {
         fprintf( stderr, "%s: %s\n", path, SDL_GetError() );
         goto failure;
     }
@@ -251,7 +249,7 @@ static int terrain_convert_tiles( char id, PG_Shp *shp, const char *fname )
                     set_pixel( surf, i, j, snow_pixel );
     snprintf( path, MAXPATHLEN, "%s/gfx/terrain/%s/%s_snow.bmp", 
                                             dest_path, target_name, fname );
-    if ( SDL_SaveBMP( surf, path ) != 0 ) {
+    if ( !lg_save_rgb565_bmp( surf, path ) ) {
         fprintf( stderr, "%s: %s\n", path, SDL_GetError() );
         goto failure;
     }
@@ -263,14 +261,14 @@ static int terrain_convert_tiles( char id, PG_Shp *shp, const char *fname )
                     set_pixel( surf, i, j, mud_pixel );
     snprintf( path, MAXPATHLEN, "%s/gfx/terrain/%s/%s_rain.bmp", 
                                             dest_path, target_name, fname );
-    if ( SDL_SaveBMP( surf, path ) != 0 ) {
+    if ( !lg_save_rgb565_bmp( surf, path ) ) {
         fprintf( stderr, "%s: %s\n", path, SDL_GetError() );
         goto failure;
     }
-    SDL_FreeSurface( surf );
+    SDL_DestroySurface( surf );
     return 1;
 failure:
-    if ( surf ) SDL_FreeSurface( surf );
+    if ( surf ) SDL_DestroySurface( surf );
     return 0;
 }
 
@@ -383,9 +381,7 @@ int terrain_convert_graphics( void )
     
     /* explosion */
     if ( ( shp = shp_load( "EXPLODE.SHP" ) ) == 0 ) return 0;
-    surf = SDL_CreateRGBSurface( SDL_SWSURFACE, 60 * 5, 50, shp->surf->format->BitsPerPixel,
-                                 shp->surf->format->Rmask, shp->surf->format->Gmask, shp->surf->format->Bmask,
-                                 shp->surf->format->Amask );
+    surf = lg_create_surface_like( 60 * 5, 50, shp->surf );
     if ( surf == 0 ) {
         fprintf( stderr, "error creating surface: %s\n", SDL_GetError() );
         goto failure;
@@ -399,11 +395,11 @@ int terrain_convert_graphics( void )
         SDL_BlitSurface( shp->surf, &srect, surf, &drect );
     }
     snprintf( path, MAXPATHLEN, "%s/gfx/terrain/pg/explosion.bmp", dest_path );
-    if ( SDL_SaveBMP( surf, path ) != 0 ) {
+    if ( !lg_save_rgb565_bmp( surf, path ) ) {
         fprintf( stderr, "%s: %s\n", path, SDL_GetError() );
         goto failure;
     }
-    SDL_FreeSurface( surf );
+    SDL_DestroySurface( surf );
     shp_free(&shp);
     /* fog */
     snprintf( path, MAXPATHLEN, "%s/convdata/fog.bmp", get_gamedir() );
@@ -451,7 +447,7 @@ int terrain_convert_graphics( void )
     shp_free(&shp);
     return 1;
 failure:
-    if ( surf ) SDL_FreeSurface( surf );
+    if ( surf ) SDL_DestroySurface( surf );
     if ( shp ) shp_free( &shp );
     return 0;
 }

@@ -19,7 +19,7 @@
 #define __MISC_H
 
 #include "config.h"
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <string>
 #include <vector>
 

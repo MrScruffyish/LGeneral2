@@ -18,7 +18,7 @@
 #ifndef __SHP_H
 #define __SHP_H
  
-#include <SDL.h> 
+#include "sdl3_compat.h"
  
 /*
 ====================================================================
@@ -78,7 +78,8 @@ typedef struct {
 Get SDL pixel from R,G,B values
 ====================================================================
 */
-#define MAPRGB( red, green, blue ) SDL_MapRGB( SDL_GetVideoSurface()->format, red, green, blue )
+#define MAPRGB( red, green, blue ) \
+    lg_map_rgb565( (Uint8)(red), (Uint8)(green), (Uint8)(blue) )
 /*
 ====================================================================
 Transparency color key.

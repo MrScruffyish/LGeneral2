@@ -20,7 +20,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <SDL_endian.h>
+#include <SDL3/SDL_endian.h>
 #include "shp.h"
 #include "units.h"
 #include "misc.h"
@@ -478,7 +478,7 @@ int units_convert_database( const char *tac_icons )
      * entries ( 50 bytes each ) 
      */
     _fread( &entry_count, 2, 1, source_file );
-    entry_count = SDL_SwapLE16(entry_count);
+    entry_count = SDL_Swap16LE(entry_count);
     if ( !single_scen )
         fprintf( dest_file, "@\n" ); /* only a new file needs this magic */
     /* domain */
@@ -630,14 +630,12 @@ int units_convert_graphics( char *tac_icons )
             height += shp->headers[i].actual_height + 2;
         else
             height += 10;
-    surf = SDL_CreateRGBSurface( SDL_SWSURFACE, shp->surf->w, height, shp->surf->format->BitsPerPixel,
-                                 shp->surf->format->Rmask, shp->surf->format->Gmask, shp->surf->format->Bmask,
-                                 shp->surf->format->Amask );
+    surf = lg_create_surface_like( shp->surf->w, height, shp->surf );
     if ( surf == 0 ) {
         fprintf( stderr, "error creating surface: %s\n", SDL_GetError() );
         goto failure;
     }
-    SDL_FillRect( surf, 0, ckey );
+    lg_fill_surface( surf, ckey );
     height = 0;
     for ( i = 0; i < shp->count; i++ ) {
         if ( !shp->headers[i].valid ) {
@@ -674,11 +672,11 @@ int units_convert_graphics( char *tac_icons )
         height += shp->headers[i].actual_height + 2;
     }
     snprintf( path, MAXPATHLEN, "%s/gfx/units/%s", dest_path, tac_icons );
-    if ( SDL_SaveBMP( surf, path ) != 0 ) {
+    if ( !lg_save_rgb565_bmp( surf, path ) ) {
         fprintf( stderr, "%s: %s\n", path, SDL_GetError() );
         goto failure;
     }
-    SDL_FreeSurface( surf );
+    SDL_DestroySurface( surf );
     shp_free( &shp );
     if (!copy_pg_bmp("strength.bmp","pg_strength.bmp")) goto failure;
     if (!copy_pg_bmp("attack.bmp","pg_attack.bmp")) goto failure;
@@ -713,7 +711,7 @@ int units_convert_graphics( char *tac_icons )
     copy( path, path2 );
     return 1;
 failure:
-    if ( surf ) SDL_FreeSurface( surf );
+    if ( surf ) SDL_DestroySurface( surf );
     if ( shp ) shp_free( &shp );
     return 0;
 }

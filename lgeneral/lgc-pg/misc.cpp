@@ -390,11 +390,11 @@ int copy_pg_bmp( const char *src, const char *dest )
         return 0;
     }
     snprintf( path, MAXPATHLEN, "%s/gfx/units/%s", dest_path, dest );
-    if ( SDL_SaveBMP( surf, path ) != 0 ) {
+    if ( !SDL_SaveBMP( surf, path ) ) {
         fprintf( stderr, "%s: %s\n", path, SDL_GetError() );
         return 0;
     }
-    SDL_FreeSurface( surf );
+    SDL_DestroySurface( surf );
     return 1;
 }
 

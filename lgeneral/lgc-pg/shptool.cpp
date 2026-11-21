@@ -144,19 +144,13 @@ static void convert_shp_to_bmp() {
   if (!shp) abortf("Input file '%s' could not be loaded\n", input_file);
   
   verbosef(1, "Writing to %s\n", output_file);
-  if (SDL_SaveBMP(shp->surf, output_file) < 0)
+  if (!lg_save_rgb565_bmp(shp->surf, output_file))
     abortf("Could not write to '%s'\n", output_file);
 }
 
 static void init_sdl() {
   verbosef(2, "Initialising SDL...\n");
-  verbosef(3, "SDL_Init\n");
-  /* SDL required for graphical conversion */
-  SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER );
-  verbosef(3, "SDL_SetVideoMode\n");
-  SDL_SetVideoMode( 20, 20, 16, SDL_SWSURFACE );
-  verbosef(3, "Registering exit-handler\n");
-  atexit( SDL_Quit );
+  verbosef(3, "Using SDL3 surfaces; no video initialisation needed\n");
 }
 
 int main(int argc, char **argv) {

@@ -20,7 +20,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
-#include <SDL_endian.h>
+#include <SDL3/SDL_endian.h>
 #include "misc.h"
 #include "shp.h"
 
@@ -143,23 +143,23 @@ static void shp_read_icon_header( FILE *file, Icon_Header *header )
 {
     memset( header, 0, sizeof( Icon_Header ) );
     _fread( &header->height, 2, 1, file );
-    header->height = SDL_SwapLE16(header->height);
+    header->height = SDL_Swap16LE(header->height);
     header->height++; /* if y1 == y2 it is at least one line anyway */
     _fread( &header->width, 2, 1, file );
-    header->width = SDL_SwapLE16(header->width);
+    header->width = SDL_Swap16LE(header->width);
     header->width++;
     _fread( &header->cx, 2, 1, file );
-    header->cx = SDL_SwapLE16(header->cx);
+    header->cx = SDL_Swap16LE(header->cx);
     _fread( &header->cy, 2, 1, file );
-    header->cy = SDL_SwapLE16(header->cy);
+    header->cy = SDL_Swap16LE(header->cy);
     _fread( &header->x1, 4, 1, file );
-    header->x1 = SDL_SwapLE32(header->x1);
+    header->x1 = SDL_Swap32LE(header->x1);
     _fread( &header->y1, 4, 1, file );
-    header->y1 = SDL_SwapLE32(header->y1);
+    header->y1 = SDL_Swap32LE(header->y1);
     _fread( &header->x2, 4, 1, file );
-    header->x2 = SDL_SwapLE32(header->x2);
+    header->x2 = SDL_Swap32LE(header->x2);
     _fread( &header->y2, 4, 1, file );
-    header->y2 = SDL_SwapLE32(header->y2);
+    header->y2 = SDL_Swap32LE(header->y2);
     header->valid = 1;
     if ( header->x1 >= header->width || header->x2 >= header->width )
         header->valid = 0;
@@ -192,7 +192,7 @@ static void shp_read_palette( FILE *file, RGB_Entry *pal )
     int part;
     memset( pal, 0, sizeof( RGB_Entry ) * 256 );
     _fread( &count, 4, 1, file );
-    count = SDL_SwapLE32(count);
+    count = SDL_Swap32LE(count);
     for ( i = 0; i < count; i++ ) {
         id = 0; _fread( &id, 1, 1, file );
         if ( id >= 256 ) id = 255;
@@ -262,15 +262,15 @@ void set_pixel( SDL_Surface *surf, int x, int y, int pixel )
 {
     int pos = 0;
 
-    pos = y * surf->pitch + x * surf->format->BytesPerPixel;
-    memcpy( (char *)surf->pixels + pos, &pixel, surf->format->BytesPerPixel );
+    pos = y * surf->pitch + x * lg_bytes_per_pixel( surf );
+    memcpy( (char *)surf->pixels + pos, &pixel, lg_bytes_per_pixel( surf ) );
 }
 Uint32 get_pixel( SDL_Surface *surf, int x, int y )
 {
     int pos = 0;
     Uint32 pixel = 0;
-    pos = y * surf->pitch + x * surf->format->BytesPerPixel;
-    memcpy( &pixel, (char *)surf->pixels + pos, surf->format->BytesPerPixel );
+    pos = y * surf->pitch + x * lg_bytes_per_pixel( surf );
+    memcpy( &pixel, (char *)surf->pixels + pos, lg_bytes_per_pixel( surf ) );
     return pixel;
 }
 
@@ -291,7 +291,6 @@ PG_Shp *shp_load( const char *fname )
     int width = 0, height = 0;
     int old_pos, pos, pal_pos;
     PG_Shp *shp = 0; 
-    SDL_PixelFormat *pf = SDL_GetVideoSurface()->format;
     Uint32 ckey = MAPRGB( CKEY_RED, CKEY_GREEN, CKEY_BLUE ); /* transparent color key */
     Icon_Header header;
     RGB_Entry pal[256];
@@ -310,7 +309,7 @@ PG_Shp *shp_load( const char *fname )
     shp = (PG_Shp *)calloc( 1, sizeof( PG_Shp ) );
     /* icon count */
     _fread( &shp->count, 4, 1, file );
-    shp->count = SDL_SwapLE32(shp->count);
+    shp->count = SDL_Swap32LE(shp->count);
     if ( shp->count == 0 ) {
         fprintf( stderr, "%s: no icons found\n", path );
         goto failure;
@@ -319,7 +318,7 @@ PG_Shp *shp_load( const char *fname )
     for ( i = 0; i < shp->count; i++ ) {
         /* read file position of actual data and palette */
         _fread( &pos, 4, 1, file );
-        pos = SDL_SwapLE32(pos);
+        pos = SDL_Swap32LE(pos);
         _fread( &dummy, 4, 1, file );
         old_pos = ftell( file );
         /* read header */
@@ -342,12 +341,12 @@ PG_Shp *shp_load( const char *fname )
         height += header.height;
         fseek( file, old_pos, SEEK_SET );
     }
-    shp->surf = SDL_CreateRGBSurface( SDL_SWSURFACE, width, height, pf->BitsPerPixel, pf->Rmask, pf->Gmask, pf->Bmask, pf->Amask );
+    shp->surf = lg_create_rgb565_surface( width, height );
     if ( shp->surf == 0 ) {
         fprintf( stderr, "error creating surface: %s\n", SDL_GetError() );
         goto failure;
     }
-    SDL_FillRect( shp->surf, 0, ckey );
+    lg_fill_surface( shp->surf, ckey );
     /* read icons */
     shp->offsets = (int *)calloc( shp->count, sizeof( int ) );
     shp->headers = (Icon_Header *)calloc( shp->count, sizeof( Icon_Header ) );
@@ -356,9 +355,9 @@ PG_Shp *shp_load( const char *fname )
         /* read position of data and palette */
         pos = pal_pos = 0;
         _fread( &pos, 4, 1, file );
-        pos = SDL_SwapLE32(pos);
+        pos = SDL_Swap32LE(pos);
         _fread( &pal_pos, 4, 1, file );
-        pal_pos = SDL_SwapLE32(pal_pos);
+        pal_pos = SDL_Swap32LE(pal_pos);
         old_pos = ftell( file );
         /* read palette */
         if ( !use_def_pal && pal_pos > 0 ) {
@@ -403,7 +402,7 @@ void shp_free( PG_Shp **shp )
     if ( *shp == 0 ) return;
     if ( (*shp)->headers ) free( (*shp)->headers );
     if ( (*shp)->offsets ) free( (*shp)->offsets );
-    if ( (*shp)->surf ) SDL_FreeSurface( (*shp)->surf );
+    if ( (*shp)->surf ) SDL_DestroySurface( (*shp)->surf );
     free( *shp ); *shp = 0;
 }
 
@@ -437,7 +436,7 @@ int shp_all_to_bmp( void )
         printf( "%s...\n", dirent->d_name );
         if ( ( shp = shp_load( dirent->d_name ) ) == 0 ) continue;
         snprintf( path, MAXPATHLEN, "%s/.view/%s.bmp", dest_path, dirent->d_name );
-        SDL_SaveBMP( shp->surf, path );
+        lg_save_rgb565_bmp( shp->surf, path );
         shp_free( &shp );
     }
     closedir( dir );

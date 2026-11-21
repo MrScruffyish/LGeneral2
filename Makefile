@@ -51,7 +51,6 @@ endif
 
 # lgc-pg only needs SDL's image routines; a dummy driver keeps data
 # conversion usable on headless build machines.
-SDL_VIDEODRIVER ?= dummy
 
 .PHONY: all lgeneral lgeditor data run smoke clean distclean
 
@@ -129,8 +128,7 @@ data: lgeneral
 		rm -rf $(GAME_DATA)/convdata; \
 		cp -a $(LGENERAL_BUILD)/lgc-pg/convdata $(GAME_DATA)/convdata; \
 		cd $(GAME_DATA) && \
-			SDL_VIDEODRIVER=$(SDL_VIDEODRIVER) ../lgc-pg/lgc-pg \
-				-s "$$source_dir" -d .; \
+			../lgc-pg/lgc-pg -s "$$source_dir" -d .; \
 	fi
 
 # The game looks up data (and its config file) relative to the working
