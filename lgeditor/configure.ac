@@ -37,18 +37,23 @@ AC_ARG_ENABLE( install,
 [  --disable-install       No installation. Start from source directory.], 
 datdir="../data/")
 
-AC_ARG_WITH( lgendir,
-[  --with-lgendir          Installation path of LGeneral], 
-lgendir=$withval; AC_MSG_RESULT(LGeneral location: $lgendir),
-
-lgendir=$(sh ./findlgen.sh);
-if test "$lgendir" = "NOTFOUND"; then
-	AC_MSG_ERROR(Please specify LGeneral location.)
-else
-	AC_MSG_RESULT(LGeneral location: $lgendir)
-fi
-
-)
+dnl The editor loads graphics and maps from the game's data directory, so it
+dnl must be told where that directory is. Automatic discovery used to scan all
+dnl of /usr, which was slow and unreliable; require an explicit path instead.
+AC_ARG_WITH( [lgendir],
+  [AS_HELP_STRING([--with-lgendir=DIR],
+                  [directory containing the LGeneral graphics and maps (required)])],
+  [
+    if test -z "$withval" || test "$withval" = yes || test "$withval" = no; then
+      AC_MSG_ERROR([--with-lgendir requires a directory])
+    fi
+    if test ! -d "$withval"; then
+      AC_MSG_ERROR([--with-lgendir directory does not exist: $withval])
+    fi
+    lgendir=$withval
+  ],
+  [AC_MSG_ERROR([please specify the LGeneral data directory with --with-lgendir=DIR])])
+AC_MSG_RESULT([LGeneral location: $lgendir])
 
 CXXFLAGS="$CXXFLAGS $(sdl2-config --cflags) -Wall"
 CXXFLAGS="$CXXFLAGS -DDATADIR=\\\"$datdir\\\" -DLGENDIR=\\\"$lgendir\\\""

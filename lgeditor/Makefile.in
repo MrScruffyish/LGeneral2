@@ -295,7 +295,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
 SUBDIRS = src data
-EXTRA_DIST = TODO COPYING README Changelog findlgen.sh
+EXTRA_DIST = TODO COPYING README Changelog
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 

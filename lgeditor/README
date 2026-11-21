@@ -4,11 +4,13 @@ LGeneral (Map )Editor
 
 Installation
 ------------
-The usual 
-	./configure
+The usual, with the game's data directory given explicitly:
+	./configure --with-lgendir=/path/to/lgeneral
 	make
 	make install
-It tries to find LGeneral on its own. If it fails use --with-lgendir manually.
+
+The directory must contain the game's `gfx/` and `maps/` subdirectories. The
+top-level build passes the path automatically when building both projects.
 
 
 Getting Started
