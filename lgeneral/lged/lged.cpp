@@ -25,7 +25,9 @@
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define _GNU_SOURCE
+#ifndef _GNU_SOURCE
+#  define _GNU_SOURCE
+#endif
 #include <getopt.h>
 
 #include <assert.h>
@@ -106,7 +108,7 @@ static int list_classes(int argc, char **argv, int idx);
 static struct command {
   const char name[20];
   CommandHandler *run;
-  enum Command alias_for;
+  int alias_for;
   CommandHelp *help;
 } commands[] = {
   { "", 0, 0, syntax },
@@ -232,21 +234,21 @@ static void verbosef(int level, const char *fmt, ...) {
 static char *concat(const char *s1, const char *s2) {
   unsigned l1 = strlen(s1);
   unsigned l2 = strlen(s2);
-  char *r = malloc(l1 + l2 + 1);
+  char *r = (char *)malloc(l1 + l2 + 1);
   strcpy(r, s1);
   strcpy(r + l1, s2);
   return r;
 }
 
 /* resolves alias commands */
-static enum Command command_resolve_alias(int cmd) {
+static int command_resolve_alias(int cmd) {
   if (cmd < 0 || cmd >= NUM_COMMANDS) return COMMAND_NONE;
   if (commands[cmd].alias_for) cmd = commands[cmd].alias_for;
   return cmd;
 }
 
 /* set the command to be executed. Aborts if a command has already been set. */
-static void set_command(enum Command cmd) {
+static void set_command(int cmd) {
   if (command_index != COMMAND_NONE) abortf("Two commands specified\n");
   command_index = cmd;
 }
@@ -310,7 +312,7 @@ static void print_commands() {
 }
 
 /** prints all alias-names for cmd */
-static void print_alias_names(enum Command cmd) {
+static void print_alias_names(int cmd) {
   int i = 0;
   int alias_count = 0;
   printf("Alias names:\n\t");
@@ -455,7 +457,7 @@ static void renumber_reinf(void) {
     for ( j = 0; j < 2; j++ ) {
       Unit *unit;
       list_reset( reinf[j][i] );
-      while ((unit = list_next( reinf[j][i] )))
+      while ((unit = (Unit *)list_next( reinf[j][i] )))
         unit->pin = pin++;
     }
   }
@@ -472,7 +474,7 @@ static Unit *find_reinf_by_pin(int pin, int *side_id, int *scen_id) {
     for ( j = 0; j < 2; j++ ) {
       Unit *unit;
       list_reset( reinf[j][i] );
-      while ((unit = list_next( reinf[j][i] )))
+      while ((unit = (Unit *)list_next( reinf[j][i] )))
         if (unit->pin == pin) {
           if (scen_id) *scen_id = i;
           if (side_id) *side_id = j;
@@ -700,7 +702,7 @@ static int insert_reinf(int argc, char **argv, int idx) {
   /* now that we have unmarshalled all the params,
    * create and fill the unit structure
    */
-  unit = calloc(1, sizeof *unit);
+  unit = (Unit *)calloc(1, sizeof *unit);
   /*unit->pin = ;*/
   unit->uid = unit_id;
   snprintf(unit->id, sizeof unit->id, "%d", unit_id);
@@ -898,7 +900,7 @@ static int modify_reinf(int argc, char **argv, int idx) {
 
   /* we have to remove and insert it if either nation or side changes */  
   if (nation_id != -1 || side_id != -1) {
-    Unit *new_unit = malloc(sizeof *unit);
+    Unit *new_unit = (Unit *)malloc(sizeof *unit);
     *new_unit = *unit;
     new_unit->pin = 0;	/* mark as new */
     list_delete_item(reinf[orig_side_id][orig_scen_id], unit);
@@ -1065,7 +1067,7 @@ static int do_list_reinf(int scen_id, char *scen_bitmap, int side_id, char *side
       if (side_id != -1 && !in_bitmap(i, side_bitmap, num_sides/2)) continue;
       
       list_reset(reinf[i][j]);
-      while ((unit = list_next(reinf[i][j]))) {
+      while ((unit = (Unit *)list_next(reinf[i][j]))) {
         const char *nat = "---";
         
         if (unit->nation >= 0 && unit->nation < num_nation_table/2)
@@ -1182,7 +1184,7 @@ static int list_unitdb(int argc, char **argv, int idx) {
     const char *nat = "---";
 
     if (tgttype_id != -1 && !in_bitmap(entry->tgttype, tgttype_bitmap, num_target_types/2)) continue;
-    if (class_id != -1 && !in_bitmap(entry->class, class_bitmap, num_unit_classes/2)) continue;
+    if (class_id != -1 && !in_bitmap(entry->unit_class, class_bitmap, num_unit_classes/2)) continue;
     if (nation_id != -1 && !in_bitmap(entry->nation, nation_bitmap, num_nation_table/2)) continue;
     if (side_id != -1 && !in_bitmap(entry->side, side_bitmap, num_sides/2)) continue;
     
@@ -1191,7 +1193,7 @@ static int list_unitdb(int argc, char **argv, int idx) {
       const char *mask;
       
       list_reset(unit_mask_list);
-      while ((mask = list_next(unit_mask_list))) {
+      while ((mask = (const char *)list_next(unit_mask_list))) {
         if (strcasestr(entry->name, mask)) break;
       }
       
@@ -1204,7 +1206,7 @@ static int list_unitdb(int argc, char **argv, int idx) {
       nat = nation_table[entry->nation*2];
 
     printf("%4d %-20s %-8s %-5s %-3s     %04d-%02d to %04d\n",
-           entry->nid, entry->name, unit_classes[entry->class*2],
+           entry->nid, entry->name, unit_classes[entry->unit_class*2],
            target_types[entry->tgttype*2], nat,
            entry->start_year, entry->start_month, entry->last_year);
   }

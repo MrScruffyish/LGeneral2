@@ -2,6 +2,10 @@
 
 #ifndef __HASHTABLE_PRIVATE_CWC22_H__
 #define __HASHTABLE_PRIVATE_CWC22_H__
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include "hashtable.h"
 
@@ -50,6 +54,10 @@ indexFor(unsigned int tablelength, unsigned int hashvalue)
 
 /*****************************************************************************/
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif /* __HASHTABLE_PRIVATE_CWC22_H__*/
 
 /*

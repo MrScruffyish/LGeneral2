@@ -52,7 +52,7 @@ const char *unit_classes[] = {
 #endif
 };
 #define NUM_UNIT_CLASSES (sizeof unit_classes/sizeof unit_classes[0])
-const int num_unit_classes = NUM_UNIT_CLASSES;
+extern const int num_unit_classes = NUM_UNIT_CLASSES;
 
 const char *target_types[] = {
     "soft",  "Soft Target",
@@ -61,14 +61,14 @@ const char *target_types[] = {
     "naval", "Naval Target",
 };
 #define NUM_TARGET_TYPES (sizeof target_types/sizeof target_types[0])
-const int num_target_types = NUM_TARGET_TYPES;
+extern const int num_target_types = NUM_TARGET_TYPES;
 
 const char *sides[] = {
     "axis",    "Axis Forces",
     "allied",  "Allied Forces",
 };
 #define NUM_SIDES (sizeof sides/sizeof sides[0])
-const int num_sides = NUM_SIDES;
+extern const int num_sides = NUM_SIDES;
 
 const char *nation_table[] = {
     "aus", "Austria",
@@ -97,7 +97,7 @@ const char *nation_table[] = {
     "yug", "Yugoslavia",
 };
 #define NUM_NATION_TABLE (sizeof nation_table/sizeof nation_table[0])
-const int num_nation_table = NUM_NATION_TABLE;
+extern const int num_nation_table = NUM_NATION_TABLE;
 
 const char *scenarios[] = {
     "Poland", "Warsaw", "Norway", "LowCountries", "France",
@@ -184,27 +184,27 @@ int load_reinf()
     cur_pin = 1;
     for ( i = 0; i < SCEN_COUNT; i++ )
     {
-        line = list_next( list );
+        line = (char *)list_next( list );
         for ( j = 0; j < 2; j++ ) {
             list_clear( reinf[j][i] );
-            count = atoi( list_next( list ) );
+            count = atoi( (const char *)list_next( list ) );
             for ( k = 0; k < count; k++ ) {
-                line = list_next( list );
+                line = (char *)list_next( list );
                 if ( ( args = parser_explode_string( line, ',' ) ) ) {
-                    if ( ( unit = calloc( 1, sizeof( Unit ) ) ) ) {
+                    if ( ( unit = (Unit *)calloc( 1, sizeof( Unit ) ) ) ) {
                         const char *arg;
                         unit->pin = cur_pin++;
-                        unit->delay = atoi( list_next( args ) );
-                        strcpy_lt( unit->id, list_next( args ), 7 );
+                        unit->delay = atoi( (const char *)list_next( args ) );
+                        strcpy_lt( unit->id, (char *)list_next( args ), 7 );
                         unit->uid = atoi( unit->id );
-                        strcpy_lt( unit->trp, list_next( args ), 7 );
+                        strcpy_lt( unit->trp, (char *)list_next( args ), 7 );
                         unit->tid = strcmp( unit->trp, "none" ) == 0 ? -1 : atoi( unit->trp );
-                        unit->str = atoi( list_next( args ) );
-                        unit->exp = atoi( list_next( args ) );
-                        unit->class_id = atoi( list_next( args ) );
-                        unit->unit_id = atoi( list_next( args ) );
-                        unit->trp_id = atoi( list_next( args ) );
-                        if ( (arg = list_next( args )) )
+                        unit->str = atoi( (const char *)list_next( args ) );
+                        unit->exp = atoi( (const char *)list_next( args ) );
+                        unit->class_id = atoi( (const char *)list_next( args ) );
+                        unit->unit_id = atoi( (const char *)list_next( args ) );
+                        unit->trp_id = atoi( (const char *)list_next( args ) );
+                        if ( (arg = (const char *)list_next( args )) )
                             unit->nation = atoi( arg );
                         else
                             unit->nation = -1;
@@ -235,7 +235,7 @@ int save_reinf()
         for ( j = 0; j < 2; j++ ) {
             fprintf( file, "%i\n", reinf[j][i]->count );
             list_reset( reinf[j][i] );
-            while ( ( unit = list_next( reinf[j][i] ) ) ) 
+            while ( ( unit = (Unit *)list_next( reinf[j][i] ) ) )
                 fprintf( file, "%i,%s,%s,%i,%i,%i,%i,%i,%i\n", unit->delay,
                          unit->id, unit->trp, unit->str,
                          unit->exp,
@@ -282,7 +282,7 @@ void build_reinf()
                 if ( reinf[j][i]->count == 0 )
                     continue;
                 list_reset( reinf[j][i] );
-                while ( ( unit = list_next( reinf[j][i] ) ) ) {
+                while ( ( unit = (Unit *)list_next( reinf[j][i] ) ) ) {
                     nat = unit->nation;
                     if (nat==-1)
                     {
@@ -473,11 +473,13 @@ UnitLib_Entry *find_unit_by_id(int id) {
 }
 
 /** opaque data structure for maintaining iterator state */
+enum UdbSide { AxisSide, AlliedSide, SidesTraversed };
+enum UdbArray { UnitArray, TransportArray, ArraysTraversed };
 struct UdbIteratorState {
-    enum { AxisSide, AlliedSide, SidesTraversed } side;
-    enum { UnitArray, TransportArray, ArraysTraversed } ary;
+    enum UdbSide side;
+    enum UdbArray ary;
     int cls;
-    struct UnitLib_Entry *cur;
+    UnitLib_Entry *cur;
 } udb_it;
 
 /*
@@ -499,7 +501,7 @@ Returns the next unit or 0 if end reached.
 */
 UnitLib_Entry *iterate_units_next(void) {
     List *lst = udb_it.ary == UnitArray ? unitlib[udb_it.side][udb_it.cls] : trplib[udb_it.side];
-    UnitLib_Entry *item = list_next(lst);
+    UnitLib_Entry *item = (UnitLib_Entry *)list_next(lst);
     if (item) return item;
 
     switch (udb_it.ary) {
@@ -508,7 +510,7 @@ UnitLib_Entry *iterate_units_next(void) {
             udb_it.cls++;
 
             if (udb_it.cls == CLASS_COUNT) {
-                udb_it.ary++;
+                udb_it.ary = (UdbArray)(udb_it.ary + 1);
                 list_reset(trplib[udb_it.side]);
             } else
                 list_reset(unitlib[udb_it.side][udb_it.cls]);
@@ -517,12 +519,12 @@ UnitLib_Entry *iterate_units_next(void) {
 
         case TransportArray:
 
-            udb_it.ary++;
+            udb_it.ary = (UdbArray)(udb_it.ary + 1);
             /* fall through */
 
         case ArraysTraversed:
 
-            udb_it.side++;
+            udb_it.side = (UdbSide)(udb_it.side + 1);
 
             if (udb_it.side < SidesTraversed) {
                 udb_it.ary = UnitArray;
@@ -557,7 +559,7 @@ void init()
                                          LIST_NO_CALLBACK );
         trplib[j] = list_create( LIST_AUTO_DELETE,
                                  LIST_NO_CALLBACK );
-        if ( ( entry = calloc( 1, sizeof( UnitLib_Entry ) ) ) ) {
+        if ( ( entry = (UnitLib_Entry *)calloc( 1, sizeof( UnitLib_Entry ) ) ) ) {
             strcpy( entry->name, "NONE" );
             list_add( trplib[j], entry );
         }
@@ -572,9 +574,9 @@ void init()
         goto failure;
     /* load and categorize unit entries */
     list_reset( units->entries );
-    while ( ( unit = list_next( units->entries ) ) ) {
+    while ( ( unit = (PData *)list_next( units->entries ) ) ) {
         /* id, name and side */
-        if ( ( entry = calloc( 1, sizeof( UnitLib_Entry ) ) ) == 0 )
+        if ( ( entry = (UnitLib_Entry *)calloc( 1, sizeof( UnitLib_Entry ) ) ) == 0 )
             goto failure;
         strcpy_lt( entry->id, unit->name, 7 );
         entry->nid = atoi(entry->id);
@@ -595,7 +597,7 @@ void init()
         if ( parser_get_value( unit, "class", &str, 0 ) ) {
             int class_id = to_unit_class(str);
 #ifdef CMDLINE_ONLY
-            entry->class = class_id;
+            entry->unit_class = class_id;
 #endif
             if ( STRCMP( "landtrp", str ) )
                 /* ground transporters are special */
@@ -664,7 +666,7 @@ void finalize()
 Copy source to dest and at maximum limit chars. Terminate with 0.
 ====================================================================
 */
-void strcpy_lt( char *dest, char *src, int limit )
+void strcpy_lt( char *dest, const char *src, int limit )
 {
     int len = strlen( src );
     if ( len > limit ) {
@@ -792,7 +794,7 @@ void insert_reinf_unit( Unit *unit, int player, int scenario ) {
         Unit *item;
         int i = 0;
         list_reset( reinf[player][scenario] );
-        for (i = 0; (item = list_next( reinf[player][scenario] )); i++) {
+        for (i = 0; (item = (Unit *)list_next( reinf[player][scenario] )); i++) {
             if ( unit->nation == item->nation ) break;
         }
         
@@ -821,7 +823,7 @@ const char *get_gamedir(void)
     if (gamedir) return gamedir;
     prefix = paths_prefix();
     len = strlen(prefix);
-    gamedir = malloc(len + sizeof suffix);
+    gamedir = (char *)malloc(len + sizeof suffix);
     strcpy(gamedir, prefix);
     strcpy(gamedir + len, suffix);
     return gamedir;

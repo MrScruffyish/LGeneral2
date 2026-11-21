@@ -31,6 +31,10 @@
 #  include <config.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Returns the executable's path or "" if the operating
  * system does not support it.
@@ -46,6 +50,10 @@ const char *paths_exec_path(void);
  * specified at build time is returned.
  */
 const char *paths_prefix(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /*UTIL_PATHS_H*/
 

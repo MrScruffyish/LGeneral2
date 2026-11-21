@@ -2,6 +2,10 @@
 
 #ifndef __HASHTABLE_CWC22_UTILITY_H__
 #define __HASHTABLE_CWC22_UTILITY_H__
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 /*****************************************************************************
  * hashtable_change
@@ -19,6 +23,10 @@
 int
 hashtable_change(struct hashtable *h, void *k, void *v);
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif /* __HASHTABLE_CWC22_H__ */
 
 /*

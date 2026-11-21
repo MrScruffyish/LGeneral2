@@ -34,6 +34,7 @@
 
 const char *paths_exec_path(void) {
   static char *exec_path_buf;
+  static const char empty[] = "";
   if (!exec_path_buf) {
     char file[512];
     unsigned size = 1;
@@ -41,17 +42,17 @@ const char *paths_exec_path(void) {
     snprintf(file, sizeof file, "/proc/%u/exe", getpid());
     do {
       size *= 2;
-      exec_path_buf = realloc(exec_path_buf, size);
-      if (!exec_path_buf
-          || ((int)(written = readlink(file, exec_path_buf, size)) == -1)) {
-        free(exec_path_buf);
-        exec_path_buf = "";
-        break;
+      char *buf = (char *)realloc(exec_path_buf, size);
+      if (!buf || ((int)(written = readlink(file, buf, size)) == -1)) {
+        free(buf);
+        return empty;
       }
+      exec_path_buf = buf;
     } while (written == size);
     /* trim buffer to the exact length and NUL it */
     if (exec_path_buf[0]) {
-      exec_path_buf = realloc(exec_path_buf, written + 1);
+      char *buf = (char *)realloc(exec_path_buf, written + 1);
+      if (buf) exec_path_buf = buf;
       exec_path_buf[written] = '\0';
     }
   }
@@ -62,7 +63,7 @@ const char *paths_prefix(void) {
   static char *prefix_buf;
   if (!prefix_buf) {
     char *pos;
-    prefix_buf = strdup(paths_exec_path());
+    prefix_buf = (char *)strdup(paths_exec_path());
     /* ignore executable's file name */
     pos = strrchr(prefix_buf, '/');
     prefix_buf[pos ? pos - prefix_buf : 0] = '\0';

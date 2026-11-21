@@ -26,7 +26,7 @@ typedef struct {
     int nid; /* the same as id, but stored as an integer */
 #ifdef CMDLINE_ONLY
     int tgttype;
-    int class;
+    int unit_class;
     int nation;
     int start_year, start_month;
     int last_year;
@@ -86,7 +86,7 @@ void finalize();
 Copy source to dest and at maximum limit chars. Terminate with 0.
 ====================================================================
 */
-void strcpy_lt( char *dest, char *src, int limit );
+void strcpy_lt( char *dest, const char *src, int limit );
 
 /*
 ====================================================================

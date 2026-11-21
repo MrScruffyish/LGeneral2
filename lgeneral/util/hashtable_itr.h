@@ -2,6 +2,10 @@
 
 #ifndef __HASHTABLE_ITR_CWC22__
 #define __HASHTABLE_ITR_CWC22__
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "hashtable.h"
 #include "hashtable_private.h" /* needed to enable inlining */
 
@@ -70,6 +74,10 @@ int fnname (struct hashtable_itr *i, struct hashtable *h, keytype *k) \
 
 
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif /* __HASHTABLE_ITR_CWC22__*/
 
 /*

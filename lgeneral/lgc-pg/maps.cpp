@@ -30,8 +30,8 @@
 Externals
 ====================================================================
 */
-extern char *source_path;
-extern char *dest_path;
+extern const char *source_path;
+extern const char *dest_path;
 extern char target_name[128];
 extern int map_or_scen_files_missing;
 extern int terrain_tile_count;

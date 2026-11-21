@@ -107,7 +107,7 @@ const char *tr(const char *s) {
  */
 static struct DomainInfo *domain_map_get(const char *domain) {
   struct hashtable *dm = domain_map_instance();
-  return hashtable_search(dm, (void *)domain);
+  return (struct DomainInfo *)hashtable_search(dm, (void *)domain);
 }
 
 /**
@@ -116,7 +116,7 @@ static struct DomainInfo *domain_map_get(const char *domain) {
  */
 static LanguageCode locale_determine_internal_code(const char *str) {
   unsigned len = strlen(str);
-  char *buf = alloca(len + 1);
+  char *buf = (char *)alloca(len + 1);
   char *pos;
 
   /* make a copy we can manipulate at will */
@@ -170,7 +170,7 @@ int locale_load_domain(const char *domain, const char *translations) {
     bind_textdomain_codeset(domain, lang_data[lang_code].charset);
   }
 #endif
-  info = malloc(sizeof(struct DomainInfo));
+  info = (struct DomainInfo *)malloc(sizeof(struct DomainInfo));
   domain_map_insert(domain, info);
   return 1;
 }

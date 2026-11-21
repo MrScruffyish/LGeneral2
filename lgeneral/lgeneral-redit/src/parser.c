@@ -112,7 +112,7 @@ If the first symbol is ' ' it is used as wildcard for all
 white-spaces.
 ====================================================================
 */
-static int is_symbol( int c, char *symbols )
+static int is_symbol( int c, const char *symbols )
 {
     int i = 0;
     if ( symbols[0] == ' ' && c <= 32 ) return 1;
@@ -150,7 +150,7 @@ to test it's contents.
 Returns False on EoF.
 ====================================================================
 */
-static int file_read_token_intern( FILE *file, char *symbols, char *token )
+static int file_read_token_intern( FILE *file, const char *symbols, char *token )
 {
     int pos = 0;
     char c;
@@ -227,7 +227,7 @@ skip[0], skip[1] (if skip is not NULL).
 Return 0 if EoF.
 ====================================================================
 */
-static int file_read_token( FILE *file, char *symbols, char *skip, char *token )
+static int file_read_token( FILE *file, const char *symbols, const char *skip, char *token )
 {
     while ( 1 ) {
         if ( !file_read_token_intern( file, symbols, token ) )
@@ -365,7 +365,7 @@ whitespaces are used as breakpoints though NOT added as a token
 (thus removed from string).
 ====================================================================
 */
-List* parser_split_string( char *string, char *symbols )
+List* parser_split_string( char *string, const char *symbols )
 {
     int pos;
     char *token = 0;
@@ -403,10 +403,10 @@ just one character and does not add this glue characters to the
 list. It's about 2% faster. Wow.
 ====================================================================
 */
-List *parser_explode_string( char *string, char c )
+List *parser_explode_string( const char *string, char c )
 {
     List *list = list_create( LIST_AUTO_DELETE, LIST_NO_CALLBACK );
-    char *next_slash = 0;
+    const char *next_slash = 0;
     char buffer[64];
     while ( string[0] != 0 && ( next_slash = strchr( string, c ) ) != 0 ) {
         if ( next_slash != string ) {
@@ -574,7 +574,7 @@ If an error occurs result is set NULL, False is returned and
 parse_error is set.
 ====================================================================
 */
-int parser_get_pdata  ( PData *pd, char *name, PData  **result )
+int parser_get_pdata  ( PData *pd, const char *name, PData  **result )
 {
     int i, found;
     PData *pd_next = pd;
@@ -608,7 +608,7 @@ failure:
     *result = 0;
     return 0;
 }
-int parser_get_entries( PData *pd, char *name, List   **result )
+int parser_get_entries( PData *pd, const char *name, List   **result )
 {
     PData *entry;
     *result = 0;
@@ -624,7 +624,7 @@ int parser_get_entries( PData *pd, char *name, List   **result )
     *result = entry->entries;
     return 1;
 }
-int parser_get_values ( PData *pd, char *name, List   **result )
+int parser_get_values ( PData *pd, const char *name, List   **result )
 {
     PData *entry;
     *result = 0;
@@ -640,7 +640,7 @@ int parser_get_values ( PData *pd, char *name, List   **result )
     *result = entry->values;
     return 1;
 }
-int parser_get_value  ( PData *pd, char *name, char   **result, int index )
+int parser_get_value  ( PData *pd, const char *name, char   **result, int index )
 {
     List *values;
     if ( !parser_get_values( pd, name, &values ) ) {
@@ -656,7 +656,7 @@ int parser_get_value  ( PData *pd, char *name, char   **result, int index )
     *result = list_get( values, index );
     return 1;
 }
-int parser_get_int    ( PData *pd, char *name, int     *result )
+int parser_get_int    ( PData *pd, const char *name, int     *result )
 {
     char *value;
     if ( !parser_get_value( pd, name, &value, 0 ) ) {
@@ -667,7 +667,7 @@ int parser_get_int    ( PData *pd, char *name, int     *result )
     *result = atoi( value );
     return 1;
 }
-int parser_get_double ( PData *pd, char *name, double  *result )
+int parser_get_double ( PData *pd, const char *name, double  *result )
 {
     char *value;
     if ( !parser_get_value( pd, name, &value, 0 ) ) {
@@ -678,7 +678,7 @@ int parser_get_double ( PData *pd, char *name, double  *result )
     *result = strtod( value, 0 );
     return 1;
 }
-int parser_get_string ( PData *pd, char *name, char   **result )
+int parser_get_string ( PData *pd, const char *name, char   **result )
 {
     char *value;
     if ( !parser_get_value( pd, name, &value, 0 ) ) {

@@ -595,7 +595,7 @@ void init()
         if ( parser_get_value( unit, "class", &str, 0 ) ) {
             int class_id = to_unit_class(str);
 #ifdef CMDLINE_ONLY
-            entry->class = class_id;
+            entry->unit_class = class_id;
 #endif
             if ( STRCMP( "landtrp", str ) )
                 /* ground transporters are special */
@@ -664,7 +664,7 @@ void finalize()
 Copy source to dest and at maximum limit chars. Terminate with 0.
 ====================================================================
 */
-void strcpy_lt( char *dest, char *src, int limit )
+void strcpy_lt( char *dest, const char *src, int limit )
 {
     int len = strlen( src );
     if ( len > limit ) {

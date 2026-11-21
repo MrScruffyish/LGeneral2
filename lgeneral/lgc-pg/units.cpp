@@ -30,14 +30,14 @@
 Externals
 ====================================================================
 */
-extern char *source_path;
-extern char *dest_path;
+extern const char *source_path;
+extern const char *dest_path;
 extern char target_name[128];
 extern int single_scen;
 extern int apply_unit_mods;
 extern int unit_entry_used[UDB_LIMIT];
 extern int nation_count;
-extern char *nations[];
+extern const char *nations[];
 
 /*
 ====================================================================
@@ -81,7 +81,7 @@ Unit entries are saved to this struct.
 */
 typedef struct {     
     char name[20];   
-    int  class;
+    int  unit_class;
     int  atk_soft;   
     int  atk_hard;   
     int  atk_air;    
@@ -112,7 +112,7 @@ Panzer General Definitions.
 ====================================================================
 */
 #define TARGET_TYPE_COUNT 4
-char *target_types[] = { 
+const char *target_types[] = {
     "soft",  "Soft", 
     "hard",  "Hard", 
     "air",   "Air", 
@@ -127,7 +127,7 @@ enum {
     LAND_TRANS, AIR_TRANS, SEA_TRANS,
     UNIT_CLASS_COUNT
 };
-char *unit_classes[] = {
+const char *unit_classes[] = {
     "inf",      "Infantry",         "infantry",                         
     "tank",     "Tank",             "low_entr_rate&tank",
     "recon",    "Recon",            "recon&tank",
@@ -148,7 +148,7 @@ char *unit_classes[] = {
     "seatrp",   "Sea Transport",    "transporter&swimming",
 };
 int move_type_count = 8;
-char *move_types[] = {
+const char *move_types[] = {
     "tracked",     "Tracked",       "pg/tracked.wav",
     "halftracked", "Halftracked",   "pg/tracked.wav",
     "wheeled",     "Wheeled",       "pg/wheeled.wav",
@@ -163,7 +163,7 @@ char *move_types[] = {
 Additional flags for special units.
 ====================================================================
 */
-char *add_flags[] = {
+const char *add_flags[] = {
     "6",   "jet",
     "7",   "jet",
     "9",   "jet",
@@ -290,7 +290,7 @@ static int units_read_entry( FILE *file, PG_UnitEntry *entry )
     unsigned char dummy[8];
     if ( feof( file ) ) return 0;
     _fread(  entry->name,       1, 20, file );
-    _fread( &entry->class,      1, 1,  file );
+    _fread( &entry->unit_class,      1, 1,  file );
     _fread( &entry->atk_soft,   1, 1,  file );
     _fread( &entry->atk_hard,   1, 1,  file );
     _fread( &entry->atk_air,    1, 1,  file );
@@ -443,7 +443,7 @@ appended to single scenario.
 'tac_icons' is the file name of the tactical icons.
 ====================================================================
 */
-int units_convert_database( char *tac_icons )
+int units_convert_database( const char *tac_icons )
 {
     int id = 0, ini_bonus;
     short entry_count;
@@ -503,10 +503,10 @@ int units_convert_database( char *tac_icons )
             goto failure;
         }
         /* sometimes a unit class seems to be screwed */
-        if ( entry.class >= UNIT_CLASS_COUNT )
-            entry.class = 0;
+        if ( entry.unit_class >= UNIT_CLASS_COUNT )
+            entry.unit_class = 0;
         /* adjust attack values according to unit class (add - for defense only) */
-        switch ( entry.class ) {
+        switch ( entry.unit_class ) {
             case INFANTRY:
             case TANK:
             case RECON:
@@ -533,14 +533,14 @@ int units_convert_database( char *tac_icons )
         /* all russian tanks get an initiative bonus */
         if ( apply_unit_mods ) {
             ini_bonus = 2;
-            if ( entry.class == 1 && strncmp( entry.name, "ST ", 3 ) == 0 ) 
+            if ( entry.unit_class == 1 && strncmp( entry.name, "ST ", 3 ) == 0 )
             {
                 entry.init += ini_bonus;
                 printf( "%s: initiative bonus +%i\n", entry.name, ini_bonus );
             }
         }
         /* get flags */
-        sprintf( flags, "%s", unit_classes[entry.class * 3 + 2] );
+        sprintf( flags, "%s", unit_classes[entry.unit_class * 3 + 2] );
         if ( apply_unit_mods ) {
             i = 0;
             while ( add_flags[i*2][0] != 'X' ) {
@@ -557,7 +557,7 @@ int units_convert_database( char *tac_icons )
         if ( entry.move > 0 && (entry.move_type == 3 || entry.move_type == 4) )
             strcat( flags, "&air_trsp_ok&ground_trsp_ok" );
         /* all artillery with range 1 has no attack_first */
-        if (entry.class==4&&entry.range==1)
+        if (entry.unit_class==4&&entry.range==1)
         {
             sprintf( flags, "artillery&suppr_fire" );
             printf( "%s: overwrite flags to: artillery,suppr_fire\n", entry.name);
@@ -570,7 +570,7 @@ int units_convert_database( char *tac_icons )
         fprintf( dest_file, "name=%s\n", buf );
         fprintf( dest_file, "nation=%s\n", (entry.nation==-1)?"none":
 						nations[entry.nation * 3] );
-        fprintf( dest_file, "class=%s\n", unit_classes[entry.class * 3] );
+        fprintf( dest_file, "class=%s\n", unit_classes[entry.unit_class * 3] );
         fprintf( dest_file, "target_type=%s\n", target_types[entry.target_type * 2] );
         fprintf( dest_file, "initiative=%i\n", entry.init );
         fprintf( dest_file, "spotting=%i\n", entry.spot );

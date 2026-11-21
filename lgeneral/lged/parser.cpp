@@ -65,6 +65,11 @@ Locals
 Macro to shorten the fread call for a single character.
 ====================================================================
 */
+/** Macro wrapper to read data from file with (very) simple error handling.
+ * Only to be used as standalone command, not in conditions. */
+#define _fread(ptr,size,nmemb,stream) \
+	do { int _freadretval = fread(ptr,size,nmemb,stream); if (_freadretval != nmemb && !feof(stream)) fprintf(stderr, "%s: %d: _fread error\n",__FILE__,__LINE__);} while (0)
+
 #define FILE_READCHAR( file, c ) _fread( &c, sizeof( char ), 1, file )
 
 /*
@@ -93,7 +98,7 @@ static char* parser_get_next_line()
 Set parse error string: "file:line: error"
 ====================================================================
 */
-static void parser_set_parse_error( char *fname, FILE *file, char *error )
+static void parser_set_parse_error( const char *fname, FILE *file, const char *error )
 {
     int end, pos;
     int line_count = 1;
@@ -115,7 +120,7 @@ If the first symbol is ' ' it is used as wildcard for all
 white-spaces.
 ====================================================================
 */
-static int is_symbol( int c, char *symbols )
+static int is_symbol( int c, const char *symbols )
 {
     int i = 0;
     if ( symbols[0] == ' ' && c <= 32 ) return 1;
@@ -153,7 +158,7 @@ to test it's contents.
 Returns False on EoF.
 ====================================================================
 */
-static int file_read_token_intern( FILE *file, char *symbols, char *token )
+static int file_read_token_intern( FILE *file, const char *symbols, char *token )
 {
     int pos = 0;
     char c;
@@ -230,7 +235,7 @@ skip[0], skip[1] (if skip is not NULL).
 Return 0 if EoF.
 ====================================================================
 */
-static int file_read_token( FILE *file, char *symbols, char *skip, char *token )
+static int file_read_token( FILE *file, const char *symbols, const char *skip, char *token )
 {
     while ( 1 ) {
         if ( !file_read_token_intern( file, symbols, token ) )
@@ -254,13 +259,13 @@ Remove quotes if any and return result as newly allocated string.
 */
 static char* parser_remove_quotes( char *string )
 {
-    char *new;
+    char *new_str;
     if ( string[0] != '"' ) 
         return strdup( string );
-    new = calloc( strlen( string ) - 1, sizeof( char ) );
-    strncpy( new, string + 1, strlen( string ) - 2 );
-    new[strlen( string ) - 2] = 0;
-    return new;
+    new_str = (char *)calloc( strlen( string ) - 1, sizeof( char ) );
+    strncpy( new_str, string + 1, strlen( string ) - 2 );
+    new_str[strlen( string ) - 2] = 0;
+    return new_str;
 }
 
 /*
@@ -291,10 +296,10 @@ static PData* parser_parse_file( FILE *file )
     if ( !file_read_token( file, PARSER_SYMBOLS, PARSER_SKIP_SYMBOLS, token ) )
         return 0;
     if ( is_symbol( token[0], PARSER_SYMBOLS ) ) {
-        snprintf( parser_sub_error, sizeof parser_sub_error, "parse error before '%s'", token );
+        snprintf( parser_sub_error, sizeof parser_sub_error, "parse error before '%.100s'", token );
         return 0;
     }
-    pd = calloc( 1, sizeof( PData ) );
+    pd = (PData *)calloc( 1, sizeof( PData ) );
     pd->name = parser_remove_quotes( token );
     /* check type */
     if ( !file_read_token( file, PARSER_SYMBOLS, PARSER_SKIP_SYMBOLS, token ) )
@@ -307,7 +312,7 @@ static PData* parser_parse_file( FILE *file )
                 goto failure;
             if ( token[0] != PARSER_LIST_BEGIN ) {
                 if ( is_symbol( token[0], PARSER_SYMBOLS ) ) {
-                    snprintf( parser_sub_error, sizeof parser_sub_error, "parse error before '%s'", token );
+                    snprintf( parser_sub_error, sizeof parser_sub_error, "parse error before '%.100s'", token );
                     goto failure;
                 }
                 else
@@ -318,7 +323,7 @@ static PData* parser_parse_file( FILE *file )
                     goto failure;
                 while ( token[0] != PARSER_LIST_END ) {
                     if ( is_symbol( token[0], PARSER_SYMBOLS ) ) {
-                        snprintf( parser_sub_error, sizeof parser_sub_error, "parse error before '%s'", token );
+                        snprintf( parser_sub_error, sizeof parser_sub_error, "parse error before '%.100s'", token );
                         goto failure;
                     }
                     else
@@ -345,7 +350,7 @@ static PData* parser_parse_file( FILE *file )
             }
             break;
         default:
-            snprintf( parser_sub_error, sizeof parser_sub_error, "parse error before '%s'", token );
+            snprintf( parser_sub_error, sizeof parser_sub_error, "parse error before '%.100s'", token );
             goto failure;
     }
     return pd;
@@ -368,7 +373,7 @@ whitespaces are used as breakpoints though NOT added as a token
 (thus removed from string).
 ====================================================================
 */
-List* parser_split_string( char *string, char *symbols )
+List* parser_split_string( char *string, const char *symbols )
 {
     int pos;
     char *token = 0;
@@ -386,13 +391,13 @@ List* parser_split_string( char *string, char *symbols )
                 /* read a string */
                 string = string + 1; pos = 0;
                 while ( string[pos] != 0 && string[pos] != '"' ) pos++;
-                token = calloc( pos + 1, sizeof( char ) );
+                token = (char *)calloc( pos + 1, sizeof( char ) );
                 strncpy( token, string, pos ); token[pos] = 0;
                 list_add( list, token );
                 string = string + pos + (string[pos] != 0);
                 continue;
             }
-        token = calloc( pos + 1, sizeof( char ) );
+        token = (char *)calloc( pos + 1, sizeof( char ) );
         strncpy( token, string, pos); token[pos] = 0;
         list_add( list, token );
         string = string + pos;
@@ -406,10 +411,10 @@ just one character and does not add this glue characters to the
 list. It's about 2% faster. Wow.
 ====================================================================
 */
-List *parser_explode_string( char *string, char c )
+List *parser_explode_string( const char *string, char c )
 {
     List *list = list_create( LIST_AUTO_DELETE, LIST_NO_CALLBACK );
-    char *next_slash = 0;
+    const char *next_slash = 0;
     char buffer[64];
     while ( string[0] != 0 && ( next_slash = strchr( string, c ) ) != 0 ) {
         if ( next_slash != string ) {
@@ -453,12 +458,6 @@ static int parser_read_file_full( FILE *file, PData *top )
 }
 static int parser_read_file_compact( PData *section )
 {
-	char entryToken1 = 0xbb;
-	char itemToken1 = 0xb0;
-	char entryToken2 = '=';
-	char itemToken2 = '&';
-	int useNewTokens = 0;
-
     /* section is the parent pdata that needs some 
        entries */
     PData *pd = 0;
@@ -470,7 +469,7 @@ static int parser_read_file_compact( PData *section )
                 return 1;
             case '<':
                 /* add a whole subsection */
-                pd = calloc( 1, sizeof( PData ) );
+                pd = (PData *)calloc( 1, sizeof( PData ) );
                 pd->name = strdup( line + 1 );
                 pd->entries = list_create( LIST_NO_AUTO_DELETE, LIST_NO_CALLBACK );
                 parser_read_file_compact( pd );
@@ -479,21 +478,16 @@ static int parser_read_file_compact( PData *section )
                 break;
             default:
                 /* read values as subsection */
-                pd = calloc( 1, sizeof( PData ) );
+                pd = (PData *)calloc( 1, sizeof( PData ) );
                 /* check name */
-                if ( ( cur = strchr( line, entryToken1 ) ) == 0 ) {
-                	if ( ( cur = strchr( line, entryToken2 ) ) == 0 ) {
-                		snprintf( parser_sub_error, sizeof parser_sub_error,
-                				"parse error: use '%c' or '%c' for assignment or '<' for section",
-                				entryToken1, entryToken2 );
-                		return 0;
-                	} else
-                		useNewTokens = 1;
+                if ( ( cur = strchr( line, '\xbb' ) ) == 0 ) {
+                    snprintf( parser_sub_error, sizeof parser_sub_error, "parse error: use '%c' for assignment or '<' for section", '\xbb' );
+                    return 0;
                 }
                 cur[0] = 0; cur++;
                 pd->name = strdup( line );
                 /* get values */
-                pd->values = parser_explode_string( cur, useNewTokens?itemToken2:itemToken1 );
+                pd->values = parser_explode_string( cur, '\xb0' );
                 /* add to section */
                 list_add( section->entries, pd );
                 break;
@@ -501,7 +495,7 @@ static int parser_read_file_compact( PData *section )
     }
     return 1;
 }
-PData* parser_read_file( char *tree_name, char *fname )
+PData* parser_read_file( const char *tree_name, const char *fname )
 {
     int size;
     char magic = 0;
@@ -513,7 +507,7 @@ PData* parser_read_file( char *tree_name, char *fname )
         return 0;
     }
     /* create top level pdata */
-    top = calloc( 1, sizeof( PData ) );
+    top = (PData *)calloc( 1, sizeof( PData ) );
     top->name = strdup( tree_name );
     top->entries = list_create( LIST_NO_AUTO_DELETE, LIST_NO_CALLBACK );
     /* parse */
@@ -565,7 +559,7 @@ void parser_free( PData **pdata )
     if ( (*pdata)->values ) list_delete( (*pdata)->values );
     if ( (*pdata)->entries ) {
         list_reset( (*pdata)->entries );
-        while ( ( entry = list_next( (*pdata)->entries ) ) )
+        while ( ( entry = (PData *)list_next( (*pdata)->entries ) ) )
             parser_free( &entry );
         list_delete( (*pdata)->entries );
     }
@@ -588,7 +582,7 @@ If an error occurs result is set NULL, False is returned and
 parse_error is set.
 ====================================================================
 */
-int parser_get_pdata  ( PData *pd, char *name, PData  **result )
+int parser_get_pdata  ( PData *pd, const char *name, PData  **result )
 {
     int i, found;
     PData *pd_next = pd;
@@ -596,20 +590,20 @@ int parser_get_pdata  ( PData *pd, char *name, PData  **result )
     char *sub = 0;
     List *path = parser_explode_string( name, '/' );
     for ( i = 0, list_reset( path ); i < path->count; i++ ) {
-        sub = list_next( path );
+        sub = (char *)list_next( path );
         if ( !pd_next->entries ) {
-            snprintf( parser_sub_error, sizeof parser_sub_error, "%s: no subtrees", pd_next->name );
+            snprintf( parser_sub_error, sizeof parser_sub_error, "%.128s: no subtrees", pd_next->name );
             goto failure;
         }
         list_reset( pd_next->entries ); found = 0;
-        while ( ( entry = list_next( pd_next->entries ) ) )
+        while ( ( entry = (PData *)list_next( pd_next->entries ) ) )
             if ( strlen( entry->name ) == strlen( sub ) && !strncmp( entry->name, sub, strlen( sub ) ) ) {
                 pd_next = entry;
                 found = 1;
                 break;
             }
         if ( !found ) {
-            snprintf( parser_sub_error, sizeof parser_sub_error, "%s: subtree '%s' not found", pd_next->name, sub );
+            snprintf( parser_sub_error, sizeof parser_sub_error, "%.128s: subtree '%.128s' not found", pd_next->name, sub );
             goto failure;
         }
     }
@@ -617,14 +611,12 @@ int parser_get_pdata  ( PData *pd, char *name, PData  **result )
     *result = pd_next;
     return 1;
 failure:
-    snprintf( parser_error, sizeof parser_error,
-                  "parser_get_pdata: %.128s/%.128s: %.3800s",
-                  pd->name, name, parser_sub_error );
+    snprintf( parser_error, sizeof parser_error, "parser_get_pdata: %.128s/%.128s: %.3800s", pd->name, name, parser_sub_error );
     list_delete( path );
     *result = 0;
     return 0;
 }
-int parser_get_entries( PData *pd, char *name, List   **result )
+int parser_get_entries( PData *pd, const char *name, List   **result )
 {
     PData *entry;
     *result = 0;
@@ -639,7 +631,7 @@ int parser_get_entries( PData *pd, char *name, List   **result )
     *result = entry->entries;
     return 1;
 }
-int parser_get_values ( PData *pd, char *name, List   **result )
+int parser_get_values ( PData *pd, const char *name, List   **result )
 {
     PData *entry;
     *result = 0;
@@ -654,7 +646,7 @@ int parser_get_values ( PData *pd, char *name, List   **result )
     *result = entry->values;
     return 1;
 }
-int parser_get_value  ( PData *pd, char *name, char   **result, int index )
+int parser_get_value  ( PData *pd, const char *name, char   **result, int index )
 {
     List *values;
     if ( !parser_get_values( pd, name, &values ) ) {
@@ -666,10 +658,10 @@ int parser_get_value  ( PData *pd, char *name, char   **result, int index )
                  pd->name, name, index, values->count );
         return 0;
     }
-    *result = list_get( values, index );
+    *result = (char *)list_get( values, index );
     return 1;
 }
-int parser_get_int    ( PData *pd, char *name, int     *result )
+int parser_get_int    ( PData *pd, const char *name, int     *result )
 {
     char *value;
     if ( !parser_get_value( pd, name, &value, 0 ) ) {
@@ -679,7 +671,7 @@ int parser_get_int    ( PData *pd, char *name, int     *result )
     *result = atoi( value );
     return 1;
 }
-int parser_get_double ( PData *pd, char *name, double  *result )
+int parser_get_double ( PData *pd, const char *name, double  *result )
 {
     char *value;
     if ( !parser_get_value( pd, name, &value, 0 ) ) {
@@ -689,7 +681,7 @@ int parser_get_double ( PData *pd, char *name, double  *result )
     *result = strtod( value, 0 );
     return 1;
 }
-int parser_get_string ( PData *pd, char *name, char   **result )
+int parser_get_string ( PData *pd, const char *name, char   **result )
 {
     char *value;
     if ( !parser_get_value( pd, name, &value, 0 ) ) {

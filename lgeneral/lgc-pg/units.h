@@ -41,7 +41,7 @@ Convert unit database.
 'tac_icons' is file name of the tactical icons.
 ====================================================================
 */
-int units_convert_database( char *tac_icons );
+int units_convert_database( const char *tac_icons );
 
 /*
 ====================================================================

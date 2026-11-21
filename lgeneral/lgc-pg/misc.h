@@ -120,7 +120,7 @@ int is_close( int x1, int y1, int x2, int y2 );
 Copy source to dest and at maximum limit chars. Terminate with 0.
 ====================================================================
 */
-void strcpy_lt( char *dest, char *src, int limit );
+void strcpy_lt( char *dest, const char *src, int limit );
 
 /*
 ====================================================================
@@ -136,7 +136,7 @@ Copy file
 */
 void copy_ic( char *sname, char *dname );
 void copy( char *sname, char *dname );
-int copy_pg_bmp( char *src, char *dest );
+int copy_pg_bmp( const char *src, const char *dest );
 
 /*
 ====================================================================

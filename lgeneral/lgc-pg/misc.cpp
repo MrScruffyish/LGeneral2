@@ -23,8 +23,8 @@
 #include "shp.h"
 #include "util/paths.h"
 
-extern char *source_path;
-extern char *dest_path;
+extern const char *source_path;
+extern const char *dest_path;
 
 /* compares to strings and returns true if their first strlen(str1) chars are equal */
 int equal_str( char *str1, char *str2 )
@@ -190,7 +190,7 @@ Text* create_text( char *orig_str, int char_width )
     Text *text = 0;
     char *str = 0;
 
-    text = calloc ( 1, sizeof( Text ) );
+    text = (Text *)calloc ( 1, sizeof( Text ) );
 
     // maybe orig_str is a constant expression; duplicate for safety //
     str = strdup( orig_str );
@@ -237,14 +237,14 @@ Text* create_text( char *orig_str, int char_width )
         text->count = 1;
 
     /* get mem */
-    text->lines = calloc( text->count, sizeof( char* ) );
+    text->lines = (char **)calloc( text->count, sizeof( char* ) );
 
     pos = 0;
     /* get all lines */
     for ( j = 0; j < text->count; j++ ) {
         i = 0;
         while ( pos + i < strlen( str ) && str[pos + i] != 10 ) i++;
-        text->lines[j] = calloc( i + 1, sizeof( char ) );
+        text->lines[j] = (char *)calloc( i + 1, sizeof( char ) );
         strncpy( text->lines[j], str + pos, i );
         text->lines[j][i] = 0;
         pos += i; pos++;
@@ -314,7 +314,7 @@ int check_flag( char *name, StrToFlag *fct )
 Copy source to dest and at maximum limit chars. Terminate with 0.
 ====================================================================
 */
-void strcpy_lt( char *dest, char *src, int limit )
+void strcpy_lt( char *dest, const char *src, int limit )
 {
     int len = strlen( src );
     if ( len > limit ) {
@@ -368,7 +368,7 @@ void copy_ic( char *sname, char *dname )
     fseek( source, 0, SEEK_END ); 
     size = ftell( source );
     fseek( source, 0, SEEK_SET );
-    buffer = calloc( size, sizeof( char ) );
+    buffer = (char *)calloc( size, sizeof( char ) );
     _fread( buffer, sizeof( char ), size, source );
     fwrite( buffer, sizeof( char ), size, dest );
     free( buffer );
@@ -391,14 +391,14 @@ void copy( char *sname, char *dname )
     fseek( source, 0, SEEK_END ); 
     size = ftell( source );
     fseek( source, 0, SEEK_SET );
-    buffer = calloc( size, sizeof( char ) );
+    buffer = (char *)calloc( size, sizeof( char ) );
     _fread( buffer, sizeof( char ), size, source );
     fwrite( buffer, sizeof( char ), size, dest );
     free( buffer );
     fclose( source );
     fclose( dest );
 }
-int copy_pg_bmp( char *src, char *dest )
+int copy_pg_bmp( const char *src, const char *dest )
 {
     SDL_Surface *surf = 0;
     char path[MAXPATHLEN];

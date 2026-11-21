@@ -29,8 +29,8 @@
 Externals
 ====================================================================
 */
-extern char *source_path;
-extern char *dest_path;
+extern const char *source_path;
+extern const char *dest_path;
 extern int use_def_pal;
 
 /*
@@ -263,14 +263,14 @@ void set_pixel( SDL_Surface *surf, int x, int y, int pixel )
     int pos = 0;
 
     pos = y * surf->pitch + x * surf->format->BytesPerPixel;
-    memcpy( surf->pixels + pos, &pixel, surf->format->BytesPerPixel );
+    memcpy( (char *)surf->pixels + pos, &pixel, surf->format->BytesPerPixel );
 }
 Uint32 get_pixel( SDL_Surface *surf, int x, int y )
 {
     int pos = 0;
     Uint32 pixel = 0;
     pos = y * surf->pitch + x * surf->format->BytesPerPixel;
-    memcpy( &pixel, surf->pixels + pos, surf->format->BytesPerPixel );
+    memcpy( &pixel, (char *)surf->pixels + pos, surf->format->BytesPerPixel );
     return pixel;
 }
 
@@ -307,7 +307,7 @@ PG_Shp *shp_load( const char *fname )
     /* magic */
     _fread( &dummy, 4, 1, file );
     /* shp struct */
-    shp = calloc( 1, sizeof( PG_Shp ) );
+    shp = (PG_Shp *)calloc( 1, sizeof( PG_Shp ) );
     /* icon count */
     _fread( &shp->count, 4, 1, file );
     shp->count = SDL_SwapLE32(shp->count);
@@ -349,8 +349,8 @@ PG_Shp *shp_load( const char *fname )
     }
     SDL_FillRect( shp->surf, 0, ckey );
     /* read icons */
-    shp->offsets = calloc( shp->count, sizeof( int ) );
-    shp->headers = calloc( shp->count, sizeof( Icon_Header ) );
+    shp->offsets = (int *)calloc( shp->count, sizeof( int ) );
+    shp->headers = (Icon_Header *)calloc( shp->count, sizeof( Icon_Header ) );
     fseek( file, 8, SEEK_SET );
     for ( i = 0; i < shp->count; i++ ) {
         /* read position of data and palette */

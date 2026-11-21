@@ -47,6 +47,10 @@ static inline const char *trd(const char *dom, const char *s) { return *(s) ? dg
 #  define TR_NOOP(s) (s)
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Load all translations of a given domain so that they can
  * be used throughout the application.
@@ -71,6 +75,10 @@ void locale_write_ordinal_number(char *buf, unsigned n, int number);
  * @param lang iso-code of language or 0 to determine automatically
  */
 void locale_init(const char *lang);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /*UTIL_LOCALIZE_H*/
 

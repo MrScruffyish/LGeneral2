@@ -31,12 +31,12 @@
 Externals
 ====================================================================
 */
-extern char *source_path;
-extern char *dest_path;
+extern const char *source_path;
+extern const char *dest_path;
 extern char target_name[128];
 extern int map_or_scen_files_missing;
 extern int  nation_count;
-extern char *nations[];
+extern const char *nations[];
 /* unofficial options */
 extern const char *axis_name, *allies_name;
 extern const char *axis_nations, *allies_nations;
@@ -83,7 +83,7 @@ Tests:
 Scenario file names
 ====================================================================
 */
-char *fnames[] = {
+const char *fnames[] = {
     "Poland",
     "Warsaw",
     "Norway",
@@ -129,7 +129,7 @@ char *fnames[] = {
 AI modules names
 ====================================================================
 */
-char *ai_modules[] = {
+const char *ai_modules[] = {
     /* axis, allied -- scenarios as listed above */
     "default", "default",
     "default", "default",
@@ -377,7 +377,7 @@ use old algorithm for random weather.
 void scen_create_pg_weather( FILE *dest_file, int scen_id, FILE *scen_file, int turns )
 {
     /* HACK: use weather type id's directly with shortcut f=fair,o=clouds,R=rain,S=snow */
-    char *weathers[] = {
+    const char *weathers[] = {
         "fffffroRff",
         "ffffffffffffrooorRff",
         "fffforRRRmfffforRRoffffff",
@@ -1250,7 +1250,7 @@ int scenarios_convert( int scen_id )
                    unit */
                 def_str = 10; def_exp = 0;
                 list_reset( reinf->entries );
-                while ( ( unit = list_next( reinf->entries ) ) )
+                while ( ( unit = (PData *)list_next( reinf->entries ) ) )
                     if ( !strcmp( "unit", unit->name ) ) {
                         /* add unit */
                         fprintf( dest_file, "<unit\n" );

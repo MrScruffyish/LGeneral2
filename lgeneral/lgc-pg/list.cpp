@@ -30,7 +30,7 @@ Return Value: List pointer
 */
 List *list_create( int auto_delete, void (*callback)(void*) )
 {
-    List *list = calloc( 1, sizeof( List ) );
+    List *list = (List *)calloc( 1, sizeof( List ) );
     list->head.next = &list->tail;
     list->head.prev = &list->head;
     list->tail.next = &list->tail;
@@ -78,7 +78,7 @@ int list_insert( List *list, void *item, int pos )
     /* get to previous entry */
     for (i = 0; i < pos; i++) cur = cur->next;
     /* create and anchor new entry */
-    new_entry = calloc( 1, sizeof( List_Entry ) );
+    new_entry = (List_Entry *)calloc( 1, sizeof( List_Entry ) );
     new_entry->item = item;
     new_entry->next = cur->next;
     new_entry->prev = cur;
@@ -98,7 +98,7 @@ int list_add( List *list, void *item )
     /* check if insertion possible */
     if ( item == 0 ) return 0;
     /* create and anchor new entry */
-    new_entry = calloc( 1, sizeof( List_Entry ) );
+    new_entry = (List_Entry *)calloc( 1, sizeof( List_Entry ) );
     new_entry->item = item;
     new_entry->next = &list->tail;
     new_entry->prev = list->tail.prev;

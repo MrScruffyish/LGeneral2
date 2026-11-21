@@ -27,8 +27,8 @@
 Externals
 ====================================================================
 */
-extern char *source_path;
-extern char *dest_path;
+extern const char *source_path;
+extern const char *dest_path;
 extern char target_name[128];
 
 /*
@@ -37,7 +37,7 @@ Nations.
 ====================================================================
 */
 int nation_count = 24;
-char *nations[] = {
+const char *nations[] = {
     "aus", "Austria",       "0",
     "bel", "Belgia",        "1",
     "bul", "Bulgaria",      "2",

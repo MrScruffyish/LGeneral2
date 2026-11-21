@@ -29,10 +29,10 @@
 Externals
 ====================================================================
 */
-extern char *source_path;
-extern char *dest_path;
+extern const char *source_path;
+extern const char *dest_path;
 extern char target_name[128];
-extern char *move_types[];
+extern const char *move_types[];
 extern int   move_type_count;
 extern int separate_bridges;
 
@@ -43,7 +43,7 @@ Weather types.
 */
 #define NUM_WEATHER_TYPES 12
 struct {
-    char *id, *name; int ground; char *flags, *set_ext;
+    const char *id, *name; int ground; const char *flags, *set_ext;
 } weatherTypes[NUM_WEATHER_TYPES] = {
     { "fair",   "Fair(Dry)",     0, "none", "" }, /* f */
     { "clouds", "Overcast(Dry)", 0, "none", "" }, /* o */
@@ -65,10 +65,10 @@ Terrain definitions.
 */
 #define NUM_TERRAIN_TYPES 16
 struct {
-    char id, *name, *set_name;
+    char id; const char *name, *set_name;
     int min_entr, max_entr, max_ini; 
-    char *spot_costs, *move_costs[3];
-    char *flags[3];
+    const char *spot_costs, *move_costs[3];
+    const char *flags[3];
 } terrainTypes[NUM_TERRAIN_TYPES] = {
     { 'c', "Clear", "clear", 0, 5, 99, 
         "112211221122",
@@ -183,7 +183,7 @@ Convert map tiles belonging to terrain type 'id'
 from TACMAP.SHP into one bitmap called 'fname'.
 ====================================================================
 */
-static int terrain_convert_tiles( char id, PG_Shp *shp, char *fname )
+static int terrain_convert_tiles( char id, PG_Shp *shp, const char *fname )
 {
     Uint32 grass_pixel, snow_pixel, mud_pixel;
     int i, j, pos;

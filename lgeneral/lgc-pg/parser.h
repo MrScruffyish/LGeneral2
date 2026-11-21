@@ -90,7 +90,7 @@ whitespaces are used as breakpoints though NOT added as a token
 (thus removed from string).
 ====================================================================
 */
-List* parser_split_string( char *string, char *symbols );
+List* parser_split_string( char *string, const char *symbols );
 /*
 ====================================================================
 This is the light version of parser_split_string which checks for
@@ -98,7 +98,7 @@ just one character and does not add this glue characters to the
 list. It's about 2% faster. Wow.
 ====================================================================
 */
-List *parser_explode_string( char *string, char c );
+List *parser_explode_string( const char *string, char c );
 
 /*
 ====================================================================
@@ -107,7 +107,7 @@ PData tree struct. If an error occurs NULL is returned and
 parser_error is set. 'tree_name' is the name of the PData tree.
 ====================================================================
 */
-PData* parser_read_file( char *tree_name, char *fname );
+PData* parser_read_file( const char *tree_name, const char *fname );
 
 /*
 ====================================================================
@@ -132,13 +132,13 @@ If an error occurs result is set NULL, False is returned and
 parse_error is set.
 ====================================================================
 */
-int parser_get_pdata  ( PData *pd, char *name, PData  **result );
-int parser_get_entries( PData *pd, char *name, List   **result );
-int parser_get_values ( PData *pd, char *name, List   **result );
-int parser_get_value  ( PData *pd, char *name, char   **result, int index );
-int parser_get_int    ( PData *pd, char *name, int     *result );
-int parser_get_double ( PData *pd, char *name, double  *result );
-int parser_get_string ( PData *pd, char *name, char   **result );
+int parser_get_pdata  ( PData *pd, const char *name, PData  **result );
+int parser_get_entries( PData *pd, const char *name, List   **result );
+int parser_get_values ( PData *pd, const char *name, List   **result );
+int parser_get_value  ( PData *pd, const char *name, char   **result, int index );
+int parser_get_int    ( PData *pd, const char *name, int     *result );
+int parser_get_double ( PData *pd, const char *name, double  *result );
+int parser_get_string ( PData *pd, const char *name, char   **result );
 
 /*
 ====================================================================
