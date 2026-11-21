@@ -8,6 +8,47 @@ The source is split into two independent projects at the top level:
 - `lgeneral/` — the game
 - `lgeditor/` — the map editor
 
+## Building
+
+The top-level `Makefile` builds both sub-projects into `.build/`:
+
+```bash
+make
+```
+
+It needs autoconf/automake, SDL 1.2 with SDL_mixer, SDL2 with SDL2_image and
+SDL2_ttf, and gettext. To also convert the Panzer General data into the game's
+data directory, set `PG_DATA` to `pg-data.tar.gz` or an unpacked `pg-data`
+directory:
+
+```bash
+PG_DATA=~/PG_DATA/pg-data.tar.gz make
+```
+
+The executables end up in `.build/lgeneral/src/lgeneral`,
+`.build/lgeneral/lgc-pg/lgc-pg` and `.build/lgeditor/src/lgeditor`. Start the
+game with `make run`, or from its data directory:
+
+```bash
+cd .build/lgeneral/src && ./lgeneral
+```
+
+Running it from the repository root fails because the game looks up its data
+and `lgeneral.conf` relative to the current directory.
+
+### Tracing
+
+For diagnosing data/deployment problems, build a traced copy:
+
+```bash
+PG_DATA=~/PG_DATA/pg-data.tar.gz TRACE=1 make
+make TRACE=1 run
+```
+
+It builds into `.build/lgeneral-trace` and logs scenario loading, players,
+reinforcements and deployment candidates to `/tmp/human.log`. Set
+`LG_TRACE_FILE` to write somewhere else.
+
 ## License
 
 **GPL-3.0-or-later** (see `LICENSE`). The original upstream GPL v2 text is kept
