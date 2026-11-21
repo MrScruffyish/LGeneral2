@@ -895,7 +895,7 @@ int scenarios_convert( int scen_id )
     FILE *dest_file = 0, *scen_file = 0, *aux_file = 0, *scenstat_file = 0;
     PData *pd = 0, *reinf, *unit;
     int def_str, def_exp;
-    char *str;
+    std::string str;
     int axis_ulimit = 0, axis_core_ulimit = 0, allies_ulimit = 0;
     char scen_title[16], scen_desc[160], scen_author[32];
 	int core_unit_count = 0;
@@ -1251,12 +1251,12 @@ int scenarios_convert( int scen_id )
                 def_str = 10; def_exp = 0;
                 list_reset( reinf->entries );
                 while ( ( unit = (PData *)list_next( reinf->entries ) ) )
-                    if ( !strcmp( "unit", unit->name ) ) {
+                    if ( unit->name == "unit" ) {
                         /* add unit */
                         fprintf( dest_file, "<unit\n" );
                         if ( !parser_get_value( unit, "nation", &str, 0 ) )
                             goto failure;
-                        fprintf( dest_file, "nation=%s\n", str );
+                        fprintf( dest_file, "nation=%s\n", str.c_str() );
                         if ( !parser_get_int( unit, "id", &ibuf ) )
                             goto failure;
                         fprintf( dest_file, "id=%i\n", ibuf );
@@ -1266,7 +1266,7 @@ int scenarios_convert( int scen_id )
                         fprintf( dest_file, "exp=%i\n", ibuf );
                         fprintf( dest_file, "entr=0\n" );
                         if ( parser_get_value( unit, "trsp", &str, 0 ) )
-                            fprintf( dest_file, "trsp=%s\n", str );
+                            fprintf( dest_file, "trsp=%s\n", str.c_str() );
                         if ( !parser_get_int( unit, "delay", &ibuf ) )
                             goto failure;
                         fprintf( dest_file, "delay=%i\n", ibuf );

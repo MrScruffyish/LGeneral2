@@ -21,6 +21,8 @@
 
 #include "list.h"
 #include <stdio.h>
+#include <string>
+#include <vector>
 
 /*
 ====================================================================
@@ -76,10 +78,12 @@ If 'values' is not NULL the PData is a list and 'values' contains
 a list of value strings associated with 'name'.
 ====================================================================
 */
-typedef struct {
-    char *name;
-    List *values;
+typedef struct PData {
+    std::string name;
+    std::vector<std::string> values;
     List *entries;
+
+    PData() : entries(0) {}
 } PData;
 
 /*
@@ -90,7 +94,7 @@ whitespaces are used as breakpoints though NOT added as a token
 (thus removed from string).
 ====================================================================
 */
-List* parser_split_string( char *string, const char *symbols );
+std::vector<std::string> parser_split_string( const char *string, const char *symbols );
 /*
 ====================================================================
 This is the light version of parser_split_string which checks for
@@ -98,7 +102,7 @@ just one character and does not add this glue characters to the
 list. It's about 2% faster. Wow.
 ====================================================================
 */
-List *parser_explode_string( const char *string, char c );
+std::vector<std::string> parser_explode_string( const char *string, char c );
 
 /*
 ====================================================================
@@ -123,28 +127,26 @@ Functions to access a PData tree.
 by '/' (e.g.: name = 'config/graphics/animations')
 parser_get_pdata   : get pdata entry associated with 'name'
 parser_get_entries : get list of subtrees (PData structs) in 'name'
-parser_get_values  : get value list of 'name'
 parser_get_value   : get a single value from value list of 'name'
 parser_get_int     : get first value of 'name' converted to integer
 parser_get_double  : get first value of 'name' converted to double
-parser_get_string  : get first value of 'name' _duplicated_
-If an error occurs result is set NULL, False is returned and
+parser_get_string  : get first value of 'name' as a string
+If an error occurs result is cleared, False is returned and
 parse_error is set.
 ====================================================================
 */
 int parser_get_pdata  ( PData *pd, const char *name, PData  **result );
 int parser_get_entries( PData *pd, const char *name, List   **result );
-int parser_get_values ( PData *pd, const char *name, List   **result );
-int parser_get_value  ( PData *pd, const char *name, char   **result, int index );
+int parser_get_value  ( PData *pd, const char *name, std::string *result, int index );
 int parser_get_int    ( PData *pd, const char *name, int     *result );
 int parser_get_double ( PData *pd, const char *name, double  *result );
-int parser_get_string ( PData *pd, const char *name, char   **result );
+int parser_get_string ( PData *pd, const char *name, std::string *result );
 
 /*
 ====================================================================
 If an error occurred you can query the message with this function.
 ====================================================================
 */
-char* parser_get_error( void );
+const char* parser_get_error( void );
 
 #endif

@@ -181,40 +181,39 @@ void repl_new_lines( char *text )
 
 // convert a str into text ( for listbox ) //
 // char width is the width of a line in characters //
-Text* create_text( char *orig_str, int char_width )
+Text* create_text( const char *orig_str, int char_width )
 {
     int i, j;
     int pos;
     int last_space;
     int new_line;
+    int count = 0;
     Text *text = 0;
-    char *str = 0;
+    std::string str( orig_str );
+    const int len = static_cast<int>( str.size() );
 
-    text = (Text *)calloc ( 1, sizeof( Text ) );
-
-    // maybe orig_str is a constant expression; duplicate for safety //
-    str = strdup( orig_str );
+    text = new Text();
 
     // replace original new_lines with spaces //
-    repl_new_lines( str );
+    repl_new_lines( &str[0] );
 
     /* change some spaces to new_lines, so that the new text fits the wanted line_length */
     /* NOTE: '#' means new_line ! */
     /* if character with is 0 it's just a single line */
     if ( char_width > 0 ) {
         pos = 0;
-        while ( pos < strlen( str ) ) {
+        while ( pos < len ) {
             last_space = 0;
             new_line = 0;
             i = 0;
-            while ( !new_line && i < char_width && i + pos < strlen( str ) ) {
-                switch ( str[pos + i] ) {
-                    case '#': new_line = 1;
-                    case 32: last_space = i; break;
-                }
+            while ( !new_line && i < char_width && i + pos < len ) {
+                if ( str[pos + i] == '#' )
+                    new_line = 1;
+                if ( str[pos + i] == '#' || str[pos + i] == 32 )
+                    last_space = i;
                 i++;
             }
-            if ( i + pos >= strlen( str ) ) break;
+            if ( i + pos >= len ) break;
             if ( last_space == 0 ) {
                 /* uhh... much to long, we'll have to cut a word into pieces ... */
                 last_space = char_width / 2;
@@ -226,34 +225,27 @@ Text* create_text( char *orig_str, int char_width )
 
     /* count lines */
     if ( char_width > 0 ) {
-        for ( i = 0; i < strlen( str ); i++ )
+        for ( i = 0; i < len; i++ )
             if ( str[i] == 10 )
-                text->count++;
+                count++;
         /* maybe one unfinished line */
-        if ( str[strlen( str ) - 1] != 10 )
-            text->count++;
+        if ( !str.empty() && str[len - 1] != 10 )
+            count++;
     }
     else
-        text->count = 1;
-
-    /* get mem */
-    text->lines = (char **)calloc( text->count, sizeof( char* ) );
+        count = 1;
 
     pos = 0;
     /* get all lines */
-    for ( j = 0; j < text->count; j++ ) {
+    for ( j = 0; j < count; j++ ) {
         i = 0;
-        while ( pos + i < strlen( str ) && str[pos + i] != 10 ) i++;
-        text->lines[j] = (char *)calloc( i + 1, sizeof( char ) );
-        strncpy( text->lines[j], str + pos, i );
-        text->lines[j][i] = 0;
+        while ( pos + i < len && str[pos + i] != 10 ) i++;
+        text->lines.push_back( str.substr( pos, i ) );
         pos += i; pos++;
     }
 
-    if ( text->count == 0 )
+    if ( count == 0 )
         fprintf( stderr, "conv_to_text: warning: line_count is 0\n" );
-
-    free( str );
 
     return text;
 }
@@ -261,17 +253,7 @@ Text* create_text( char *orig_str, int char_width )
 // delete text //
 void delete_text( Text *text )
 {
-    int i;
-
-    if ( text == 0 ) return;
-
-    if ( text->lines ) {
-        for ( i = 0; i < text->count; i++ )
-            if ( text->lines[i] )
-                free( text->lines[i] );
-        free( text->lines );
-    }
-    free( text );
+    delete text;
 }
 
 /*

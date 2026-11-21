@@ -17,6 +17,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <string>
+#include <vector>
 #include "parser.h"
 #include "misc.h"
 
@@ -249,18 +251,14 @@ static int file_read_token( FILE *file, const char *symbols, const char *skip, c
 
 /*
 ====================================================================
-Remove quotes if any and return result as newly allocated string.
+Remove quotes if any and return the result as a string.
 ====================================================================
 */
-static char* parser_remove_quotes( char *string )
+static std::string parser_remove_quotes( const char *string )
 {
-    char *new_str;
-    if ( string[0] != '"' ) 
-        return strdup( string );
-    new_str = (char *)calloc( strlen( string ) - 1, sizeof( char ) );
-    strncpy( new_str, string + 1, strlen( string ) - 2 );
-    new_str[strlen( string ) - 2] = 0;
-    return new_str;
+    if ( string[0] != '"' )
+        return string;
+    return std::string( string + 1, strlen( string ) - 2 );
 }
 
 /*
@@ -269,7 +267,7 @@ Proceed in the given string until it ends or non-whitespace occurs
 and return the new position.
 ====================================================================
 */
-static char* string_ignore_whitespace( char *string )
+static const char* string_ignore_whitespace( const char *string )
 {
     int i = 0;
     while ( string[i] != 0 && string[i] <= 32 ) i++;
@@ -294,7 +292,7 @@ static PData* parser_parse_file( FILE *file )
         snprintf( parser_sub_error, sizeof parser_sub_error, "parse error before '%s'", token );
         return 0;
     }
-    pd = (PData *)calloc( 1, sizeof( PData ) );
+    pd = new PData();
     pd->name = parser_remove_quotes( token );
     /* check type */
     if ( !file_read_token( file, PARSER_SYMBOLS, PARSER_SKIP_SYMBOLS, token ) )
@@ -302,7 +300,6 @@ static PData* parser_parse_file( FILE *file )
     switch ( token[0] ) {
         case PARSER_SET:
             /* assign single value or list */
-            pd->values = list_create( LIST_AUTO_DELETE, LIST_NO_CALLBACK );
             if ( !file_read_token( file, PARSER_SYMBOLS, PARSER_SKIP_SYMBOLS, token ) ) 
                 goto failure;
             if ( token[0] != PARSER_LIST_BEGIN ) {
@@ -311,7 +308,7 @@ static PData* parser_parse_file( FILE *file )
                     goto failure;
                 }
                 else
-                    list_add( pd->values, parser_remove_quotes( token ) );
+                    pd->values.push_back( parser_remove_quotes( token ) );
             }
             else {
                 if ( !file_read_token( file, PARSER_SYMBOLS, PARSER_SKIP_SYMBOLS, token ) )
@@ -322,7 +319,7 @@ static PData* parser_parse_file( FILE *file )
                         goto failure;
                     }
                     else
-                        list_add( pd->values, parser_remove_quotes( token ) );
+                        pd->values.push_back( parser_remove_quotes( token ) );
                     if ( !file_read_token( file, PARSER_SYMBOLS, PARSER_SKIP_SYMBOLS, token ) )
                         goto failure;
                 }
@@ -368,36 +365,33 @@ whitespaces are used as breakpoints though NOT added as a token
 (thus removed from string).
 ====================================================================
 */
-List* parser_split_string( char *string, const char *symbols )
+std::vector<std::string> parser_split_string( const char *string, const char *symbols )
 {
     int pos;
-    char *token = 0;
-    List *list = list_create( LIST_AUTO_DELETE, LIST_NO_CALLBACK );
-    while ( string[0] != 0 ) {
+    const char *cur = string;
+    std::vector<std::string> tokens;
+    while ( cur[0] != 0 ) {
         if ( symbols[0] == ' ' )
-            string = string_ignore_whitespace( string ); 
-        if ( string[0] == 0 ) break;
+            cur = string_ignore_whitespace( cur ); 
+        if ( cur[0] == 0 ) break;
         pos = 1; /* 'read in' first character */
-        while ( string[pos - 1] != 0 && !is_symbol( string[pos - 1], symbols ) && string[pos - 1] != '"' ) pos++;
+        while ( cur[pos - 1] != 0 && !is_symbol( cur[pos - 1], symbols ) && cur[pos - 1] != '"' ) pos++;
         if ( pos > 1 ) 
             pos--;
         else
-            if ( string[pos - 1] == '"' ) {
+            if ( cur[pos - 1] == '"' ) {
                 /* read a string */
-                string = string + 1; pos = 0;
-                while ( string[pos] != 0 && string[pos] != '"' ) pos++;
-                token = (char *)calloc( pos + 1, sizeof( char ) );
-                strncpy( token, string, pos ); token[pos] = 0;
-                list_add( list, token );
-                string = string + pos + (string[pos] != 0);
+                const char *quoted = cur + 1;
+                pos = 0;
+                while ( quoted[pos] != 0 && quoted[pos] != '"' ) pos++;
+                tokens.push_back( std::string( quoted, pos ) );
+                cur = quoted + pos + (quoted[pos] != 0);
                 continue;
             }
-        token = (char *)calloc( pos + 1, sizeof( char ) );
-        strncpy( token, string, pos); token[pos] = 0;
-        list_add( list, token );
-        string = string + pos;
+        tokens.push_back( std::string( cur, pos ) );
+        cur += pos;
     }
-    return list;
+    return tokens;
 }
 /*
 ====================================================================
@@ -406,21 +400,21 @@ just one character and does not add this glue characters to the
 list. It's about 2% faster. Wow.
 ====================================================================
 */
-List *parser_explode_string( const char *string, char c )
+std::vector<std::string> parser_explode_string( const char *string, char c )
 {
-    List *list = list_create( LIST_AUTO_DELETE, LIST_NO_CALLBACK );
+    std::vector<std::string> tokens;
     const char *next_slash = 0;
-    char buffer[64];
     while ( string[0] != 0 && ( next_slash = strchr( string, c ) ) != 0 ) {
         if ( next_slash != string ) {
-            strcpy_lt( buffer, string, (next_slash-string>63)?63:(next_slash-string) );
-            list_add( list, strdup( buffer ) );
+            size_t len = static_cast<size_t>( next_slash - string );
+            if ( len > 63 ) len = 63; /* keep the old 64-byte token limit */
+            tokens.push_back( std::string( string, len ) );
         }
         string += next_slash - string + 1;
     }
     if ( string[0] != 0 )
-        list_add( list, strdup( string ) );
-    return list;
+        tokens.push_back( string );
+    return tokens;
 }
 
 /*
@@ -470,8 +464,8 @@ static int parser_read_file_compact( PData *section )
                 return 1;
             case '<':
                 /* add a whole subsection */
-                pd = (PData *)calloc( 1, sizeof( PData ) );
-                pd->name = strdup( line + 1 );
+                pd = new PData();
+                pd->name = line + 1;
                 pd->entries = list_create( LIST_NO_AUTO_DELETE, LIST_NO_CALLBACK );
                 parser_read_file_compact( pd );
                 /* add to section */
@@ -479,7 +473,7 @@ static int parser_read_file_compact( PData *section )
                 break;
             default:
                 /* read values as subsection */
-                pd = (PData *)calloc( 1, sizeof( PData ) );
+                pd = new PData();
                 /* check name */
                 if ( ( cur = strchr( line, entryToken1 ) ) == 0 ) {
                 	if ( ( cur = strchr( line, entryToken2 ) ) == 0 ) {
@@ -491,7 +485,7 @@ static int parser_read_file_compact( PData *section )
                 		useNewTokens = 1;
                 }
                 cur[0] = 0; cur++;
-                pd->name = strdup( line );
+                pd->name = line;
                 /* get values */
                 pd->values = parser_explode_string( cur, useNewTokens?itemToken2:itemToken1 );
                 /* add to section */
@@ -513,8 +507,8 @@ PData* parser_read_file( const char *tree_name, const char *fname )
         return 0;
     }
     /* create top level pdata */
-    top = (PData *)calloc( 1, sizeof( PData ) );
-    top->name = strdup( tree_name );
+    top = new PData();
+    top->name = tree_name;
     top->entries = list_create( LIST_NO_AUTO_DELETE, LIST_NO_CALLBACK );
     /* parse */
     FILE_READCHAR( file, magic );
@@ -561,15 +555,13 @@ void parser_free( PData **pdata )
 {
     PData *entry = 0;
     if ( (*pdata) == 0 ) return;
-    if ( (*pdata)->name ) free( (*pdata)->name );
-    if ( (*pdata)->values ) list_delete( (*pdata)->values );
     if ( (*pdata)->entries ) {
         list_reset( (*pdata)->entries );
         while ( ( entry = (PData *)list_next( (*pdata)->entries ) ) )
             parser_free( &entry );
         list_delete( (*pdata)->entries );
     }
-    free( *pdata ); *pdata = 0;
+    delete *pdata; *pdata = 0;
 }
 
 /*
@@ -579,48 +571,46 @@ Functions to access a PData tree.
 by '/' (e.g.: name = 'config/graphics/animations')
 parser_get_pdata   : get pdata entry associated with 'name'
 parser_get_entries : get list of subtrees (PData structs) in 'name'
-parser_get_values  : get value list of 'name'
 parser_get_value   : get a single value from value list of 'name'
 parser_get_int     : get first value of 'name' converted to integer
 parser_get_double  : get first value of 'name' converted to double
-parser_get_string  : get first value of 'name' _duplicated_
-If an error occurs result is set NULL, False is returned and
+parser_get_string  : get first value of 'name' as a string
+If an error occurs result is cleared, False is returned and
 parse_error is set.
 ====================================================================
 */
 int parser_get_pdata  ( PData *pd, const char *name, PData  **result )
 {
-    int i, found;
+    size_t i;
+    int found;
     PData *pd_next = pd;
     PData *entry = 0;
-    char *sub = 0;
-    List *path = parser_explode_string( name, '/' );
-    for ( i = 0, list_reset( path ); i < path->count; i++ ) {
-        sub = (char *)list_next( path );
+    std::vector<std::string> path = parser_explode_string( name, '/' );
+    for ( i = 0; i < path.size(); i++ ) {
+        const std::string &sub = path[i];
         if ( !pd_next->entries ) {
-            snprintf( parser_sub_error, sizeof parser_sub_error, "%s: no subtrees", pd_next->name );
+            snprintf( parser_sub_error, sizeof parser_sub_error, "%s: no subtrees", pd_next->name.c_str() );
             goto failure;
         }
         list_reset( pd_next->entries ); found = 0;
         while ( ( entry = (PData *)list_next( pd_next->entries ) ) )
-            if ( strlen( entry->name ) == strlen( sub ) && !strncmp( entry->name, sub, strlen( sub ) ) ) {
+            if ( entry->name == sub ) {
                 pd_next = entry;
                 found = 1;
                 break;
             }
         if ( !found ) {
-            snprintf( parser_sub_error, sizeof parser_sub_error, "%s: subtree '%s' not found", pd_next->name, sub );
+            snprintf( parser_sub_error, sizeof parser_sub_error, "%s: subtree '%s' not found",
+                      pd_next->name.c_str(), sub.c_str() );
             goto failure;
         }
     }
-    list_delete( path );
     *result = pd_next;
     return 1;
 failure:
     snprintf( parser_error, sizeof parser_error,
                   "parser_get_pdata: %.128s/%.128s: %.3800s",
-                  pd->name, name, parser_sub_error );
-    list_delete( path );
+                  pd->name.c_str(), name, parser_sub_error );
     *result = 0;
     return 0;
 }
@@ -633,70 +623,72 @@ int parser_get_entries( PData *pd, const char *name, List   **result )
         return 0;
     }
     if ( !entry->entries || entry->entries->count == 0 ) {
-        snprintf( parser_error, sizeof parser_error, "parser_get_entries: %s/%s: no subtrees", pd->name, name );
+        snprintf( parser_error, sizeof parser_error, "parser_get_entries: %s/%s: no subtrees", pd->name.c_str(), name );
         return 0;
     }
     *result = entry->entries;
     return 1;
 }
-int parser_get_values ( PData *pd, const char *name, List   **result )
+static int parser_get_values( PData *pd, const char *name,
+                              const std::vector<std::string> **result )
 {
-    PData *entry;
+    PData *entry = 0;
     *result = 0;
     if ( !parser_get_pdata( pd, name, &entry ) ) {
         parser_prepend_error( "parser_get_values:" );
         return 0;
     }
-    if ( !entry->values || entry->values->count == 0 ) {
-        snprintf( parser_error, sizeof parser_error, "parser_get_values: %s/%s: no values", pd->name, name );
+    if ( entry->values.empty() ) {
+        snprintf( parser_error, sizeof parser_error, "parser_get_values: %s/%s: no values",
+                  pd->name.c_str(), name );
         return 0;
     }
-    *result = entry->values;
+    *result = &entry->values;
     return 1;
 }
-int parser_get_value  ( PData *pd, const char *name, char   **result, int index )
+int parser_get_value  ( PData *pd, const char *name, std::string *result, int index )
 {
-    List *values;
+    const std::vector<std::string> *values = 0;
     if ( !parser_get_values( pd, name, &values ) ) {
         parser_prepend_error( "parser_get_value:" );
         return 0;
     }
-    if ( index >= values->count ) {
+    if ( index < 0 || static_cast<size_t>( index ) >= values->size() ) {
         snprintf( parser_error, sizeof parser_error, "parser_get_value: %s/%s: index %i out of range (%i elements)", 
-                 pd->name, name, index, values->count );
+                  pd->name.c_str(), name, index, static_cast<int>( values->size() ) );
         return 0;
     }
-    *result = (char *)list_get( values, index );
+    *result = (*values)[index];
     return 1;
 }
 int parser_get_int    ( PData *pd, const char *name, int     *result )
 {
-    char *value;
+    std::string value;
     if ( !parser_get_value( pd, name, &value, 0 ) ) {
         parser_prepend_error( "parser_get_int:" );
         return 0;
     }
-    *result = atoi( value );
+    *result = atoi( value.c_str() );
     return 1;
 }
 int parser_get_double ( PData *pd, const char *name, double  *result )
 {
-    char *value;
+    std::string value;
     if ( !parser_get_value( pd, name, &value, 0 ) ) {
         parser_prepend_error( "parser_get_double:" );
         return 0;
     }
-    *result = strtod( value, 0 );
+    *result = strtod( value.c_str(), 0 );
     return 1;
 }
-int parser_get_string ( PData *pd, const char *name, char   **result )
+int parser_get_string ( PData *pd, const char *name, std::string *result )
 {
-    char *value;
+    std::string value;
     if ( !parser_get_value( pd, name, &value, 0 ) ) {
         parser_prepend_error( "parser_get_string:" );
         return 0;
     }
-    *result = strdup( value );
+    *result = value;
     return 1;
 }
 
@@ -705,7 +697,7 @@ int parser_get_string ( PData *pd, const char *name, char   **result )
 If an error occurred you can query the reason with this function.
 ====================================================================
 */
-char* parser_get_error( void )
+const char* parser_get_error( void )
 {
     return parser_error;
 }

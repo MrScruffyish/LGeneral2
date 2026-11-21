@@ -19,7 +19,9 @@
 #define __MISC_H
 
 #include "config.h"
-#include <SDL.h> 
+#include <SDL.h>
+#include <string>
+#include <vector>
 
 /* check if number is odd or even */
 #define ODD( x ) ( x & 1 )
@@ -71,11 +73,10 @@ void get_coord( char *str, int *x, int *y );
 
 // text structure //
 typedef struct {
-    char **lines;
-    int count;
+    std::vector<std::string> lines;
 } Text;
 // convert a str into text ( for listbox ) //
-Text* create_text( char *str, int char_width );
+Text* create_text( const char *str, int char_width );
 // delete text //
 void delete_text( Text *text );
 
