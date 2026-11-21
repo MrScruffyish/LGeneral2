@@ -8,6 +8,6 @@ ltrextract_LDADD = $(top_builddir)/util/libutil.a $(INTLLIBS)
 ltrextract_SOURCES = ltrextract.cpp util.cpp util.h \
 	terrain.cpp terrain.h map.cpp map.h nation.cpp nation.h \
 	unit_lib.cpp unit_lib.h scenario.cpp scenario.h campaign.cpp campaign.h \
-	$(LGENERAL_PATH)/parser.c \
-	$(LGENERAL_PATH)/list.c
+	$(LGENERAL_PATH)/parser.cpp \
+	$(LGENERAL_PATH)/list.cpp
 

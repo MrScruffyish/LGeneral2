@@ -49,7 +49,7 @@ struct CommonTreeData {
 };
 
 static struct CommonTreeData *common_tree_data_create(const char *filename) {
-    struct CommonTreeData *ctd = malloc(sizeof(struct CommonTreeData));
+    struct CommonTreeData *ctd = (struct CommonTreeData *)malloc(sizeof(struct CommonTreeData));
     ctd->filename = strdup(filename);
     ctd->ref = 0;
     return ctd;
@@ -207,7 +207,7 @@ static ParserToken parser_read_token(ParserState *st) {
     case PARSER_SET:
     case PARSER_LIST_BEGIN:
     case PARSER_LIST_END:
-        st->tok = ch;
+        st->tok = (ParserToken)ch;
         st->tokbuf[0] = ch;
         st->tokbuf[1] = 0;
         FILE_READCHAR(st, ch);
@@ -296,7 +296,7 @@ hours of precious sleep.
 */
 static inline PData *parser_create_pdata( char *name, List *values, int lineno, struct CommonTreeData *ctd )
 {
-    PData *pd = calloc(1, sizeof(PData));
+    PData *pd = (PData *)calloc(1, sizeof(PData));
     pd->name = name;
     pd->values = values;
     pd->lineno = lineno;
@@ -405,13 +405,13 @@ List* parser_split_string( const char *string, const char *symbols )
                 /* read a string */
                 string++; pos = 0;
                 while ( string[pos] != 0 && string[pos] != '"' ) pos++;
-                token = calloc( pos + 1, sizeof( char ) );
+                token = (char *)calloc( pos + 1, sizeof( char ) );
                 strncpy( token, string, pos ); token[pos] = 0;
                 list_add( list, token );
                 string += pos + (string[pos] != 0);
                 continue;
             }
-        token = calloc( pos + 1, sizeof( char ) );
+        token = (char *)calloc( pos + 1, sizeof( char ) );
         strncpy( token, string, pos); token[pos] = 0;
         list_add( list, token );
         string += pos;
@@ -430,11 +430,11 @@ List *parser_explode_string( const char *string, char c )
     List *list = list_create( LIST_AUTO_DELETE, LIST_NO_CALLBACK );
     char *next_slash = 0;
     char small_buf[64];
-    while ( *string != 0 && ( next_slash = strchr( string, c ) ) != 0 ) {
+    while ( *string != 0 && ( next_slash = (char *)strchr( string, c ) ) != 0 ) {
         if ( next_slash != string ) {
 	    const unsigned buflen = next_slash - string;
 	    /* don't bust the stack. call alloca only on long strings */
-	    char *buffer = buflen < sizeof small_buf ? small_buf : alloca(buflen + 1);
+	    char *buffer = buflen < sizeof small_buf ? small_buf : (char *)alloca(buflen + 1);
             memcpy( buffer, string, buflen );
 	    buffer[buflen] = 0;
             list_add( list, strdup( buffer ) );
@@ -579,7 +579,7 @@ void parser_free( PData **pdata )
     if ( (*pdata) == 0 ) return;
     if ( (*pdata)->entries ) {
         list_reset( (*pdata)->entries );
-        while ( ( entry = list_next( (*pdata)->entries ) ) )
+        while ( ( entry = (PData *)list_next( (*pdata)->entries ) ) )
             parser_free( &entry );
         list_delete( (*pdata)->entries );
     }
@@ -653,13 +653,13 @@ int parser_get_pdata  ( PData *pd, const char *name, PData  **result )
     List *path = parser_explode_string( name, '/' );
     for ( i = 0, list_reset( path ); i < path->count; i++ ) {
         ListIterator it;
-        sub = list_next( path );
+        sub = (char *)list_next( path );
         if ( !pd_next->entries ) {
             snprintf( parser_sub_error, sizeof parser_sub_error, tr("%s: no subtrees"), pd_next->name );
             goto failure;
         }
         it = list_iterator( pd_next->entries ); found = 0;
-        while ( ( entry = list_iterator_next( &it ) ) )
+        while ( ( entry = (PData *)list_iterator_next( &it ) ) )
             if ( strlen( entry->name ) == strlen( sub ) && !strncmp( entry->name, sub, strlen( sub ) ) ) {
                 pd_next = entry;
                 found = 1;
@@ -723,7 +723,7 @@ int parser_get_value  ( PData *pd, const char *name, char   **result, int index 
                  pd->name, name, index, values->count );
         return 0;
     }
-    *result = list_get( values, index );
+    *result = (char *)list_get( values, index );
     return 1;
 }
 int parser_get_int    ( PData *pd, const char *name, int     *result )

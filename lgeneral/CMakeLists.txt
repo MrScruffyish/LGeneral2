@@ -112,10 +112,10 @@ set_target_properties(util PROPERTIES
 
 set(LGENERAL_GAME_SOURCES
     src/main.c
-    src/config.c src/date.c
+    src/config.c src/date.cpp
     src/file.c src/map.c src/nation.c
     src/player.c src/scenario.c src/lg-sdl.c src/misc.c src/unit.c
-    src/audio.c src/parser.c src/list.c src/unit_lib.c
+    src/audio.c src/parser.cpp src/list.cpp src/unit_lib.c
     src/terrain.c src/image.c src/slot.c src/gui.c src/purchase_dlg.c
     src/event.c src/windows.c src/action.c src/campaign.c
     src/strat_map.c src/ai.c src/engine.c src/ai_group.c src/ai_tools.c
@@ -188,7 +188,7 @@ add_executable(ltrextract
     tools/ltrextract/nation.h tools/ltrextract/unit_lib.cpp
     tools/ltrextract/unit_lib.h tools/ltrextract/scenario.cpp
     tools/ltrextract/scenario.h tools/ltrextract/campaign.cpp
-    tools/ltrextract/campaign.h src/parser.c src/list.c
+    tools/ltrextract/campaign.h src/parser.cpp src/list.cpp
 )
 target_compile_definitions(ltrextract PRIVATE LTREXTRACT=1)
 target_include_directories(ltrextract PRIVATE

@@ -73,7 +73,7 @@ const char short_month_names[][4] = {
 /* converts a string to date */
 void str_to_date( Date *date, char *str )
 {
-    int i;
+    size_t i;
     char aux_str[12];
     memset( aux_str, 0, sizeof( char ) * 12 );
     // day

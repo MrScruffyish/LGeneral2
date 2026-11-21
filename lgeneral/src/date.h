@@ -18,6 +18,10 @@
 #ifndef __DATE_H
 #define __DATE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* date types */
 enum {
     DIGIT_DATE       = 0,
@@ -40,5 +44,9 @@ void date_to_str( char *str, Date date, int type );
 
 /* add number of days to date and adjust it */
 void date_add_days( Date *date, int days );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
