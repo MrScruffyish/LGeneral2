@@ -168,7 +168,7 @@ static struct command {
   { "cls", 0, LIST_CLASSES, 0 },
 };
 
-#define NUM_COMMANDS (sizeof commands/sizeof commands[0])
+#define NUM_COMMANDS ((int)(sizeof commands/sizeof commands[0]))
 
 /* predefined locations of files. in_place means in source tree, installed
 means in installation directory. */

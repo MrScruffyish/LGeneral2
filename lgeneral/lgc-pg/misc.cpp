@@ -146,7 +146,7 @@ void set_random_seed()
 /* get coordinates from string */
 void get_coord( char *str, int *x, int *y )
 {
-    int i;
+    size_t i;
     char *cur_arg = 0;
 
     *x = *y = 0;
@@ -173,7 +173,7 @@ void get_coord( char *str, int *x, int *y )
 /* replace new_lines with spaces in text */
 void repl_new_lines( char *text )
 {
-    int i;
+    size_t i;
     for ( i = 0; i < strlen( text ); i++ )
         if ( text[i] < 32 )
             text[i] = 32;

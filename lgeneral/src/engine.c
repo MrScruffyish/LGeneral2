@@ -3619,7 +3619,7 @@ Update the engine if an action is currently handled.
 */
 static void engine_update( int ms )
 {
-    int cx, cy;
+    int cx = 0, cy = 0;
     int old_atk_str, old_def_str;
     int old_atk_suppr, old_def_suppr;
     int old_atk_turn_suppr, old_def_turn_suppr;

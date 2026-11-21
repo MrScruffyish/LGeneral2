@@ -131,7 +131,7 @@ static LanguageCode locale_determine_internal_code(const char *str) {
     /* In the first pass, try to match ll_TT.
      * If this fails, strip _TT and match again.
      */
-    int i;
+    size_t i;
     for (i = 0; i < sizeof lang_data/sizeof lang_data[0]; i++) {
       if (strcmp(lang_data[i].lang, buf) == 0)
         return (LanguageCode)i;
@@ -203,7 +203,7 @@ void locale_write_ordinal_number(char *buf, unsigned n, int number) {
 
 void locale_init(const char *lang) {
   static const char *vars[] = { "LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG" };
-  int i;
+  size_t i;
 
   if (lang) {
     setenv("LANGUAGE", lang, 1);

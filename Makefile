@@ -17,7 +17,7 @@ JOBS ?= $(shell nproc)
 # Output goes to /tmp/human.log (override with LG_TRACE_FILE).
 TRACE ?= 0
 TRACE_SUFFIX := $(if $(filter 1,$(TRACE)),-trace,)
-TRACE_CFLAGS := $(if $(filter 1,$(TRACE)),-DLG_TRACE,)
+TRACE_CMAKE := $(if $(filter 1,$(TRACE)),ON,OFF)
 
 # Path to pg-data.tar.gz or an unpacked pg-data directory, supplied through
 # the environment (e.g. export PG_DATA=~/PG_DATA/pg-data.tar.gz).
@@ -32,9 +32,22 @@ LGEDITOR_BUILD := $(BUILD_ROOT)/lgeditor$(TRACE_SUFFIX)
 GAME_DATA := $(LGENERAL_BUILD)/src
 EXTRACTED_PG_DATA := $(BUILD_ROOT)/pg-data
 
-# Extra options passed to the sub-projects' configure scripts.
-LGENERAL_CONFIGURE_ARGS ?=
-LGEDITOR_CONFIGURE_ARGS ?=
+# Extra options passed to the sub-projects' CMake configuration steps.
+LGENERAL_CMAKE_ARGS ?=
+LGEDITOR_CMAKE_ARGS ?=
+
+# Autotools used -g -O2 by default; keep the same baseline unless the caller
+# supplies explicit flags.
+ifeq ($(strip $(CFLAGS)),)
+CMAKE_C_FLAGS := -g -O2 -Wall
+else
+CMAKE_C_FLAGS := $(strip $(CFLAGS) -Wall)
+endif
+ifeq ($(strip $(CXXFLAGS)),)
+CMAKE_CXX_FLAGS := -g -O2 -Wall
+else
+CMAKE_CXX_FLAGS := $(strip $(CXXFLAGS) -Wall)
+endif
 
 # lgc-pg only needs SDL's image routines; a dummy driver keeps data
 # conversion usable on headless build machines.
@@ -56,18 +69,19 @@ $(LGEDITOR_BUILD)/.synced: $(shell find $(LGEDITOR) -type f) Makefile
 	cp -a $(LGEDITOR)/. $(LGEDITOR_BUILD)/
 	touch $@
 
-# The build uses system gettext and bootstraps autotools files in the isolated
-# build copy.
+# The build uses system gettext and CMake inside the isolated build copy.
 lgeneral: $(LGENERAL_BUILD)/.synced
 	@echo "==> Building $(LGENERAL)"
 	@if [ "$(TRACE)" = 1 ]; then \
 		cp debug/lgtrace.h $(LGENERAL_BUILD)/src/; \
 		python3 debug/instrument.py $(LGENERAL_BUILD); \
 	fi
-	cd $(LGENERAL_BUILD) && CFLAGS="$(CFLAGS) $(TRACE_CFLAGS)" autoreconf -fi && \
-		CFLAGS="$(CFLAGS) $(TRACE_CFLAGS)" ./configure --disable-install \
-		$(LGENERAL_CONFIGURE_ARGS)
-	$(MAKE) -C $(LGENERAL_BUILD) -j$(JOBS)
+	cmake -S $(LGENERAL_BUILD) -B $(LGENERAL_BUILD) \
+		-DCMAKE_BUILD_TYPE= \
+		-DCMAKE_C_FLAGS='$(CMAKE_C_FLAGS)' \
+		-DCMAKE_CXX_FLAGS='$(CMAKE_CXX_FLAGS)' \
+		-DLGENERAL_TRACE=$(TRACE_CMAKE) $(LGENERAL_CMAKE_ARGS)
+	cmake --build $(LGENERAL_BUILD) -j$(JOBS)
 	@echo "==> Staging translations"
 	@set -e; for dom in lgeneral pg; do \
 		for lang in en de; do \
@@ -89,9 +103,11 @@ lgeneral: $(LGENERAL_BUILD)/.synced
 
 lgeditor: $(LGEDITOR_BUILD)/.synced
 	@echo "==> Building $(LGEDITOR)"
-	cd $(LGEDITOR_BUILD) && autoreconf -fi && ./configure --disable-install \
-		--with-lgendir=$(GAME_DATA) $(LGEDITOR_CONFIGURE_ARGS)
-	$(MAKE) -C $(LGEDITOR_BUILD) -j$(JOBS)
+	cmake -S $(LGEDITOR_BUILD) -B $(LGEDITOR_BUILD) \
+		-DCMAKE_BUILD_TYPE= \
+		-DCMAKE_CXX_FLAGS='$(CMAKE_CXX_FLAGS)' \
+		-DLGENDIR=$(GAME_DATA) $(LGEDITOR_CMAKE_ARGS)
+	cmake --build $(LGEDITOR_BUILD) -j$(JOBS)
 
 data: lgeneral
 	@echo "==> Converting Panzer General data"

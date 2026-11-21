@@ -438,7 +438,7 @@ int determine_nation_for_unit(const UnitLib_Entry *entry) {
         { "Greek ", "gre" },
         { "Yugoslav ", "yug" },
     };
-    int i;
+    size_t i;
     const char *nat = 0;
     
     for (i = 0; i < sizeof prefix_xlate/sizeof prefix_xlate[0]; i++) {

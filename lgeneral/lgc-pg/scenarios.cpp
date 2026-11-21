@@ -417,9 +417,9 @@ void scen_create_pg_weather( FILE *dest_file, int scen_id, FILE *scen_file, int 
         "ffffffffffsooofffffoosos",
         "ffffffroforofff"
     };
-    int i, wlen = strlen(weathers[scen_id]);
+    int i, wlen = (int)strlen(weathers[scen_id]);
     char w[32];
-    if (strlen(weathers[scen_id])>0&&strlen(weathers[scen_id])!=turns)
+    if (wlen > 0 && wlen != turns)
         fprintf(stderr,"ERROR: scen %d: mismatch in length of weather (%d) and turn number (%d)\n",
                 scen_id,wlen,turns);
     /* write weather */
@@ -838,7 +838,7 @@ static char *scentitle_to_filename( const char *title )
     int i, j;
     
     snprintf(fname, 32, "%s", title);
-    for (i = 0; i < strlen(fname); i++) {
+    for (i = 0; i < (int)strlen(fname); i++) {
         /* adjust case (first character of word is upper case) */
         if (i == 0 || fname[i - 1] == ' ')
             fname[i] = toupper(fname[i]);
@@ -911,8 +911,8 @@ int scenarios_convert( int scen_id )
             snprintf( path, MAXPATHLEN, "%s/scenarios/pg/.order", dest_path );
             aux_file = fopen( path, "wb" );
             if ( aux_file ) {
-                for (i = 0; i < sizeof fnames/sizeof fnames[0]; i++)
-                    fprintf( aux_file, "%s\n", fnames[i] );
+                for (size_t n = 0; n < sizeof fnames/sizeof fnames[0]; n++)
+                    fprintf( aux_file, "%s\n", fnames[n] );
                 fclose( aux_file );
             } else
                 fprintf( stderr, "Could not write sort order to %s\n", path );
