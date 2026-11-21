@@ -12,7 +12,7 @@ src/event.c
 src/engine.c
 src/date.cpp
 src/config.c
-src/file.c
+src/file.cpp
 src/strat_map.c
 src/list.cpp
 src/main.c

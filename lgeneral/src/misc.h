@@ -18,6 +18,10 @@
 #ifndef __MISC_H
 #define __MISC_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct PData;
 struct _Font;
 
@@ -198,5 +202,9 @@ const char *get_gamedir(void);
  * Only to be used as standalone command, not in conditions. */
 #define _fread(ptr,size,nmemb,stream) \
 	do { int _freadretval = fread(ptr,size,nmemb,stream); if (_freadretval != nmemb && !feof(stream)) fprintf(stderr, "%s: %d: _fread error\n",__FILE__,__LINE__);} while (0)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

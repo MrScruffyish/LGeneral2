@@ -5,7 +5,7 @@ bin_PROGRAMS = lgeneral
 AM_CPPFLAGS = -I$(top_srcdir)/util $(INTLINCLUDES)
 lgeneral_SOURCES = main.c \
 config.c date.cpp \
-file.c map.c nation.c \
+file.cpp map.c nation.c \
 player.c scenario.c lg-sdl.c misc.c unit.c \
 audio.c parser.cpp list.cpp unit_lib.c \
 terrain.c image.c slot.c gui.c purchase_dlg.c \
@@ -33,7 +33,7 @@ scenarios ai_modules terrain
 check_PROGRAMS = testfile
 
 testfile_CFLAGS = -DTESTFILE @SDL_CFLAGS@
-testfile_SOURCES = file.c list.cpp misc.c
+testfile_SOURCES = file.cpp list.cpp misc.c
 testfile_LDADD = $(top_builddir)/util/libutil.a
 
 install-data-local:

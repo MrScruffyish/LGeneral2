@@ -113,7 +113,7 @@ set_target_properties(util PROPERTIES
 set(LGENERAL_GAME_SOURCES
     src/main.c
     src/config.c src/date.cpp
-    src/file.c src/map.c src/nation.c
+    src/file.cpp src/map.c src/nation.c
     src/player.c src/scenario.c src/lg-sdl.c src/misc.c src/unit.c
     src/audio.c src/parser.cpp src/list.cpp src/unit_lib.c
     src/terrain.c src/image.c src/slot.c src/gui.c src/purchase_dlg.c

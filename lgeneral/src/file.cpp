@@ -87,9 +87,9 @@ static List *file_extract_order_list( List *files, List *orderlist )
     if ( !orderlist ) return extracted;
     
     list_reset( orderlist );
-    while ( ( ordered = list_next( orderlist ) ) ) {
+    while ( ( ordered = (char *)list_next( orderlist ) ) ) {
         list_reset( files );
-        while ( ( name = list_next( files ) ) ) {
+        while ( ( name = (char *)list_next( files ) ) ) {
         
             if ( strcmp( name, ordered ) == 0 ) {
                 list_transfer( files, extracted, name );
@@ -143,7 +143,7 @@ List* dir_get_entries( const char *path, const char *root, const char *ext )
         fprintf( stderr, tr("get_file_list: can't open parent directory '%s'\n"), path );
         return 0;
     }
-    text = calloc( 1, sizeof( Text ) );
+    text = (Text *)calloc( 1, sizeof( Text ) );
     /* use dynamic list to gather all valid entries */
     list = list_create( LIST_AUTO_DELETE, LIST_NO_CALLBACK );
     /* read each entry and check if its a valid entry, then add it to the dynamic list */
@@ -197,10 +197,10 @@ List* dir_get_entries( const char *path, const char *root, const char *ext )
     extracted = file_extract_order_list( list, order );
     /* convert to static list */
     text->count = list->count;
-    text->lines = malloc( list->count * sizeof( char* ));
+    text->lines = (char **)malloc( list->count * sizeof( char* ));
     list_reset( list );
     for ( i = 0; i < text->count; i++ )
-        text->lines[i] = strdup( list_next( list ) );
+        text->lines[i] = strdup( (char *)list_next( list ) );
     list_delete( list );
     /* sort this list: directories at top and everything in alphabetical order */
     qsort( text->lines, text->count, sizeof text->lines[0], file_compare );
@@ -213,7 +213,7 @@ List* dir_get_entries( const char *path, const char *root, const char *ext )
     {
         char *str;
         list_reset( extracted );
-        while ( ( str = list_next( extracted ) ) )
+        while ( ( str = (char *)list_next( extracted ) ) )
             list_transfer( extracted, list, str );
     }
     /* transfer files */
@@ -252,7 +252,7 @@ int main( int argc, char **argv )
     }
     
     list_reset(l);
-    while ( ( name = list_next(l) ) )
+    while ( ( name = (char *)list_next(l) ) )
         printf( "%s\n", name );
     return 0;
 }
