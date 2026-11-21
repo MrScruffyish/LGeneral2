@@ -106,12 +106,14 @@ Get the geometry of an icon in surface 'icons' by using the three
 measure dots in the left upper, right upper, left lower corner.
 ====================================================================
 */
-static void unit_get_icon_geometry( int icon_id, SDL_Surface *icons, int *width, int *height, int *offset, Uint32 *key )
+static int unit_get_icon_geometry( int icon_id, SDL_Surface *icons, int *width, int *height, int *offset, Uint32 *key )
 {
     Uint32 mark;
     int y;
     int count = icon_id * 2; /* there are two pixels for one icon */
 
+    if ( !icons || icons->w < 2 || icons->h < 2 || icon_id < 0 )
+        return 0;
     /* nada white dot! take the first pixel found in the upper left corner as mark */
     mark = get_pixel( icons, 0, 0 );
     /* compute offset */
@@ -120,20 +122,24 @@ static void unit_get_icon_geometry( int icon_id, SDL_Surface *icons, int *width,
             if ( count == 0 ) break;
             count--;
         }
+    if ( y >= icons->h ) return 0;
     *offset = y;
     /* compute height */
     y++;
     while ( y < icons->h && get_pixel( icons, 0, y ) != mark )
         y++;
+    if ( y >= icons->h ) return 0;
    (*height) = y - (*offset) + 1;
     /* compute width */
     y = *offset;
     *width = 1;
-    while ( get_pixel( icons, (*width ), y ) != mark )
+    while ( *width < icons->w && get_pixel( icons, *width, y ) != mark )
         (*width)++;
+    if ( *width >= icons->w ) return 0;
     (*width)++;
     /* pixel beside left upper measure key is color key */
     *key = get_pixel( icons, 1, *offset );
+    return 1;
 }
 
 /*
@@ -275,7 +281,7 @@ int unit_lib_load( char *fname, int main )
         }
         trgt_types = (Trgt_Type*)calloc( trgt_type_count, sizeof( Trgt_Type ) );
         list_reset( entries ); i = 0;
-        while ( ( sub = (PData*)list_next( entries ) ) ) {
+        while ( i < trgt_type_count && ( sub = (PData*)list_next( entries ) ) ) {
             trgt_types[i].id = strdup( sub->name );
             if ( !parser_get_value( sub, "name", &str, 0 ) ) goto parser_failure;
             trgt_types[i].name = strdup(trd(domain, str));
@@ -441,7 +447,8 @@ int unit_lib_load( char *fname, int main )
         /* icon_type */
         unit->icon_type = icon_type;
         /* get position and size in icons surface */
-        unit_get_icon_geometry( icon_id, icons, &width, &height, &offset, &color_key );
+        if ( !unit_get_icon_geometry( icon_id, icons, &width, &height, &offset, &color_key ) )
+            goto failure;
         /* picture is copied from unit_pics first
          * if picture_type is not ALL_DIRS, picture is a single picture looking to the right;
          * add a flipped picture looking to the left 

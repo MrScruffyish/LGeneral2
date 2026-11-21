@@ -82,7 +82,8 @@ static inline struct hashtable *domain_map_instance() {
 /** inserts a new entry into the domain-map */
 static void domain_map_insert(const char *domain, struct DomainInfo *info) {
   struct hashtable *dm = domain_map_instance();
-  hashtable_insert(dm, (void *)domain, info);
+  /* The table owns its keys; callers may free the domain string. */
+  hashtable_insert(dm, strdup(domain), info);
 }
 
 #ifdef __NOTUSED

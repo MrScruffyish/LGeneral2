@@ -899,9 +899,12 @@ int fdlg_handle_button( FDlg *fdlg, int button_id, int cx, int cy, Button **butt
                             fdlg->subdir[0] = 0;
                     }
                     else {
+                        size_t used = strlen( fdlg->subdir );
+                        size_t avail = sizeof( fdlg->subdir ) - used;
                         if ( fdlg->subdir[0] != 0 )
-                            strcat( fdlg->subdir, "/" );
-                        strcat( fdlg->subdir, fname + 1 );
+                            snprintf( fdlg->subdir + used, avail, "/%s", fname + 1 );
+                        else
+                            snprintf( fdlg->subdir + used, avail, "%s", fname + 1 );
                     }
                     if ( fdlg->subdir[0] == 0 )
                         strcpy( path, fdlg->root );

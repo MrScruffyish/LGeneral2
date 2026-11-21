@@ -57,6 +57,7 @@ static struct CommonTreeData *common_tree_data_create(const char *filename) {
 
 static void common_tree_data_delete(struct CommonTreeData *ctd) {
     free(ctd->filename);
+    free(ctd);
 }
 
 static inline void common_tree_data_ref(struct CommonTreeData *ctd) {
@@ -492,6 +493,8 @@ static int parser_read_file_compact( ParserState *st, PData *section )
                 list_add( section->entries, pd );
                 break;
             default:
+                /* token style is per line, not per file */
+                useNewTokens = 0;
                 /* check name */
                 if ( ( cur = strchr( line, entryToken1 ) ) == 0 ) {
                 	if ( ( cur = strchr( line, entryToken2 ) ) == 0 ) {
@@ -535,12 +538,20 @@ PData* parser_read_file( const char *tree_name, const char *fname )
     FILE_READCHAR( st, st->ch );
     magic = st->ch;
     if ( magic == '@' ) {
+        long file_size;
         /* get the whole contents -- 1 and CBUFFER_SIZE are switched */
-        fseek( st->file, 0, SEEK_END ); size = ftell( st->file ) - 2;
-        if ( size >= CBUFFER_SIZE ) {
+        fseek( st->file, 0, SEEK_END );
+        file_size = ftell( st->file );
+        if ( file_size < 2 ) {
+            snprintf( parser_error, sizeof parser_error,
+                      tr("%s: invalid compact file"), fname );
+            goto failure;
+        }
+        if ( file_size - 2 >= CBUFFER_SIZE ) {
             fprintf( stderr, tr("%s: file's too big to fit the compact buffer (%dKB)\n"), fname, CBUFFER_SIZE / 1024 );
             size = CBUFFER_SIZE - 1;
-        }
+        } else
+            size = (int)(file_size - 2);
         fseek( st->file, 2, SEEK_SET );
         _fread( cbuffer, 1, size, st->file );
         cbuffer[size] = 0;

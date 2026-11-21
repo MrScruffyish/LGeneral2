@@ -115,7 +115,7 @@ static int is_saved_game( char *file_name, int *i )
     if ( strncmp( file_name, "lg_save_", 8 ) ) return 0;
     ptr = &file_name[8];
     (*i) = atoi(ptr);
-    return *i < SLOT_COUNT;
+    return *i >= 0 && *i < SLOT_COUNT;
 }
 
 /*
@@ -125,7 +125,11 @@ Save/load slot name to/from file.
 */
 static void slot_read_name( Slot *slot, FILE *file )
 {
-    _fread( slot->name, sizeof( slot->name ), 1, file );
+    /* Read the whole fixed-size field to keep the file position aligned. */
+    if ( fread( slot->name, 1, sizeof( slot->name ), file )
+         != sizeof( slot->name ) )
+        slot->name[0] = 0;
+    slot->name[sizeof( slot->name ) - 1] = 0;
 }
 static void slot_write_name( Slot *slot, FILE *file )
 {
@@ -205,13 +209,19 @@ static void save_string( FILE *file, const char *str )
 }
 static char* load_string( FILE *file )
 {
-    char *str = 0;
-    int length;
+    const int length = try_load_int( file, -1 );
+    char *str;
 
-    _fread( &length, sizeof( int ), 1, file );
-    str = (char*)calloc( length + 1, sizeof( char ) );
-    _fread( str, sizeof( char ), length, file );
-    str[length] = 0;
+    /* Malformed input must not turn into a negative allocation or a huge read.
+     * Return an allocated empty string so existing callers can free it. */
+    if ( length < 0 || length > ( 1 << 20 ) )
+        return (char*)calloc( 1, 1 );
+    str = (char*)calloc( (size_t)length + 1, sizeof( char ) );
+    if ( !str )
+        return (char*)calloc( 1, 1 );
+    if ( length > 0 &&
+         fread( str, sizeof( char ), (size_t)length, file ) != (size_t)length )
+        str[0] = 0;
     return str;
 }
 
@@ -499,6 +509,7 @@ Unit* load_unit( FILE *file )
     int val;
 
     unit = (Unit*)calloc( 1, sizeof( Unit ) );
+    if ( !unit ) return 0;
     /* read each member */
     /* prop */
     load_unit_lib_entry(file, &unit->prop);
@@ -577,6 +588,10 @@ Unit* load_unit( FILE *file )
     load_int(file);
 
     unit->backup = (Unit*)calloc( 1, sizeof( Unit ) );
+    if ( !unit->backup ) {
+        free( unit );
+        return 0;
+    }
     /* sel_prop */
     if ( unit->embark == EMBARK_NONE )
         unit->sel_prop = &unit->prop;
@@ -585,6 +600,12 @@ Unit* load_unit( FILE *file )
     /* props */
     str = load_string( file );
     lib_entry = unit_lib_find( str );
+    if ( !lib_entry ) {
+        free( str );
+        free( unit->backup );
+        free( unit );
+        return 0;
+    }
     unit->prop.id = lib_entry->id;
     unit->prop.name = lib_entry->name;
     unit->prop.icon = lib_entry->icon;
@@ -615,6 +636,13 @@ Unit* load_unit( FILE *file )
     unit->nation = nation_find( str );
     free( str );
     /* recalculate members that aren't stored */
+    if ( !unit->player || !unit->nation ||
+         unit->x < 0 || unit->x >= map_w ||
+         unit->y < 0 || unit->y >= map_h ) {
+        free( unit->backup );
+        free( unit );
+        return 0;
+    }
     unit->terrain = map[unit->x][unit->y].terrain;
     unit_adjust_icon( unit );
     unit->exp_level = unit->exp / 100;
@@ -1080,7 +1108,12 @@ int slot_load( int id )
         config.purchase = load_int( file );
     }
     turn = load_int( file );
-    cur_player = player_get_by_index( load_int( file ) );
+    {
+        int player_index = load_int( file );
+        if ( player_index < 0 || player_index >= players->count )
+            player_index = 0;
+        cur_player = player_get_by_index( player_index );
+    }
     cur_weather = scen_get_weather();
     /* players */
     list_reset( players );
@@ -1089,19 +1122,47 @@ int slot_load( int id )
     /* unit stuff */
     list_clear( units );
     unit_count = load_int( file );
-    for ( i = 0; i < unit_count; i++ )
-        list_add( units, load_unit( file ) );
+    if ( unit_count < 0 || unit_count > 100000 ) {
+        fclose( file );
+        return 0;
+    }
+    for ( i = 0; i < unit_count; i++ ) {
+        Unit *unit = load_unit( file );
+        if ( !unit ) { fclose( file ); return 0; }
+        list_add( units, unit );
+    }
     list_clear( reinf );
     unit_count = load_int( file );
-    for ( i = 0; i < unit_count; i++ )
-        list_add( reinf, load_unit( file ) );
+    if ( unit_count < 0 || unit_count > 100000 ) {
+        fclose( file );
+        return 0;
+    }
+    for ( i = 0; i < unit_count; i++ ) {
+        Unit *unit = load_unit( file );
+        if ( !unit ) { fclose( file ); return 0; }
+        list_add( reinf, unit );
+    }
     list_clear( avail_units );
     unit_count = load_int( file );
-    for ( i = 0; i < unit_count; i++ )
-        list_add( avail_units, load_unit( file ) );
+    if ( unit_count < 0 || unit_count > 100000 ) {
+        fclose( file );
+        return 0;
+    }
+    for ( i = 0; i < unit_count; i++ ) {
+        Unit *unit = load_unit( file );
+        if ( !unit ) { fclose( file ); return 0; }
+        list_add( avail_units, unit );
+    }
     /* map stuff */
-    map_w = load_int( file );
-    map_h = load_int( file );
+    {
+        const int saved_map_w = load_int( file );
+        const int saved_map_h = load_int( file );
+        if ( saved_map_w != map_w || saved_map_h != map_h ) {
+            fprintf( stderr, "%s: saved map size does not match scenario\n", path );
+            fclose( file );
+            return 0;
+        }
+    }
     for ( i = 0; i < map_w; i++ )
         for ( j = 0; j < map_h; j++ ) {
             load_map_tile_units( file, &map[i][j].g_unit, &map[i][j].a_unit );

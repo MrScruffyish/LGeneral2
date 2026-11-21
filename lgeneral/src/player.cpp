@@ -151,7 +151,7 @@ Set and get player as current by index.
 Player *players_set_current( int index )
 {
     if ( index < 0 ) index = 0;
-    if ( index > players->count ) index = 0;
+    if ( index >= players->count ) index = 0;
     cur_player_id = index;
     return (Player*)list_get( players, cur_player_id );
 }

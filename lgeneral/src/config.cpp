@@ -35,10 +35,14 @@ void check_config_dir_name()
     struct stat info;
 #ifndef INSTALLDIR
     /* if no installation store config to current directory not home */
-    sprintf( config.dir_name, "." );
-#else    
-    sprintf( config.dir_name, "%s/.lgames", getenv( "HOME" ) );
-#endif    
+    snprintf( config.dir_name, sizeof config.dir_name, "." );
+#else
+    {
+        const char *home = getenv( "HOME" );
+        if ( !home || !*home ) home = ".";
+        snprintf( config.dir_name, sizeof config.dir_name, "%s/.lgames", home );
+    }
+#endif
     if ( stat( config.dir_name, &info ) != 0 ) {
         int res;
 

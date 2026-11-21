@@ -107,6 +107,11 @@ Locals
 Check if subcondition is fullfilled.
 ====================================================================
 */
+static int coord_in_map( int x, int y )
+{
+    return x >= 0 && x < map_w && y >= 0 && y < map_h;
+}
+
 static int subcond_check( VSubCond *cond )
 {
     Unit *unit;
@@ -121,6 +126,7 @@ static int subcond_check( VSubCond *cond )
                             return 0;
             return 1;
         case VSUBCOND_CTRL_HEX:
+            if ( !coord_in_map( cond->x, cond->y ) ) return 0;
             if ( map[cond->x][cond->y].player )
                 if ( player_is_ally( cond->player, map[cond->x][cond->y].player ) )
                     return 1;
@@ -417,7 +423,7 @@ int scen_load( const char *fname )
 	}
 	if ( parser_get_values( sub, "prestige", &values ) ) {
 		list_reset( values ); i = 0;
-		while ( ( str = (char*)list_next( values ) ) ) {
+		while ( i < scen_info->turn_limit && ( str = (char*)list_next( values ) ) ) {
 			player->prestige_per_turn[i] = atoi(str);
 			i++;
 		}
@@ -450,6 +456,10 @@ int scen_load( const char *fname )
     while ( ( flag = (PData*)list_next( flags ) ) ) {
         if ( !parser_get_int( flag, "x", &x ) ) goto parser_failure;
         if ( !parser_get_int( flag, "y", &y ) ) goto parser_failure;
+        if ( !coord_in_map( x, y ) ) {
+            fprintf( stderr, tr("Flag out of map: ignored\n") );
+            continue;
+        }
         obj = 0; parser_get_int( flag, "obj", &obj );
         if ( !parser_get_value( flag, "nation", &str, 0 ) ) goto parser_failure;
         nation = nation_find( str );
@@ -521,6 +531,9 @@ int scen_load( const char *fname )
                         vconds[i].subconds_and[j].player = player_get_by_id( str );
                         if ( !parser_get_int( pd_vsubcond, "x", &vconds[i].subconds_and[j].x ) ) goto parser_failure;
                         if ( !parser_get_int( pd_vsubcond, "y", &vconds[i].subconds_and[j].y ) ) goto parser_failure;
+                        if ( !coord_in_map( vconds[i].subconds_and[j].x,
+                                            vconds[i].subconds_and[j].y ) )
+                            goto parser_failure;
                     }
                     else
                     if ( STRCMP( pd_vsubcond->name, "turns_left" ) ) {
@@ -568,6 +581,7 @@ int scen_load( const char *fname )
 							list_reset( values );
 							while ( ( lib = (char*)list_next( values ) ) ) {
 								get_coord( lib, &x, &y );
+								if ( !coord_in_map( x, y ) ) continue;
 								vconds[i].subconds_and[j].coords[vconds[i].subconds_and[j].coord_count][0]=x;
 								vconds[i].subconds_and[j].coords[vconds[i].subconds_and[j].coord_count][1]=y;
 								vconds[i].subconds_and[j].coord_count++;
@@ -606,6 +620,9 @@ int scen_load( const char *fname )
                         vconds[i].subconds_or[j].player = player_get_by_id( str );
                         if ( !parser_get_int( pd_vsubcond, "x", &vconds[i].subconds_or[j].x ) ) goto parser_failure;
                         if ( !parser_get_int( pd_vsubcond, "y", &vconds[i].subconds_or[j].y ) ) goto parser_failure;
+                        if ( !coord_in_map( vconds[i].subconds_or[j].x,
+                                            vconds[i].subconds_or[j].y ) )
+                            goto parser_failure;
                     }
                     else
                     if ( STRCMP( pd_vsubcond->name, "turns_left" ) ) {

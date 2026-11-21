@@ -43,11 +43,16 @@ const char *paths_exec_path(void) {
     do {
       size *= 2;
       char *buf = (char *)realloc(exec_path_buf, size);
-      if (!buf || ((int)(written = readlink(file, buf, size)) == -1)) {
+      if (!buf) return empty;
+      int result = readlink(file, buf, size);
+      if (result == -1) {
+        /* realloc may already have freed the old buffer. */
         free(buf);
+        exec_path_buf = 0;
         return empty;
       }
       exec_path_buf = buf;
+      written = (unsigned)result;
     } while (written == size);
     /* trim buffer to the exact length and NUL it */
     if (exec_path_buf[0]) {

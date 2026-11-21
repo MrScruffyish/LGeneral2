@@ -138,22 +138,33 @@ int map_load( char *fname )
     /* map size */
     if ( !parser_get_int( pd, "width", &map_w ) ) goto parser_failure;
     if ( !parser_get_int( pd, "height", &map_h ) ) goto parser_failure;
+    if ( map_w <= 0 || map_h <= 0 || map_w > 1024 || map_h > 1024 )
+        goto parser_failure;
     /* load terrains */
     if ( !parser_get_value( pd, "terrain_db", &str, 0 ) ) goto parser_failure;
     if ( !terrain_load( str ) ) goto failure;
     if ( !parser_get_values( pd, "tiles", &tiles ) ) goto parser_failure;
+    if ( terrain_type_count <= 0 ) goto parser_failure;
+    if ( (size_t)tiles->count < (size_t)map_w * (size_t)map_h ) goto parser_failure;
     /* allocate map memory */
     map = (Map_Tile**)calloc( map_w, sizeof( Map_Tile* ) );
-    for ( i = 0; i < map_w; i++ )
+    if ( !map ) goto failure;
+    for ( i = 0; i < map_w; i++ ) {
         map[i] = (Map_Tile*)calloc( map_h, sizeof( Map_Tile ) );
+        if ( !map[i] ) goto failure;
+    }
     mask = (Mask_Tile**)calloc( map_w, sizeof( Mask_Tile* ) );
-    for ( i = 0; i < map_w; i++ )
+    if ( !mask ) goto failure;
+    for ( i = 0; i < map_w; i++ ) {
         mask[i] = (Mask_Tile*)calloc( map_h, sizeof( Mask_Tile ) );
+        if ( !mask[i] ) goto failure;
+    }
     /* map itself */
     list_reset( tiles );
     for ( y = 0; y < map_h; y++ )
         for ( x = 0; x < map_w; x++ ) {
             tile = (char*)list_next( tiles );
+            if ( !tile || strlen( tile ) < 2 ) goto parser_failure;
             /* default is no flag */
             map[x][y].nation = 0;
             map[x][y].player = 0;
@@ -184,7 +195,7 @@ int map_load( char *fname )
     /* map names */
     if ( parser_get_values( pd, "names", &names ) ) {
         list_reset( names );
-        for ( i = 0; i < names->count; i++ ) {
+        for ( i = 0; i < names->count && i < map_w * map_h; i++ ) {
             str = (char*)list_next( names );
             x = i % map_w;
             y = i / map_w;

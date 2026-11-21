@@ -384,7 +384,7 @@ int gui_load( const char *dir )
     sx = 3; sy = 3;
     dy = 32;
     for ( i = 0; i < SLOT_COUNT; i++ ) {
-        sprintf( str, tr("Load: %s"), slot_get_name( i ) );
+        snprintf( str, sizeof str, tr("Load: %s"), slot_get_name( i ) );
         group_add_button( gui->load_menu, ID_LOAD_0 + i, sx, sy, 0, str );
         sy += dy;
     }
@@ -396,7 +396,7 @@ int gui_load( const char *dir )
         goto failure;
     sx = 3; sy = 3;
     for ( i = 0; i < 10; i++ ) {
-        sprintf( str, tr("Save: %s"), slot_get_name( i ) );
+        snprintf( str, sizeof str, tr("Save: %s"), slot_get_name( i ) );
         group_add_button( gui->save_menu, ID_SAVE_0 + i, sx, sy, 0, str );
         sy += dy;
     }
@@ -1420,11 +1420,11 @@ void gui_update_slot_tooltips()
     int i;
     char str[128];
     for ( i = 0; i < SLOT_COUNT; i++ ) {
-        sprintf( str, tr("Load: %s"), slot_get_name( i ) );
+        snprintf( str, sizeof str, tr("Load: %s"), slot_get_name( i ) );
         strcpy_lt( group_get_button( gui->load_menu, ID_LOAD_0 + i )->tooltip, str, 31 );
     }
     for ( i = 0; i < 10; i++ ) {
-        sprintf( str, tr("Save: %s"), slot_get_name( i ) );
+        snprintf( str, sizeof str, tr("Save: %s"), slot_get_name( i ) );
         strcpy_lt( group_get_button( gui->save_menu, ID_SAVE_0 + i )->tooltip, str, 31 );
     }
 }
@@ -1917,6 +1917,17 @@ static void gui_render_single_unit( SDL_Surface * contents,Unit *unit ,int x,int
     y+=hex_h;
     write_line( contents, gui->font_std, unit->name, x-24, &y );
 }
+/* Append a NUL-terminated tag to a packed tag list. */
+static int tag_list_add( char *tags, size_t size, int *used, const char *tag )
+{
+    const size_t len = strlen( tag ) + 1;
+    if ( *used < 0 || static_cast<size_t>( *used ) + len > size )
+        return 0;
+    memcpy( tags + *used, tag, len );
+    *used += static_cast<int>( len );
+    return 1;
+}
+
 void gui_render_unit_list( SDL_Surface *contents, List * units)
 {
     int tagUnits=0;
@@ -1941,8 +1952,9 @@ void gui_render_unit_list( SDL_Surface *contents, List * units)
                             }
                     if(!already_added_tag&&strlen(unit->tag))
                         {
-                            sprintf(tags+last_tag,"%s",unit->tag);
-                            last_tag+=strlen(unit->tag)+1;
+                            if ( tag_list_add( tags, sizeof tags, &last_tag,
+                                               unit->tag ) )
+                                tagUnits=1;
                             tagUnits=1;
                         }
                     if(unit->prop.unit_class>class_count)
@@ -1950,8 +1962,7 @@ void gui_render_unit_list( SDL_Surface *contents, List * units)
                 }
             unit=(Unit*)list_next(units);
         }
-    sprintf(tags+last_tag,"[untagged]");
-    last_tag+=11;
+    tag_list_add( tags, sizeof tags, &last_tag, "[untagged]" );
     for(tag_iterator=0;tag_iterator!=last_tag;tag_iterator+=strlen(tags+tag_iterator)+1)
         {
             if(y)y+=20;
@@ -2031,8 +2042,9 @@ Unit *gui_unit_list_unit_clicked( List * units ,int cx,int cy)
                             }
                     if(!already_added_tag&&strlen(unit->tag))
                         {
-                            sprintf(tags+last_tag,"%s",unit->tag);
-                            last_tag+=strlen(unit->tag)+1;
+                            if ( tag_list_add( tags, sizeof tags, &last_tag,
+                                               unit->tag ) )
+                                tagUnits=1;
                             tagUnits=1;
                         }
                     if(unit->prop.unit_class>class_count)
@@ -2040,8 +2052,7 @@ Unit *gui_unit_list_unit_clicked( List * units ,int cx,int cy)
                 }
             unit=(Unit*)list_next(units);
         }
-    sprintf(tags+last_tag,"[untagged]");
-    last_tag+=11;
+    tag_list_add( tags, sizeof tags, &last_tag, "[untagged]" );
     for(tag_iterator=0;tag_iterator!=last_tag;tag_iterator+=strlen(tags+tag_iterator)+1)
         {
             if(y)y+=20;

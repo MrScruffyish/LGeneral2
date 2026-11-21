@@ -44,9 +44,12 @@ List *file_read_lines( FILE *file )
     
     /* read lines */
     while( !feof( file ) ) {
+        size_t len;
         if ( !fgets( buffer, sizeof buffer - 1, file ) ) break;
         if ( buffer[0] == 10 ) continue; /* empty line */
-        buffer[strlen( buffer ) - 1] = 0; /* cancel newline */
+        len = strlen( buffer );
+        while ( len > 0 && ( buffer[len - 1] == '\n' || buffer[len - 1] == '\r' ) )
+            buffer[--len] = 0; /* cancel newline */
         list_add( list, strdup( buffer ) );
     }
     return list;
@@ -182,9 +185,13 @@ List* dir_get_entries( const char *path, const char *root, const char *ext )
             if ( ( file = fopen( file_name, "rb" ) ) == 0 ) continue;
             fclose( file );
             /* check if this file has the proper extension */
-            if ( ext )
-                if ( !STRCMP( dirent->d_name + ( strlen( dirent->d_name ) - strlen( ext ) ), ext ) )
+            if ( ext ) {
+                const size_t name_len = strlen( dirent->d_name );
+                const size_t ext_len = strlen( ext );
+                if ( name_len < ext_len ||
+                     !STRCMP( dirent->d_name + name_len - ext_len, ext ) )
                     continue;
+            }
             list_add( list, strdup( dirent->d_name ) );
         }
     }

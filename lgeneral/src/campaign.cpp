@@ -193,6 +193,7 @@ int camp_load( const char *fname )
             while ( ( subsub = (PData*)list_next( next_entries ) ) ) {
                 result = subsub->name;
                 next_scen = (char*)list_first( subsub->values );
+                if ( !next_scen ) next_scen = (char*)"";
                 snprintf( str, sizeof(str), "%s>%s", result, next_scen );
                 list_add( centry->nexts, strdup( str ) );
             }
@@ -347,8 +348,11 @@ const char *camp_get_description(const char *result)
             if ( ( tokens = parser_split_string( str, ">" ) ) ) {
                 int found = 0;
                 if ( STRCMP( result, (const char*)list_first( tokens ) ) ) {
-                    ret = strchr( str, '>' ) + 1;
-                    found = 1;
+                    const char *sep = strchr( str, '>' );
+                    if ( sep ) {
+                        ret = sep + 1;
+                        found = 1;
+                    }
                 }
                 list_delete( tokens );
                 if ( found ) break;

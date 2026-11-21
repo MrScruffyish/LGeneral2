@@ -70,30 +70,49 @@ const char short_month_names[][4] = {
     TR_NOOP("Dec")
 };
 
+/* Copy one date field, stopping at 'end' (or at the end of the string). */
+static void date_copy_field( char *dst, size_t dst_size,
+                             const char *start, const char *end )
+{
+    size_t len = end ? static_cast<size_t>( end - start ) : strlen( start );
+    if ( len >= dst_size )
+        len = dst_size - 1;
+    memcpy( dst, start, len );
+    dst[len] = 0;
+}
+
 /* converts a string to date */
 void str_to_date( Date *date, char *str )
 {
-    size_t i;
     char aux_str[12];
-    memset( aux_str, 0, sizeof( char ) * 12 );
-    // day
-    for ( i = 0; i < strlen( str ); i++ )
-        if ( str[i] == '.' ) {
-            strncpy( aux_str, str, i);
-            date->day = atoi( aux_str );
-            break;
-        }
-    str = str + i + 1;
-    // month
-    for ( i = 0; i < strlen( str ); i++ )
-        if ( str[i] == '.' ) {
-            strncpy( aux_str, str, i);
-            date->month = atoi( aux_str );
-            break;
-        }
-    str = str + i + 1;
-    // year
-    date->year = atoi( str );
+    const char *pos = str;
+    const char *dot;
+
+    if ( !date )
+        return;
+    memset( date, 0, sizeof( *date ) );
+    if ( !str )
+        return;
+
+    /* day */
+    dot = strchr( pos, '.' );
+    if ( !dot )
+        return;
+    date_copy_field( aux_str, sizeof aux_str, pos, dot );
+    date->day = atoi( aux_str );
+
+    /* month */
+    pos = dot + 1;
+    dot = strchr( pos, '.' );
+    if ( !dot )
+        return;
+    date_copy_field( aux_str, sizeof aux_str, pos, dot );
+    date->month = atoi( aux_str );
+
+    /* year */
+    pos = dot + 1;
+    date_copy_field( aux_str, sizeof aux_str, pos, 0 );
+    date->year = atoi( aux_str );
 }
 
 /* converts a date to a string */
