@@ -258,16 +258,16 @@ static void render_unit_lib_entry_info( Unit_Lib_Entry *entry,
 	write_line( buffer, gui->font_std, str, x, &y );
 	y += 5;
 	for ( i = 0; i < trgt_type_count; i++ ) {
-		char valstr[8];
+		char valstr[16];
 		int j;
 		
 		sprintf( str, tr("%s Attack:"), trgt_types[i].name );
 		for (j = strlen(str); j < 14; j++)
 			strcat( str, " " );
 		if ( entry->atks[i] < 0 )
-			snprintf( valstr, 8, "[%2i]", -entry->atks[i] );
+			snprintf( valstr, sizeof valstr, "[%2i]", -entry->atks[i] );
 		else
-			snprintf( valstr, 8, "  %2i", entry->atks[i] );
+			snprintf( valstr, sizeof valstr, "  %2i", entry->atks[i] );
 		strcat(str, valstr);
 		write_line( buffer, gui->font_std, str, x, &y );
 	}

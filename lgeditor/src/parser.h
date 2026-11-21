@@ -175,6 +175,22 @@ int parser_get_values ( PData *pd, const char *name, MyList   **result );
 int parser_get_value  ( PData *pd, const char *name, char   **result, int index );
 int parser_get_int    ( PData *pd, const char *name, int     *result );
 int parser_get_double ( PData *pd, const char *name, double  *result );
+
+/* Read an integer into a local first: packed struct members cannot have their
+ * address taken safely. */
+static inline int parser_get_int_value(PData *pd, const char *name, int *ok)
+{
+    int value = 0;
+    *ok = parser_get_int(pd, name, &value);
+    return value;
+}
+#define PARSER_GET_INT(pd, name, target) \
+    do { int parser_int_ok; (target) = parser_get_int_value((pd), (name), &parser_int_ok); } while (0)
+#define PARSER_GET_INT_OR_FAIL(pd, name, target) \
+    do { int parser_int_ok; \
+         (target) = parser_get_int_value((pd), (name), &parser_int_ok); \
+         if (!parser_int_ok) goto parser_failure; \
+    } while (0)
 int parser_get_string ( PData *pd, const char *name, char   **result );
 
 /*

@@ -387,7 +387,7 @@ static void init_tool(int argc, char **argv) {
 }
 
 /** returns 1 if criterion is to be omitted */
-inline static int is_omitted(const char *criterion) {
+static inline int is_omitted(const char *criterion) {
   return !criterion || strcmp(criterion, "-") == 0 || strcmp(criterion, "*") == 0;
 }
 
@@ -407,7 +407,7 @@ static const char *strcasestr(const char *haystack, const char *needle) {
  * of ary. If found, the index of the first element is returned,
  * -1 otherwise. 'i' is the starting index, 'sz' the size of the array.
  */
-inline static int find_in_array(const char *needle, int i, const char **ary, int sz) {
+static inline int find_in_array(const char *needle, int i, const char **ary, int sz) {
   for (; i < sz; i++)
     if (strcasestr(ary[i], needle)) return i;
   return -1;
@@ -430,7 +430,7 @@ static UnitLib_Entry *find_unit_by_pattern(const char *pattern) {
  * returns 1 if 'bitmap' is true at position 'idx'. 'sz' is the size of
  * the bitmap.
  */
-inline static int in_bitmap(int idx, const char *bitmap, int sz) {
+static inline int in_bitmap(int idx, const char *bitmap, int sz) {
   return idx >= 0 && idx < sz && bitmap[idx];
 }
 

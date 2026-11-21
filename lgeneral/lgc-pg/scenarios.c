@@ -959,16 +959,21 @@ int scenarios_convert( int scen_id )
         if ( scen_id == -1 ) {
             fseek( scenstat_file, 40 + (i - 1) * 14, SEEK_SET );
             _fread( dummy, 14, 1, scenstat_file );
-            snprintf( scen_title, sizeof(scen_title), "%s", dummy);
+            dummy[14] = 0;
+            snprintf( scen_title, sizeof(scen_title), "%.*s",
+                      (int)sizeof(scen_title) - 1, dummy );
             fseek( scenstat_file, 600 + (i - 1) * 160 , SEEK_SET );
             _fread( dummy, 160, 1, scenstat_file );
-            snprintf( scen_desc, sizeof(scen_desc), "%s", dummy);
+            dummy[160] = 0;
+            snprintf( scen_desc, sizeof(scen_desc), "%.*s",
+                      (int)sizeof(scen_desc) - 1, dummy );
             if (strcmp(target_name,"pg") == 0)
                 snprintf( scen_author, sizeof(scen_author), "SSI" );
             else
                 snprintf( scen_author, sizeof(scen_author), "unknown" );
         } else {
-            snprintf( scen_title, sizeof(scen_title), "%s", target_name );
+            snprintf( scen_title, sizeof(scen_title), "%.*s",
+                      (int)sizeof(scen_title) - 1, target_name );
             snprintf( scen_desc, sizeof(scen_desc), "none" );
             snprintf( scen_author, sizeof(scen_author), "unknown" );
         }

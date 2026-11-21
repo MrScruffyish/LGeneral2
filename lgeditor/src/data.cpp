@@ -57,13 +57,16 @@ int nation_flag_width = 0, nation_flag_height = 0;
 void nations_delete( void )
 {
     int i;
-    if ( nation_flags ) SDL_FreeSurface ( nation_flags ); nation_flags = 0;
+    if ( nation_flags ) SDL_FreeSurface ( nation_flags );
+    nation_flags = 0;
     if ( nations == 0 ) return;
     for ( i = 0; i < nation_count; i++ ) {
         if ( nations[i].id ) free( nations[i].id );
         if ( nations[i].name ) free( nations[i].name );
     }
-    free( nations ); nations = 0; nation_count = 0;
+    free( nations );
+    nations = 0;
+    nation_count = 0;
 }
 int nations_load( char *fname )
 {
@@ -79,7 +82,7 @@ int nations_load( char *fname )
     //locale_load_domain(domain, 0/*FIXME*/);
     /* icon size */
     if ( !parser_get_int( pd, "icon_width", &nation_flag_width ) ) goto failure;
-    if ( !parser_get_int( pd, "icon_height", &nation_flag_height ) ) goto parser_failure;
+    PARSER_GET_INT_OR_FAIL( pd, "icon_height", nation_flag_height );
     /* icons */
     if ( !parser_get_value( pd, "icons", &str, 0 ) ) goto parser_failure;
     sprintf( path, "flags/%s", str );
@@ -95,7 +98,7 @@ int nations_load( char *fname )
     while ( ( sub = (PData*)list_next( entries ) ) ) {
         nations[i].id = strdup( sub->name );
         if ( !parser_get_localized_string( sub, "name", domain, &nations[i].name ) ) goto parser_failure;
-        if ( !parser_get_int( sub, "icon_id", &nations[i].flag_offset ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "icon_id", nations[i].flag_offset );
         nations[i].flag_offset *= nation_flag_height;
         i++;
     }
@@ -192,10 +195,10 @@ int terrain_load( char *fname )
         i++;
     }
     /* hex tile geometry */
-    if ( !parser_get_int( pd, "hex_width", &hex_w ) ) goto parser_failure;
-    if ( !parser_get_int( pd, "hex_height", &hex_h ) ) goto parser_failure;
-    if ( !parser_get_int( pd, "hex_x_offset", &hex_x_offset ) ) goto parser_failure;
-    if ( !parser_get_int( pd, "hex_y_offset", &hex_y_offset ) ) goto parser_failure;
+    PARSER_GET_INT_OR_FAIL( pd, "hex_width", hex_w );
+    PARSER_GET_INT_OR_FAIL( pd, "hex_height", hex_h );
+    PARSER_GET_INT_OR_FAIL( pd, "hex_x_offset", hex_x_offset );
+    PARSER_GET_INT_OR_FAIL( pd, "hex_y_offset", hex_y_offset );
 
     /* terrain types */
     if ( !parser_get_entries( pd, "terrain", &entries ) ) goto parser_failure;
@@ -227,7 +230,7 @@ int terrain_load( char *fname )
         terrain_types[i].spt = (int*)calloc( weather_type_count, sizeof( int ) );
         if ( !parser_get_pdata( sub, "spot_cost",  &subsub ) ) goto parser_failure;
         for ( j = 0; j < weather_type_count; j++ )
-            if ( !parser_get_int( subsub, weather_types[j].id, &terrain_types[i].spt[j] ) ) goto parser_failure;
+            PARSER_GET_INT_OR_FAIL( subsub, weather_types[j].id, terrain_types[i].spt[j] );
         /* entrenchment */
         if ( !parser_get_int( sub, "min_entr",  &terrain_types[i].min_entr ) ) goto parser_failure;
         if ( !parser_get_int( sub, "max_entr",  &terrain_types[i].max_entr ) ) goto parser_failure;
@@ -567,8 +570,8 @@ int unit_lib_load(const char *fname, int main )
         if ( !parser_get_value( pd, "strength_icons", &str, 0 ) ) goto parser_failure;
         sprintf( path, "units/%s", str );
         if ( ( unit_info_icons->str = load_surf( path, SDL_SWSURFACE ) ) == 0 ) goto failure;
-        if ( !parser_get_int( pd, "strength_icon_width", &unit_info_icons->str_w ) ) goto parser_failure;
-        if ( !parser_get_int( pd, "strength_icon_height", &unit_info_icons->str_h ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( pd, "strength_icon_width", unit_info_icons->str_w );
+        PARSER_GET_INT_OR_FAIL( pd, "strength_icon_height", unit_info_icons->str_h );
         if ( !parser_get_value( pd, "attack_icon", &str, 0 ) ) goto parser_failure;
         sprintf( path, "units/%s", str );
         if ( ( unit_info_icons->atk = load_surf( path, SDL_SWSURFACE ) ) == 0 ) goto failure;
@@ -634,11 +637,11 @@ int unit_lib_load(const char *fname, int main )
                 break;
             }
         /* initiative */
-        if ( !parser_get_int( sub, "initiative", &unit->ini ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "initiative", unit->ini );
         /* spotting */
-        if ( !parser_get_int( sub, "spotting", &unit->spt ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "spotting", unit->spt );
         /* movement */
-        if ( !parser_get_int( sub, "movement", &unit->mov ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "movement", unit->mov );
         /* move type id */
         unit->mov_type = 0;
         if ( !parser_get_value( sub, "move_type", &str, 0 ) ) goto parser_failure;
@@ -648,23 +651,23 @@ int unit_lib_load(const char *fname, int main )
                 break;
             }
         /* fuel */
-        if ( !parser_get_int( sub, "fuel", &unit->fuel ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "fuel", unit->fuel );
         /* range */
-        if ( !parser_get_int( sub, "range", &unit->rng ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "range", unit->rng );
         /* ammo */
-        if ( !parser_get_int( sub, "ammo", &unit->ammo ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "ammo", unit->ammo );
         /* attack count */
-        if ( !parser_get_int( sub, "attack/count", &unit->atk_count ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "attack/count", unit->atk_count );
         /* attack values */
         if ( !parser_get_pdata( sub, "attack", &subsub ) ) goto parser_failure;
         for ( i = 0; i < trgt_type_count; i++ )
-            if ( !parser_get_int( subsub, trgt_types[i].id, &unit->atks[i] ) ) goto parser_failure;
+            PARSER_GET_INT_OR_FAIL( subsub, trgt_types[i].id, unit->atks[i] );
         /* ground defense */
-        if ( !parser_get_int( sub, "def_ground", &unit->def_grnd ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "def_ground", unit->def_grnd );
         /* air defense */
-        if ( !parser_get_int( sub, "def_air", &unit->def_air ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "def_air", unit->def_air );
         /* close defense */
-        if ( !parser_get_int( sub, "def_close", &unit->def_cls ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "def_close", unit->def_cls );
         /* flags
         if ( parser_get_values( sub, "flags", &flags ) ) {
             list_reset( flags );
@@ -680,15 +683,15 @@ int unit_lib_load(const char *fname, int main )
                 unit->entr_rate = 3; */
         /* time period of usage (0 == cannot be purchased) */
         unit->start_year = unit->start_month = unit->last_year = 0;
-        parser_get_int( sub, "start_year", &unit->start_year );
-        parser_get_int( sub, "start_month", &unit->start_month );
-        parser_get_int( sub, "last_year", &unit->last_year );
+        PARSER_GET_INT( sub, "start_year", unit->start_year );
+        PARSER_GET_INT( sub, "start_month", unit->start_month );
+        PARSER_GET_INT( sub, "last_year", unit->last_year );
 	/* cost of unit (0 == cannot be purchased) */
 	unit->cost = 0;
-	parser_get_int( sub, "cost", &unit->cost );
+	PARSER_GET_INT( sub, "cost", unit->cost );
         /* icon */
         /* icon id */
-        if ( !parser_get_int( sub, "icon_id", &icon_id ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "icon_id", icon_id );
         /* icon_type */
         unit->icon_type = icon_type;
         /* get position and size in icons surface */
@@ -863,8 +866,8 @@ void Data::loadMap(std::string fname)
 
 	if ( ( pd = parser_read_file( "map", path ) ) == 0 ) goto parser_failure;
 	/* map size */
-	if ( !parser_get_int( pd, "width", &mapw ) ) goto parser_failure;
-	if ( !parser_get_int( pd, "height", &maph ) ) goto parser_failure;
+	PARSER_GET_INT_OR_FAIL( pd, "width", mapw );
+	PARSER_GET_INT_OR_FAIL( pd, "height", maph );
 	/* load terrains */
 	//if ( !parser_get_value( pd, "terrain_db", &str, 0 ) ) goto parser_failure;
 	//if ( !terrain_load( str ) ) goto failure;

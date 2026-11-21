@@ -29,27 +29,27 @@
 extern int map_w, map_h; /* FIX ME! */
 
 /* compares to strings and returns true if their first strlen(str1) chars are equal */
-inline int equal_str( const char *str1, const char *str2 )
+int equal_str( const char *str1, const char *str2 )
 {
     if ( strlen( str1 ) != strlen( str2 ) ) return 0;
     return ( !strncmp( str1, str2, strlen( str1 ) ) );
 }
 
 /* set delay to ms milliseconds */
-inline void set_delay( Delay *delay, int ms )
+void set_delay( Delay *delay, int ms )
 {
     delay->limit = ms;
     delay->cur = 0;
 }
 
 /* reset delay ( cur = 0 )*/
-inline void reset_delay( Delay *delay )
+void reset_delay( Delay *delay )
 {
     delay->cur = 0;
 }
 
 /* check if times out and reset */
-inline int timed_out( Delay *delay, int ms )
+int timed_out( Delay *delay, int ms )
 {
     delay->cur += ms;
     if ( delay->cur >= delay->limit ) {
@@ -62,7 +62,7 @@ inline int timed_out( Delay *delay, int ms )
 }
 
 /* Convert grid coordinates into isometric (diagonal) coordinates. */
-inline static void convert_coords_to_diag( int *x, int *y )
+static inline void convert_coords_to_diag( int *x, int *y )
 {
   *y += (*x + 1) / 2;
 }
@@ -126,13 +126,13 @@ void repl_new_lines( char *text )
 }
 
 /** return 1 if ch is a line breaking character */
-inline static int text_is_linebreak(char ch)
+static inline int text_is_linebreak(char ch)
 {
     return ch == '#';
 }
 
 /** return 1 if text is breakable just before end */
-inline static int text_is_breakable(const char *begin, const char *end)
+static inline int text_is_breakable(const char *begin, const char *end)
 {
     return begin != end
             && (end[-1] == '\t' || end[-1] == '\n' || end[-1] == ' '

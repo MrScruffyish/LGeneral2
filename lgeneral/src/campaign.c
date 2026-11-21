@@ -135,7 +135,7 @@ static const char *camp_resolve_ref(PData *entries, const char *key, const char 
 }
 
 /** resolve key within entries and translate the result wrt domain */
-inline static char *camp_resolve_ref_localized(PData *entries, const char *key, const char *scen_stat, const char *domain)
+static inline char *camp_resolve_ref_localized(PData *entries, const char *key, const char *scen_stat, const char *domain)
 {
     const char *res = camp_resolve_ref(entries, key, scen_stat);
     return res ? strdup(trd(domain, res)) : 0;

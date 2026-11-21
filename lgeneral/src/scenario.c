@@ -283,6 +283,7 @@ int scen_load( const char *fname )
     Unit *unit;
     Unit unit_base; /* used to store values for unit */
     int unit_delayed = 0;
+    int field_ok;
 	
     scen_delete();
     sprintf( path, "%s/scenarios/%s", get_gamedir(), fname );
@@ -687,7 +688,7 @@ int scen_load( const char *fname )
         }
 	/* core flag (if not set/found: auxiliary unit) */
 	if (camp_loaded)
-		parser_get_int( sub, "core", &unit_base.core );
+		PARSER_GET_INT( sub, "core", unit_base.core );
 	else
 		unit_base.core = 0; /* no core stuff in single scenario */
        /* name */
@@ -696,18 +697,21 @@ int scen_load( const char *fname )
        else
            strcpy_lt( unit_base.name, str, 31 );
         /* delay */
-        unit_delayed = parser_get_int( sub, "delay", &unit_base.delay );
+        unit_base.delay = parser_get_int_value( sub, "delay", &field_ok );
+        unit_delayed = field_ok;
         /* position */
-        if ( !parser_get_int( sub, "x", &unit_base.x ) && !unit_delayed ) goto parser_failure;
-        if ( !parser_get_int( sub, "y", &unit_base.y ) && !unit_delayed ) goto parser_failure;
+        unit_base.x = parser_get_int_value( sub, "x", &field_ok );
+        if ( !field_ok && !unit_delayed ) goto parser_failure;
+        unit_base.y = parser_get_int_value( sub, "y", &field_ok );
+        if ( !field_ok && !unit_delayed ) goto parser_failure;
         if ( !unit_delayed && ( unit_base.x <= 0 || unit_base.y <= 0 || unit_base.x >= map_w - 1 || unit_base.y >= map_h - 1 ) ) {
             fprintf( stderr, tr("%s: out of map: ignored\n"), unit_base.name );
             continue;  
         }
         /* strength, entrenchment, experience */
-        if ( !parser_get_int( sub, "str", &unit_base.str ) ) goto parser_failure;
-        if ( !parser_get_int( sub, "entr", &unit_base.entr ) ) goto parser_failure;
-        if ( !parser_get_int( sub, "exp", &unit_base.exp_level ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "str", unit_base.str );
+        PARSER_GET_INT_OR_FAIL( sub, "entr", unit_base.entr );
+        PARSER_GET_INT_OR_FAIL( sub, "exp", unit_base.exp_level );
         /* transporter */
         trsp_prop = 0;
         if ( parser_get_value( sub, "trsp", &str, 0 ) && !STRCMP( str, "none" ) )

@@ -50,10 +50,11 @@ fi
 
 )
 
-CXXFLAGS="$CXXFLAGS $(sdl2-config --cflags) -Wall -O0 -g"
+CXXFLAGS="$CXXFLAGS $(sdl2-config --cflags) -Wall"
 CXXFLAGS="$CXXFLAGS -DDATADIR=\\\"$datdir\\\" -DLGENDIR=\\\"$lgendir\\\""
 LIBS="$LIBS $(sdl2-config --libs)"
 
 # Makefiles
-AC_OUTPUT(Makefile src/Makefile data/Makefile)
+AC_CONFIG_FILES([Makefile src/Makefile data/Makefile])
+AC_OUTPUT
 

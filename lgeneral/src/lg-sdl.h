@@ -43,8 +43,8 @@ SDL_Surface* load_surf(const char *fname, int f);
 SDL_Surface* create_surf(int w, int h, int f);
 void free_surf( SDL_Surface **surf );
 int  disp_format(SDL_Surface *sur);
-inline void lock_surf(SDL_Surface *sur);
-inline void unlock_surf(SDL_Surface *sur);
+void lock_surf(SDL_Surface *sur);
+void unlock_surf(SDL_Surface *sur);
 void blit_surf(void);
 void alpha_blit_surf(int alpha);
 void fill_surf(int c);
@@ -93,8 +93,8 @@ void font_load_glyphs(Font *font, const char *fname);
 void free_font(Font **sfnt);
 int  write_text(Font *sfnt, SDL_Surface *dest, int x, int y, const char *str, int alpha);
 void write_line( SDL_Surface *surf, Font *font, const char *str, int x, int *y );
-inline void lock_font(Font *sfnt);
-inline void unlock_font(Font *sfnt);
+void lock_font(Font *sfnt);
+void unlock_font(Font *sfnt);
 SDL_Rect last_write_rect(Font *fnt);
 int  text_width(Font *fnt, const char *str);
 int  char_width(Font *fnt, char c);
@@ -132,9 +132,9 @@ void dim_screen(int steps, int delay, int trp);
 void undim_screen(int steps, int delay, int trp);
 int  wait_for_key();
 void wait_for_click();
-inline void lock_screen();
-inline void unlock_screen();
-inline void flip_screen();
+void lock_screen();
+void unlock_screen();
+void flip_screen();
 
 /* cursor */
 /* creates cursor */

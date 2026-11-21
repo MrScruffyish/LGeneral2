@@ -37,7 +37,7 @@
 /** shorthand for fetching translation of default domain */
 #  define tr(s) gettext (s)
 /** shorthand for fetching translation of specified domain */
-inline static const char *trd(const char *dom, const char *s) { return *(s) ? dgettext ((dom), (s)) : ""; }
+static inline const char *trd(const char *dom, const char *s) { return *(s) ? dgettext ((dom), (s)) : ""; }
 /** shorthand for marking for translation of default domain */
 #  define TR_NOOP(s) (s)
 

@@ -35,7 +35,7 @@ int cur_time, last_time;
 /* sdl surface */
 
 /* return full path of bitmap */
-inline void get_full_bmp_path( char *full_path, const char *file_name )
+void get_full_bmp_path( char *full_path, const char *file_name )
 {
     sprintf(full_path,  "%s/gfx/%s", get_gamedir(), file_name );
 }
@@ -119,7 +119,7 @@ int disp_format(SDL_Surface *sur)
 /*
     lock surface
 */
-inline void lock_surf(SDL_Surface *sur)
+void lock_surf(SDL_Surface *sur)
 {
     if (SDL_MUSTLOCK(sur))
         SDL_LockSurface(sur);
@@ -128,7 +128,7 @@ inline void lock_surf(SDL_Surface *sur)
 /*
     unlock surface
 */
-inline void unlock_surf(SDL_Surface *sur)
+void unlock_surf(SDL_Surface *sur)
 {
     if (SDL_MUSTLOCK(sur))
         SDL_UnlockSurface(sur);
@@ -477,7 +477,7 @@ void write_line( SDL_Surface *surf, Font *font, const char *str, int x, int *y )
 /*
     lock font surface
 */
-inline void lock_font(Font *fnt)
+void lock_font(Font *fnt)
 {
     if (SDL_MUSTLOCK(fnt->pic))
         SDL_LockSurface(fnt->pic);
@@ -486,7 +486,7 @@ inline void lock_font(Font *fnt)
 /*
     unlock font surface
 */
-inline void unlock_font(Font *fnt)
+void unlock_font(Font *fnt)
 {
     if (SDL_MUSTLOCK(fnt->pic))
         SDL_UnlockSurface(fnt->pic);
@@ -501,7 +501,7 @@ SDL_Rect last_write_rect(Font *fnt)
     return rect;
 }
 
-inline int  char_width(Font *fnt, char c)
+int  char_width(Font *fnt, char c)
 {
     unsigned i = (unsigned char)c;
     return fnt->char_offset[i + 1] - fnt->char_offset[i];
@@ -844,7 +844,7 @@ void wait_for_click()
 /*
     lock surface
 */
-inline void lock_screen()
+void lock_screen()
 {
     if (SDL_MUSTLOCK(sdl.screen))
         SDL_LockSurface(sdl.screen);
@@ -853,7 +853,7 @@ inline void lock_screen()
 /*
     unlock surface
 */
-inline void unlock_screen()
+void unlock_screen()
 {
     if (SDL_MUSTLOCK(sdl.screen))
         SDL_UnlockSurface(sdl.screen);
@@ -862,7 +862,7 @@ inline void unlock_screen()
 /*
     flip hardware screens (double buffer)
 */
-inline void flip_screen()
+void flip_screen()
 {
     SDL_Flip(sdl.screen);
 }

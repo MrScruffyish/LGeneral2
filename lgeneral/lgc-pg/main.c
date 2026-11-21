@@ -137,7 +137,8 @@ int parse_args( int argc, char **argv )
     if ( !single_scen && strcmp(target_name,"pg") == 0 )
         apply_unit_mods = 1; /* always for PG campaign of course */
     if (tacicons_name[0] == 0) {
-        sprintf( tacicons_name, "%s.bmp", target_name );
+        snprintf( tacicons_name, sizeof tacicons_name, "%.*s.bmp",
+                  (int)sizeof tacicons_name - 5, target_name );
     }
         
 	if (separate_bridges == 0) {

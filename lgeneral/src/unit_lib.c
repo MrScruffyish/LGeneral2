@@ -319,8 +319,8 @@ int unit_lib_load( char *fname, int main )
         if ( !parser_get_value( pd, "strength_icons", &str, 0 ) ) goto parser_failure;
         sprintf( path, "units/%s", str );
         if ( ( unit_info_icons->str = load_surf( path, SDL_SWSURFACE ) ) == 0 ) goto failure; 
-        if ( !parser_get_int( pd, "strength_icon_width", &unit_info_icons->str_w ) ) goto parser_failure;
-        if ( !parser_get_int( pd, "strength_icon_height", &unit_info_icons->str_h ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( pd, "strength_icon_width", unit_info_icons->str_w );
+        PARSER_GET_INT_OR_FAIL( pd, "strength_icon_height", unit_info_icons->str_h );
         if ( !parser_get_value( pd, "attack_icon", &str, 0 ) ) goto parser_failure;
         sprintf( path, "units/%s", str );
         if ( ( unit_info_icons->atk = load_surf( path, SDL_SWSURFACE ) ) == 0 ) goto failure; 
@@ -383,11 +383,11 @@ int unit_lib_load( char *fname, int main )
                 break;
             }
         /* initiative */
-        if ( !parser_get_int( sub, "initiative", &unit->ini ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "initiative", unit->ini );
         /* spotting */
-        if ( !parser_get_int( sub, "spotting", &unit->spt ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "spotting", unit->spt );
         /* movement */
-        if ( !parser_get_int( sub, "movement", &unit->mov ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "movement", unit->mov );
         /* move type id */
         unit->mov_type = 0;
         if ( !parser_get_value( sub, "move_type", &str, 0 ) ) goto parser_failure;
@@ -397,23 +397,23 @@ int unit_lib_load( char *fname, int main )
                 break;
             }
         /* fuel */
-        if ( !parser_get_int( sub, "fuel", &unit->fuel ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "fuel", unit->fuel );
         /* range */
-        if ( !parser_get_int( sub, "range", &unit->rng ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "range", unit->rng );
         /* ammo */
-        if ( !parser_get_int( sub, "ammo", &unit->ammo ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "ammo", unit->ammo );
         /* attack count */
-        if ( !parser_get_int( sub, "attack/count", &unit->atk_count ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "attack/count", unit->atk_count );
         /* attack values */
         if ( !parser_get_pdata( sub, "attack", &subsub ) ) goto parser_failure;
         for ( i = 0; i < trgt_type_count; i++ )
-            if ( !parser_get_int( subsub, trgt_types[i].id, &unit->atks[i] ) ) goto parser_failure;
+            PARSER_GET_INT_OR_FAIL( subsub, trgt_types[i].id, unit->atks[i] );
         /* ground defense */
-        if ( !parser_get_int( sub, "def_ground", &unit->def_grnd ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "def_ground", unit->def_grnd );
         /* air defense */
-        if ( !parser_get_int( sub, "def_air", &unit->def_air ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "def_air", unit->def_air );
         /* close defense */
-        if ( !parser_get_int( sub, "def_close", &unit->def_cls ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "def_close", unit->def_cls );
         /* flags */
         if ( parser_get_values( sub, "flags", &flags ) ) {
             list_reset( flags ); 
@@ -429,15 +429,15 @@ int unit_lib_load( char *fname, int main )
                 unit->entr_rate = 3;
         /* time period of usage (0 == cannot be purchased) */
         unit->start_year = unit->start_month = unit->last_year = 0;
-        parser_get_int( sub, "start_year", &unit->start_year );
-        parser_get_int( sub, "start_month", &unit->start_month );
-        parser_get_int( sub, "last_year", &unit->last_year );
+        PARSER_GET_INT( sub, "start_year", unit->start_year );
+        PARSER_GET_INT( sub, "start_month", unit->start_month );
+        PARSER_GET_INT( sub, "last_year", unit->last_year );
 	/* cost of unit (0 == cannot be purchased) */
 	unit->cost = 0;
-	parser_get_int( sub, "cost", &unit->cost );
+	PARSER_GET_INT( sub, "cost", unit->cost );
         /* icon */
         /* icon id */
-        if ( !parser_get_int( sub, "icon_id", &icon_id ) ) goto parser_failure;
+        PARSER_GET_INT_OR_FAIL( sub, "icon_id", icon_id );
         /* icon_type */
         unit->icon_type = icon_type;
         /* get position and size in icons surface */

@@ -851,7 +851,9 @@ void slots_init()
     /* read all directory entries */
     while ( ( entry = readdir( dir ) ) != 0 ) {
         if ( is_saved_game( entry->d_name, &i ) ) {
-            sprintf( slots[i].fname, "%s/%s", config.dir_name, entry->d_name );
+            snprintf( slots[i].fname, sizeof slots[i].fname, "%.*s/%.*s",
+                      (int)sizeof slots[i].fname / 2 - 1, config.dir_name,
+                      (int)sizeof slots[i].fname / 2 - 1, entry->d_name );
             if ( ( file = fopen( slots[i].fname, "rb" ) ) == 0 ) {
                 fprintf( stderr, tr("'%s': file not found\n"), slots[i].fname );
                 break;

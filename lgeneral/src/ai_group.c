@@ -208,9 +208,14 @@ static int ai_get_best_target( Unit *unit, int x, int y, AI_Group *group, Unit *
     /* evaluate all attacks */
     if ( targets ) {
         list_reset( targets ); 
-        while ( ( entry = list_next( targets ) ) )
-            if ( !unit_evaluate_attack( unit, entry, score_atk_base, score_rugged, score_kill, score_loss, &entry->target_score ) )
+        while ( ( entry = list_next( targets ) ) ) {
+            int entry_score;
+            if ( !unit_evaluate_attack( unit, entry, score_atk_base, score_rugged,
+                                        score_kill, score_loss, &entry_score ) )
                 list_delete_item( targets, entry ); /* erroneous entry: can't be attacked */
+            else
+                entry->target_score = entry_score;
+        }
         /* check whether any positive targets exist */
         pos_targets = 0;
         list_reset( targets ); 

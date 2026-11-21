@@ -14,8 +14,7 @@ AC_PROG_CC
 AC_PROG_RANLIB
 
 dnl various CFLAGS
-CFLAGS="$CFLAGS -Wall -std=gnu89"
-CFLAGS="$CFLAGS -O0 -g"
+CFLAGS="$CFLAGS -Wall -std=gnu11"
 
 dnl Checks for libraries.
 AC_CHECK_LIB(m, main,, AC_MSG_ERROR(maths library is needed))

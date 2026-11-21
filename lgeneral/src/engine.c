@@ -375,7 +375,7 @@ static void engine_draw_bkgnd()
 Returns true when the status screen dismission events took place.
 ====================================================================
 */
-inline static int engine_status_screen_dismissed()
+static inline int engine_status_screen_dismissed()
 {
     int dummy;
     return event_get_buttonup( &dummy, &dummy, &dummy )

@@ -16,7 +16,7 @@ JOBS ?= $(shell nproc)
 # Output goes to /tmp/human.log (override with LG_TRACE_FILE).
 TRACE ?= 0
 TRACE_SUFFIX := $(if $(filter 1,$(TRACE)),-trace,)
-TRACE_CFLAGS := $(if $(filter 1,$(TRACE)),-DLG_TRACE -O0 -g,)
+TRACE_CFLAGS := $(if $(filter 1,$(TRACE)),-DLG_TRACE,)
 
 # Path to pg-data.tar.gz or an unpacked pg-data directory, supplied through
 # the environment (e.g. export PG_DATA=~/PG_DATA/pg-data.tar.gz).

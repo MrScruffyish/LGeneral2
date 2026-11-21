@@ -1693,7 +1693,7 @@ static int gui_map_message_pane_focus_index( MessagePane *pane, int mx, int my )
 }
 
 /** unite with existing repaint rectangle */
-inline static void message_pane_unite_repaint_rect(MessagePane *pane, int x1, int y1, int x2, int y2)
+static inline void message_pane_unite_repaint_rect(MessagePane *pane, int x1, int y1, int x2, int y2)
 {
     if ((pane->refresh_x2 - pane->refresh_x1) <= 0
         || (pane->refresh_y2 - pane->refresh_y1) <= 0) {
