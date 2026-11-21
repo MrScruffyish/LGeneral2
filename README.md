@@ -50,6 +50,17 @@ It builds into `.build/lgeneral-trace` and logs scenario loading, players,
 reinforcements and deployment candidates to `/tmp/human.log`. Set
 `LG_TRACE_FILE` to write somewhere else.
 
+### Smoke test
+
+`make smoke` copies the sources to a temporary directory and builds both the
+normal and `TRACE=1` variants there. It fails on compiler warnings, missing
+executables, or a trace build without trace messages, so it also serves as a
+warning-free build check:
+
+```bash
+PG_DATA=~/PG_DATA/pg-data.tar.gz make smoke
+```
+
 ## License
 
 **GPL-3.0-or-later** (see `LICENSE`). The original upstream GPL v2 text is kept

@@ -6,6 +6,7 @@
 #   make                                   # build everything
 #   PG_DATA=/path/to/pg-data.tar.gz make    # tarball or unpacked directory
 #   make run                               # start the game from its data dir
+#   make smoke                             # clean normal + TRACE=1 build test
 #   make clean                             # remove build output
 
 SHELL := /bin/sh
@@ -39,7 +40,7 @@ LGEDITOR_CONFIGURE_ARGS ?=
 # conversion usable on headless build machines.
 SDL_VIDEODRIVER ?= dummy
 
-.PHONY: all lgeneral lgeditor data run clean distclean
+.PHONY: all lgeneral lgeditor data run smoke clean distclean
 
 all: lgeneral lgeditor data
 
@@ -107,6 +108,11 @@ data: lgeneral
 # directory, so it must be started from the data directory.
 run:
 	cd $(GAME_DATA) && ./lgeneral
+
+# Build both variants from a pristine copy of the sources and require a
+# warning-free result. Uses PG_DATA from the environment if set.
+smoke:
+	@tests/build-smoke.sh
 
 clean:
 	rm -rf $(BUILD_ROOT)
