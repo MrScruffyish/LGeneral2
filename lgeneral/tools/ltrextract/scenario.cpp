@@ -63,7 +63,7 @@ int scen_extract( struct PData *pd, struct Translateables *xl )
     /* players */
     if ( !parser_get_entries( pd, "players", &entries ) ) goto parser_failure;
     list_reset( entries );
-    while ( ( sub = list_next( entries ) ) ) {
+    while ( ( sub = (PData *)list_next( entries ) ) ) {
         /* create player */
         if ( !parser_get_pdata( sub, "name", &subsub ) ) goto parser_failure;
         translateables_add_pdata(xl, subsub);
@@ -78,7 +78,7 @@ int scen_extract( struct PData *pd, struct Translateables *xl )
     /* count conditions */
     /* create conditions */
     list_reset( entries );
-    while ( ( pd_vcond = list_next( entries ) ) ) {
+    while ( ( pd_vcond = (PData *)list_next( entries ) ) ) {
         if ( strcmp( pd_vcond->name, "cond" ) == 0 ) {
             if ( parser_get_pdata( pd_vcond, "message", &subsub ) )
                 translateables_add_pdata(xl, subsub);

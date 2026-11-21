@@ -36,7 +36,7 @@ int unit_lib_extract( struct PData *pd, struct Translateables *xl )
     /* target types */
     if ( parser_get_entries( pd, "target_types", &entries ) ) {
         list_reset( entries );
-        while ( ( sub = list_next( entries ) ) ) {
+        while ( ( sub = (PData *)list_next( entries ) ) ) {
             if ( !parser_get_pdata( sub, "name", &subsub ) ) goto parser_failure;
             translateables_add_pdata(xl, subsub);
         }
@@ -44,7 +44,7 @@ int unit_lib_extract( struct PData *pd, struct Translateables *xl )
     /* movement types */
     if ( parser_get_entries( pd, "move_types", &entries ) ) {
         list_reset( entries );
-        while ( ( sub = list_next( entries ) ) ) {
+        while ( ( sub = (PData *)list_next( entries ) ) ) {
             if ( !parser_get_pdata( sub, "name", &subsub ) ) goto parser_failure;
             translateables_add_pdata(xl, subsub);
         }
@@ -52,7 +52,7 @@ int unit_lib_extract( struct PData *pd, struct Translateables *xl )
     /* unit classes */
     if ( parser_get_entries( pd, "unit_classes", &entries ) ) {
         list_reset( entries );
-        while ( ( sub = list_next( entries ) ) ) {
+        while ( ( sub = (PData *)list_next( entries ) ) ) {
             if ( !parser_get_pdata( sub, "name", &subsub ) ) goto parser_failure;
             translateables_add_pdata(xl, subsub);
         }
@@ -62,7 +62,7 @@ int unit_lib_extract( struct PData *pd, struct Translateables *xl )
     /* unit lib entries */
     if ( !parser_get_entries( pd, "unit_lib", &entries ) ) goto parser_failure;
     list_reset( entries );
-    while ( ( sub = list_next( entries ) ) ) {
+    while ( ( sub = (PData *)list_next( entries ) ) ) {
         /* read unit entry */
         /* identification */
         /* name */

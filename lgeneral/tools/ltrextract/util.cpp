@@ -50,7 +50,7 @@ struct Comment {
 };
 
 static void comment_delete(void *cmt) {
-  struct Comment * const comment = cmt;
+  struct Comment * const comment = (struct Comment *)cmt;
   if (!comment) return;
   free(comment->s);
   free(comment);
@@ -68,13 +68,13 @@ static int comment_ends_with(struct Comment *cmt, const char *s, unsigned len) {
 static void comment_add(struct Comment *cmt, const char *s, unsigned len) {
   if (cmt->full) return;
   /* FIXME: inefficient */
-  cmt->s = realloc(cmt->s, cmt->len + len + 1);
+  cmt->s = (char *)realloc(cmt->s, cmt->len + len + 1);
   memcpy(cmt->s + cmt->len, s, len + 1);
   cmt->len += len;
 }
 
 struct Translateables *translateables_create(void) {
-  struct Translateables *xl = malloc(sizeof(struct Translateables));
+  struct Translateables *xl = (struct Translateables *)malloc(sizeof(struct Translateables));
   xl->ht = create_hashtable(16384, (unsigned int (*) (void*))hash_string,
                             (int (*)(void *, void *))strcmp, comment_delete);
   xl->domain = 0; /* heeeheee! will hideously crash on strcmp */
@@ -98,7 +98,7 @@ const char *translateables_get_domain(struct Translateables *xl) {
 }
 
 const char *translateables_get(struct Translateables *xl, const char *key, unsigned *len) {
-  struct Comment *cmt = hashtable_search(xl->ht, (void *)key);
+  struct Comment *cmt = (struct Comment *)hashtable_search(xl->ht, (void *)key);
   if (!cmt) return 0;
   if (len) *len = cmt->len;
   return cmt->s;
@@ -106,7 +106,7 @@ const char *translateables_get(struct Translateables *xl, const char *key, unsig
 
 void translateables_add(struct Translateables *xl, const char *key, const char *comment) {
   unsigned len = strlen(comment);
-  struct Comment *cmt = hashtable_search(xl->ht, (void *)key);
+  struct Comment *cmt = (struct Comment *)hashtable_search(xl->ht, (void *)key);
   /* if already contained, add comment to old comment */
   if (cmt) {
     comment_add(cmt, comment, len);
@@ -114,7 +114,7 @@ void translateables_add(struct Translateables *xl, const char *key, const char *
   }
   
   /* otherwise, create new entry */
-  cmt = calloc(1, sizeof(struct Comment));
+  cmt = (struct Comment *)calloc(1, sizeof(struct Comment));
   cmt->len = len;
   cmt->s = strdup(comment);
   
@@ -126,7 +126,7 @@ struct TranslateablesIterator *translateables_iterator(struct Translateables *xl
 }
 
 const char *translateables_iterator_key(struct TranslateablesIterator *it) {
-  return hashtable_iterator_key((struct hashtable_itr *)it);
+  return (const char *)hashtable_iterator_key((struct hashtable_itr *)it);
 }
 
 const char *translateables_iterator_comment(struct TranslateablesIterator *it) {
@@ -155,17 +155,17 @@ void translateables_add_pdata(struct Translateables *xl, struct PData *pd) {
   if (!pd->values) return;
   
   list_reset(pd->values);
-  for (; (tr_str = list_next(pd->values)); ) {
+  for (; (tr_str = (const char *)list_next(pd->values)); ) {
     struct Comment *cmt;
     
     /* don't translate empty strings */
     if (!*tr_str) continue;
     
-    cmt = hashtable_search(xl->ht, (void *)tr_str);
+    cmt = (struct Comment *)hashtable_search(xl->ht, (void *)tr_str);
 
     /* If not yet contained, insert new one */
     if (!cmt) {
-      cmt = calloc(1, sizeof(struct Comment));
+      cmt = (struct Comment *)calloc(1, sizeof(struct Comment));
       hashtable_insert(xl->ht, strdup(tr_str), cmt);
     }
     

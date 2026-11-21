@@ -40,7 +40,7 @@ int nation_extract( struct PData *pd, struct Translateables *xl )
     /* nations */
     if ( !parser_get_entries( pd, "nations", &entries ) ) goto parser_failure;
     list_reset( entries );
-    while ( ( sub = list_next( entries ) ) ) {
+    while ( ( sub = (PData *)list_next( entries ) ) ) {
         if ( parser_get_pdata( sub, "name", &sub ) ) {
             translateables_add_pdata(xl, sub);
         }

@@ -55,7 +55,7 @@ Return Value: List pointer
 ====================================================================
 */
 enum { LIST_NO_AUTO_DELETE = 0, LIST_AUTO_DELETE };
-enum { LIST_NO_CALLBACK = 0 };
+#define LIST_NO_CALLBACK ((void (*)(void *))0)
 List *list_create( int auto_delete, void (*callback)(void*) );
 /*
 ====================================================================

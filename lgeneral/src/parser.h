@@ -22,6 +22,10 @@
 #include "list.h"
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct CommonTreeData;
 
 /*
@@ -211,5 +215,9 @@ If an error occurred you can query the message with this function.
 ====================================================================
 */
 char* parser_get_error( void );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

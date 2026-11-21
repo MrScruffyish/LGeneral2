@@ -50,7 +50,7 @@ int camp_extract( struct PData *pd, struct Translateables *xl )
     /* entries */
     if ( !parser_get_entries( pd, "scenarios", &entries ) ) goto parser_failure;
     list_reset( entries );
-    while ( ( sub = list_next( entries ) ) ) {
+    while ( ( sub = (PData *)list_next( entries ) ) ) {
         List *next_entries;
         if ( parser_get_pdata( sub, "title", &subsub ) )
             camp_add_suitable_translateable(xl, subsub);
@@ -59,7 +59,7 @@ int camp_extract( struct PData *pd, struct Translateables *xl )
         if ( parser_get_entries( sub, "debriefings", &next_entries )
               || parser_get_entries( sub, "options", &next_entries ) ) {
             list_reset( next_entries );
-            while ( ( subsub = list_next( next_entries ) ) ) {
+            while ( ( subsub = (PData *)list_next( next_entries ) ) ) {
                 camp_add_suitable_translateable(xl, subsub);
             }
         }

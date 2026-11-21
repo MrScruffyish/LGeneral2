@@ -38,7 +38,7 @@ int terrain_extract( struct PData *pd, struct Translateables *xl )
     /* get weather */
     if ( !parser_get_entries( pd, "weather", &entries ) ) goto parser_failure;
     list_reset( entries );
-    while ( ( sub = list_next( entries ) ) ) {
+    while ( ( sub = (PData *)list_next( entries ) ) ) {
         if ( parser_get_pdata( sub, "name", &subsub ) ) {
            translateables_add_pdata(xl, subsub);
         }
@@ -48,7 +48,7 @@ int terrain_extract( struct PData *pd, struct Translateables *xl )
     /* terrain types */
     if ( !parser_get_entries( pd, "terrain", &entries ) ) goto parser_failure;
     list_reset( entries );
-    while ( ( sub = list_next( entries ) ) ) {
+    while ( ( sub = (PData *)list_next( entries ) ) ) {
         /* id */
         /* name */
         if ( parser_get_pdata( sub, "name", &subsub ) ) {

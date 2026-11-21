@@ -181,13 +181,13 @@ set_target_properties(lged PROPERTIES
 )
 
 add_executable(ltrextract
-    tools/ltrextract/ltrextract.c tools/ltrextract/util.c
-    tools/ltrextract/util.h tools/ltrextract/terrain.c
-    tools/ltrextract/terrain.h tools/ltrextract/map.c
-    tools/ltrextract/map.h tools/ltrextract/nation.c
-    tools/ltrextract/nation.h tools/ltrextract/unit_lib.c
-    tools/ltrextract/unit_lib.h tools/ltrextract/scenario.c
-    tools/ltrextract/scenario.h tools/ltrextract/campaign.c
+    tools/ltrextract/ltrextract.cpp tools/ltrextract/util.cpp
+    tools/ltrextract/util.h tools/ltrextract/terrain.cpp
+    tools/ltrextract/terrain.h tools/ltrextract/map.cpp
+    tools/ltrextract/map.h tools/ltrextract/nation.cpp
+    tools/ltrextract/nation.h tools/ltrextract/unit_lib.cpp
+    tools/ltrextract/unit_lib.h tools/ltrextract/scenario.cpp
+    tools/ltrextract/scenario.h tools/ltrextract/campaign.cpp
     tools/ltrextract/campaign.h src/parser.c src/list.c
 )
 target_compile_definitions(ltrextract PRIVATE LTREXTRACT=1)

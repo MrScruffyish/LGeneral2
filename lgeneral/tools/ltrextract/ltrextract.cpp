@@ -24,7 +24,9 @@
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include <getopt.h>
 
 #include "list.h"
@@ -257,7 +259,7 @@ static void process_input(const char *filename) {
     char *buffer;
     const char *basename = get_basename(filename);
     unsigned raw_basename_len = get_basename_without_extension_len(basename);
-    buffer = alloca(raw_basename_len + 1);
+    buffer = (char *)alloca(raw_basename_len + 1);
     memcpy(buffer, basename, raw_basename_len);
     buffer[raw_basename_len] = 0;
 
