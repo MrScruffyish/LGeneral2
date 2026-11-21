@@ -105,8 +105,8 @@ public:
 	void setColor(SDL_Color c);
 	void setAlign(int a);
 	int getSize() {return size;};
-	int getLineHeight() {return TTF_FontLineSkip(font);};
-	int getTextSize(const char *str, int *w, int *h) {return TTF_SizeText(font,str,w,h);};
+	int getLineHeight() {return TTF_GetFontLineSkip(font);};
+	int getTextSize(const char *str, int *w, int *h) {return lg_text_size(font,str,w,h);};
 	void write(SDL_Texture *target, int x, int y, const char *str);
 	void writeText(SDL_Texture *target, int x, int y, const char *text, int width);
 };

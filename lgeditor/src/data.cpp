@@ -14,9 +14,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
+#include "sdl3_compat.h"
 #include <stdio.h>
 #include <algorithm>
 #include <string>
@@ -57,7 +55,7 @@ int nation_flag_width = 0, nation_flag_height = 0;
 void nations_delete( void )
 {
     int i;
-    if ( nation_flags ) SDL_FreeSurface ( nation_flags );
+    if ( nation_flags ) SDL_DestroySurface ( nation_flags );
     nation_flags = 0;
     if ( nations == 0 ) return;
     for ( i = 0; i < nation_count; i++ ) {
@@ -148,7 +146,7 @@ void terrain_delete( void )
                         if ( terrain_types[i].images[j] == terrain_types[i].images[0] )
                             if ( j > 0 )
                                 continue; /* only a pointer */
-                        SDL_FreeSurface( terrain_types[i].images[j] );
+                        SDL_DestroySurface( terrain_types[i].images[j] );
                     }
                 free( terrain_types[i].images );
             }
@@ -223,7 +221,7 @@ int terrain_load( char *fname )
             else {
                 sprintf( path, "terrain/%s", str );
                 if ( ( terrain_types[i].images[j] = load_surf( path, SDL_SWSURFACE ) ) == 0 ) goto parser_failure;
-                SDL_SetColorKey( terrain_types[i].images[j], SDL_TRUE, 0x00000000);
+                SDL_SetSurfaceColorKey( terrain_types[i].images[j], true, 0x00000000);
             }
         }
         /* spot cost */
@@ -342,7 +340,7 @@ static void unit_lib_delete_entry( void *ptr )
     if ( entry == 0 ) return;
     if ( entry->id ) free( entry->id );
     if ( entry->name ) free( entry->name );
-    if ( entry->icon ) SDL_FreeSurface( entry->icon );
+    if ( entry->icon ) SDL_DestroySurface( entry->icon );
 #ifdef WITH_SOUND
     if ( entry->wav_alloc && entry->wav_move )
         wav_free( entry->wav_move );
@@ -352,25 +350,13 @@ static void unit_lib_delete_entry( void *ptr )
 
 SDL_Surface* create_surf(int w, int h, int f)
 {
-	Uint32 rmask, gmask, bmask, amask;
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    rmask = 0xff000000;
-    gmask = 0x00ff0000;
-    bmask = 0x0000ff00;
-    amask = 0x000000ff;
-#else
-    rmask = 0x000000ff;
-    gmask = 0x0000ff00;
-    bmask = 0x00ff0000;
-    amask = 0xff000000;
-#endif
-	SDL_Surface *sur;
-    sur = SDL_CreateRGBSurface(0, w, h, 32, rmask, gmask, bmask, amask);
+    (void)f;
+    SDL_Surface *sur = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA8888);
     if (sur == NULL) {
         fprintf(stderr, "ERR: ssur_create: not enough memory to create surface...\n");
         exit(1);
     }
-    SDL_SetColorKey(sur, SDL_TRUE, 0x0);
+    SDL_SetSurfaceColorKey(sur, true, 0x0);
     return sur;
 }
 
@@ -379,8 +365,8 @@ Uint32 set_pixel( SDL_Surface *surf, int x, int y, int pixel )
 {
     int pos = 0;
 
-    pos = y * surf->pitch + x * surf->format->BytesPerPixel;
-    memcpy( (char*)surf->pixels + pos, &pixel, surf->format->BytesPerPixel );
+    pos = y * surf->pitch + x * lg_bytes_per_pixel(surf);
+    memcpy( (char*)surf->pixels + pos, &pixel, lg_bytes_per_pixel(surf) );
     return pixel;
 }
 
@@ -390,8 +376,8 @@ Uint32 get_pixel( SDL_Surface *surf, int x, int y )
     int pos = 0;
     Uint32 pixel = 0;
 
-    pos = y * surf->pitch + x * surf->format->BytesPerPixel;
-    memcpy( &pixel, (char*)surf->pixels + pos, surf->format->BytesPerPixel );
+    pos = y * surf->pitch + x * lg_bytes_per_pixel(surf);
+    memcpy( &pixel, (char*)surf->pixels + pos, lg_bytes_per_pixel(surf) );
     return pixel;
 }
 
@@ -468,10 +454,10 @@ void unit_lib_delete( void )
         unit_classes = 0; unit_class_count = 0;
     }
     if ( unit_info_icons ) {
-        if ( unit_info_icons->str ) SDL_FreeSurface( unit_info_icons->str );
-        if ( unit_info_icons->atk ) SDL_FreeSurface( unit_info_icons->atk );
-        if ( unit_info_icons->mov ) SDL_FreeSurface( unit_info_icons->mov );
-        if ( unit_info_icons->guard ) SDL_FreeSurface( unit_info_icons->guard );
+        if ( unit_info_icons->str ) SDL_DestroySurface( unit_info_icons->str );
+        if ( unit_info_icons->atk ) SDL_DestroySurface( unit_info_icons->atk );
+        if ( unit_info_icons->mov ) SDL_DestroySurface( unit_info_icons->mov );
+        if ( unit_info_icons->guard ) SDL_DestroySurface( unit_info_icons->guard );
         free( unit_info_icons );
         unit_info_icons = 0;
     }
@@ -705,7 +691,7 @@ int unit_lib_load(const char *fname, int main )
         unit->icon_w = width;
         unit->icon_h = height;
         /* create pic and copy first pic */
-        unit->icon = create_surf( unit->icon_w, unit->icon_h, SDL_SWSURFACE );
+        unit->icon = create_surf( unit->icon_w, unit->icon_h, 0 );
         SDL_Rect srect = {0, offset, unit->icon_w, unit->icon_h};
         SDL_Rect drect = {0, 0, unit->icon_w, unit->icon_h};
         SDL_BlitSurface(icons, &srect, unit->icon, &drect);
@@ -714,10 +700,10 @@ int unit_lib_load(const char *fname, int main )
         set_pixel( unit->icon, 0, unit->icon_h - 1, color_key );
         set_pixel( unit->icon, unit->icon_w - 1, 0, color_key );
         /* set transparency */
-        //            SDL_SetColorKey( unit->icon, SDL_SRCCOLORKEY, color_key );
+        //            SDL_SetSurfaceColorKey( unit->icon, SDL_SRCCOLORKEY, color_key );
 
         /* use color key of 'big' picture */
-  //      SDL_SetColorKey( unit->icon_tiny, SDL_SRCCOLORKEY, color_key );
+  //      SDL_SetSurfaceColorKey( unit->icon_tiny, SDL_SRCCOLORKEY, color_key );
         /* add unit to database */
         list_add( unit_lib, unit );
         /* absolute evaluation
@@ -736,7 +722,7 @@ int unit_lib_load(const char *fname, int main )
     }
     parser_free( &pd );
     free(domain);
-    SDL_FreeSurface(icons);
+    SDL_DestroySurface(icons);
     return 1;
 
 parser_failure:
@@ -745,7 +731,7 @@ failure:
     unit_lib_delete();
     if ( pd ) parser_free( &pd );
     free(domain);
-    SDL_FreeSurface(icons);
+    SDL_DestroySurface(icons);
     return 0;
 }
 

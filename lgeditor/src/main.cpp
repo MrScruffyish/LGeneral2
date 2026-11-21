@@ -14,9 +14,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
+#include "sdl3_compat.h"
 #include <stdio.h>
 #include <list>
 #include <string>
@@ -57,9 +55,9 @@ int main(int argc, char **argv)
 	std::string fname;
 	int w,h;
 
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
+	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
 		SDL_Log("SDL_Init failed: %s\n", SDL_GetError());
-	if (TTF_Init() < 0)
+	if (!TTF_Init())
 		SDL_Log("TTF_Init failed: %s\n", SDL_GetError());
 	
 	print_help();

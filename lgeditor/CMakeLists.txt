@@ -14,7 +14,7 @@ if(NOT IS_DIRECTORY "${LGENDIR}")
 endif()
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2 SDL2_image SDL2_ttf)
+pkg_check_modules(SDL3 REQUIRED IMPORTED_TARGET sdl3 sdl3-image sdl3-ttf)
 
 find_library(MATH_LIBRARY m)
 if(NOT MATH_LIBRARY)
@@ -31,8 +31,9 @@ add_executable(lgeditor
     src/mylist.cpp src/parser.cpp src/data.cpp src/widgets.cpp
     src/mapview.cpp src/gui.cpp src/main.cpp
     src/mapview.h src/widgets.h src/gui.h src/parser.h src/mylist.h src/data.h
+    src/sdl3_compat.h
 )
-target_link_libraries(lgeditor PRIVATE PkgConfig::SDL2 ${MATH_LIBRARY})
+target_link_libraries(lgeditor PRIVATE PkgConfig::SDL3 ${MATH_LIBRARY})
 set_target_properties(lgeditor PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
 )

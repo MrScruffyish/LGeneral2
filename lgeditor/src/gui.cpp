@@ -14,9 +14,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
+#include "sdl3_compat.h"
 #include <stdio.h>
 #include <list>
 #include <string>
@@ -42,7 +40,7 @@ void renderCell(int id, SDL_Texture *t, int w, int h)
 	SDL_SetRenderTarget(mrc,t);
 	SDL_SetRenderDrawColor(mrc,0,0,0,128);
 	SDL_SetTextureBlendMode(t, SDL_BLENDMODE_BLEND);
-	SDL_RenderFillRect(mrc,NULL);
+	lg_render_fill_rect(mrc,NULL);
 
 	if (sel != -1) {
 		if (gui->curItemView == ID_TERRAINITEMS)
@@ -197,22 +195,22 @@ void GUI::run() {
 	w1->draw();
 	while (!GUI::leave) {
 		if (SDL_PollEvent(&ev)) {
-			if (ev.type == SDL_QUIT)
+			if (ev.type == SDL_EVENT_QUIT)
 				GUI::leave = true;
 			else
 				w1->handleEvent(&ev);
 
 			/* XXX do scrolling here timers didnt work most
 			 * like because of rendering in thread? */
-			if (ev.type == SDL_KEYDOWN) {
+			if (ev.type == SDL_EVENT_KEY_DOWN) {
 				int dx = 0, dy = 0;
-				if (ev.key.keysym.sym == SDLK_UP)
+				if (ev.key.key == SDLK_UP)
 					dy -= 2;
-				else if (ev.key.keysym.sym == SDLK_DOWN)
+				else if (ev.key.key == SDLK_DOWN)
 					dy += 2;
-				else if (ev.key.keysym.sym == SDLK_LEFT)
+				else if (ev.key.key == SDLK_LEFT)
 					dx -= 2;
-				else if (ev.key.keysym.sym == SDLK_RIGHT)
+				else if (ev.key.key == SDLK_RIGHT)
 					dx += 2;
 				if (dx != 0 || dy != 0) {
 					gui->mv->scroll(dx,dy);
@@ -222,7 +220,7 @@ void GUI::run() {
 			SDL_RenderPresent(mrc);
 		}
 		SDL_Delay(20);
-		SDL_FlushEvent(SDL_MOUSEMOTION); /* prevent event loop from dying */
+		SDL_FlushEvent(SDL_EVENT_MOUSE_MOTION); /* prevent event loop from dying */
 	}
 }
 

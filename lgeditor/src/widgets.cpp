@@ -13,9 +13,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
+#include "sdl3_compat.h"
 #include <stdio.h>
 #include <list>
 #include <string>
@@ -35,20 +33,18 @@ MainWindow::MainWindow(const char *title, int _w, int _h)
 	int flags = 0;
 	if (_w <= 0 || _h <= 0) {
 		/* use full (fake) screen */
-		SDL_DisplayMode mode;
-		SDL_GetCurrentDisplayMode(0,&mode);
-		_w = mode.w;
-		_h = mode.h;
-		flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
+		const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+		_w = mode->w;
+		_h = mode->h;
+		flags = SDL_WINDOW_FULLSCREEN;
 	}
 	w = _w;
 	h = _h;
 	Geom::sw = w;
 	Geom::sh = h;
-	if( (mw = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED,
-				SDL_WINDOWPOS_UNDEFINED, w, h, flags)) == NULL)
+	if( (mw = SDL_CreateWindow(title, w, h, flags)) == NULL)
 		_logsdlerr();
-	if ((mr = SDL_CreateRenderer(mw, -1, SDL_RENDERER_ACCELERATED)) == NULL)
+	if ((mr = SDL_CreateRenderer(mw, NULL)) == NULL)
 		_logsdlerr();
 	mrc = mr;
 }
@@ -72,12 +68,12 @@ Image::Image(std::string fname)
 	SDL_Surface *surf = IMG_Load(fname.c_str());
 	if (surf == NULL)
 		_logsdlerr();
-	SDL_SetColorKey(surf, SDL_TRUE, 0x0); /* set black as transparent */
+	SDL_SetSurfaceColorKey(surf, true, 0x00000000); /* set black as transparent */
 	if ((tex = SDL_CreateTextureFromSurface(mrc, surf)) == NULL)
 		_logsdlerr();
 	w = surf->w;
 	h = surf->h;
-	SDL_FreeSurface(surf);
+	SDL_DestroySurface(surf);
 }
 Image::Image(SDL_Surface *s)
 {
@@ -97,7 +93,7 @@ Image::Image(Image *s, int x, int y, int w, int h)
 				SDL_TEXTUREACCESS_TARGET,w, h)) == NULL)
 		_logsdlerr();
 	SDL_SetRenderTarget(mrc, tex);
-	SDL_RenderCopy(mrc, s->getTex(), &srect, &drect);
+	lg_render_copy(mrc, s->getTex(), &srect, &drect);
 	SDL_SetRenderTarget(mrc, NULL);
 }
 
@@ -114,22 +110,22 @@ SDL_Texture *Image::getTex()
 
 void Image::copy() /* full scale */
 {
-	SDL_RenderCopy(mrc, tex, NULL, NULL);
+	lg_render_copy(mrc, tex, NULL, NULL);
 }
 void Image::copy(int x, int y)
 {
 	SDL_Rect drect = {x, y, w, h};
-	SDL_RenderCopy(mrc, tex, NULL, &drect);
+	lg_render_copy(mrc, tex, NULL, &drect);
 }
 void Image::copy(int x, int y, int w, int h)
 {
 	SDL_Rect drect = {x, y, w, h};
-	SDL_RenderCopy(mrc, tex, NULL, &drect);
+	lg_render_copy(mrc, tex, NULL, &drect);
 }
 void Image::copy(int sx, int sy, int sw, int sh, int dx, int dy) {
 	SDL_Rect srect = {sx, sy, sw, sh};
 	SDL_Rect drect = {dx, dy, sw, sh};
-	SDL_RenderCopy(mrc, tex, &srect, &drect);
+	lg_render_copy(mrc, tex, &srect, &drect);
 }
 
 /** Grid image: large bitmap with same sized icons */
@@ -144,13 +140,13 @@ void GridImage::copy(int gx, int gy, int x, int y)
 {
 	SDL_Rect srect = {gx * gw, gy * gh, gw, gh};
 	SDL_Rect drect = {x, y, gw, gh};
-	SDL_RenderCopy(mrc, tex, &srect, &drect);
+	lg_render_copy(mrc, tex, &srect, &drect);
 }
 void GridImage::copy(int gx, int gy, int x, int y, int w, int h)
 {
 	SDL_Rect srect = {gx * gw, gy * gh, gw, gh};
 	SDL_Rect drect = {x, y, w, h};
-	SDL_RenderCopy(mrc, tex, &srect, &drect);
+	lg_render_copy(mrc, tex, &srect, &drect);
 }
 
 /** Font */
@@ -187,7 +183,7 @@ void Font::write(SDL_Texture *target, int x, int y, const char *str) {
 	if (strlen(str) == 0)
 		return;
 
-	if ((surf = TTF_RenderUTF8_Blended(font, str, clr)) == NULL)
+	if ((surf = lg_render_text(font, str, clr)) == NULL)
 		_logsdlerr();
 	if ((tex = SDL_CreateTextureFromSurface(mrc, surf)) == NULL)
 		_logsdlerr();
@@ -207,7 +203,7 @@ void Font::write(SDL_Texture *target, int x, int y, const char *str) {
 	drect.h = surf->h;
 	if (target)
 		SDL_SetRenderTarget(mrc, target);
-	SDL_RenderCopy(mrc, tex, NULL, &drect);
+	lg_render_copy(mrc, tex, NULL, &drect);
 	if (target)
 		SDL_SetRenderTarget(mrc, NULL);
 }
@@ -222,7 +218,7 @@ void Font::writeText(SDL_Texture *target, int x, int y, const char *text, int wr
 	if (strlen(text) == 0)
 		return;
 
-	if ((surf = TTF_RenderUTF8_Blended_Wrapped(font, text, clr, wrapwidth)) == NULL)
+	if ((surf = lg_render_text_wrapped(font, text, clr, wrapwidth)) == NULL)
 		_logsdlerr();
 	if ((tex = SDL_CreateTextureFromSurface(mrc, surf)) == NULL)
 		_logsdlerr();
@@ -232,7 +228,7 @@ void Font::writeText(SDL_Texture *target, int x, int y, const char *text, int wr
 	drect.h = surf->h;
 	if (target)
 		SDL_SetRenderTarget(mrc, target);
-	SDL_RenderCopy(mrc, tex, NULL, &drect);
+	lg_render_copy(mrc, tex, NULL, &drect);
 	if (target)
 		SDL_SetRenderTarget(mrc, NULL);
 }
@@ -241,11 +237,11 @@ void Font::writeText(SDL_Texture *target, int x, int y, const char *text, int wr
 
 int Widget::checkFocus(const SDL_Event *ev) {
 	int oldFocus = hasFocus;
-	if (ev->type == SDL_MOUSEMOTION)
-		hasFocus = (ev->motion.x >= ax &&
-				ev->motion.x < ax + w &&
-				ev->motion.y >= ay &&
-				ev->motion.y < ay + h);
+	if (ev->type == SDL_EVENT_MOUSE_MOTION)
+		hasFocus = ((int)ev->motion.x >= ax &&
+				(int)ev->motion.x < ax + w &&
+				(int)ev->motion.y >= ay &&
+				(int)ev->motion.y < ay + h);
 	if (oldFocus != hasFocus) {
 		if (tooltipLabel && hasFocus)
 			tooltipLabel->setText(tooltipText.c_str());
@@ -294,7 +290,7 @@ Widget::Widget(Widget * p, Geom g, Image *i, bool border)
 		SDL_SetRenderTarget(mrc, bkgnd->getTex());
 		SDL_SetRenderDrawBlendMode(mrc, SDL_BLENDMODE_BLEND);
 		SDL_SetRenderDrawColor(mrc, 255,255,255, 128);
-		SDL_RenderDrawLines(mrc, pts, 5);
+		lg_render_lines(mrc, pts, 5);
 		SDL_SetRenderDrawBlendMode(mrc, SDL_BLENDMODE_NONE);
 		SDL_SetRenderTarget(mrc, NULL);
 	}
@@ -437,11 +433,11 @@ void Label::draw() {
 	if (font) {
 		SDL_Rect cr = {ax,ay,w,h};
 
-		SDL_RenderSetClipRect(mrc, &cr);
+		SDL_SetRenderClipRect(mrc, &cr);
 		font->setColor(color);
 		font->setAlign(align);
 		font->write(NULL,ax+tx,ay+ty,text.c_str());
-		SDL_RenderSetClipRect(mrc, NULL);
+		SDL_SetRenderClipRect(mrc, NULL);
 	}
 }
 
@@ -474,7 +470,7 @@ void Button::draw() {
 				{ax + 1, ay + 1}
 		};
 		SDL_SetRenderDrawColor(mrc, 255, 230, 0, 255);
-		SDL_RenderDrawLines(mrc, pts, 5);
+		lg_render_lines(mrc, pts, 5);
 	}
 }
 
@@ -484,7 +480,7 @@ void Button::handleEvent(const SDL_Event *ev)
 		return;
 	if (checkFocus(ev))
 		draw();
-	if (ev->type == SDL_MOUSEBUTTONUP && hasFocus && actionCB)
+	if (ev->type == SDL_EVENT_MOUSE_BUTTON_UP && hasFocus && actionCB)
 		actionCB(actionID, this, ev);
 }
 
@@ -509,7 +505,7 @@ void Edit::draw() {
 				{ax + 1, ay + 1}
 		};
 		SDL_SetRenderDrawColor(mrc, 255, 230, 0, 128);
-		SDL_RenderDrawLines(mrc, pts, 5);
+		lg_render_lines(mrc, pts, 5);
 	}
 }
 
@@ -522,22 +518,22 @@ void Edit::draw() {
 	if (checkFocus(ev)) {
 		changed = true;
 		if (hasFocus)
-			SDL_StartTextInput();
+			SDL_StartTextInput(SDL_GetRenderWindow(mrc));
 		else
-			SDL_StopTextInput();
+			SDL_StopTextInput(SDL_GetRenderWindow(mrc));
 	}
 
 	if (hasFocus) {
-		if (ev->type == SDL_KEYDOWN) {
-			if( ev->key.keysym.sym == SDLK_BACKSPACE) {
+		if (ev->type == SDL_EVENT_KEY_DOWN) {
+			if( ev->key.key == SDLK_BACKSPACE) {
 				if (text.length() > 0)
 					text.erase(text.length()-1,1);
 				changed = true;
 			}
-		} else if (ev->type == SDL_KEYUP) {
-			if (ev->key.keysym.sym == SDLK_RETURN && actionCB)
+		} else if (ev->type == SDL_EVENT_KEY_UP) {
+			if (ev->key.key == SDLK_RETURN && actionCB)
 				actionCB(actionID, this, ev);
-		} else if (ev->type == SDL_TEXTINPUT && text.length() < (unsigned)size) {
+		} else if (ev->type == SDL_EVENT_TEXT_INPUT && text.length() < (unsigned)size) {
 			text += ev->text.text;
 			changed = true;
 		}
@@ -629,10 +625,10 @@ void VScrollbar::handleEvent(const SDL_Event *ev)
 	downBtn->handleEvent(ev);
 	/* XXX a bit messy yes a trackbutton class remembering absolute position
 	 * where it was clicked would be much better... is good enough anyway */
-	if (ev->type == SDL_MOUSEMOTION &&
+	if (ev->type == SDL_EVENT_MOUSE_MOTION &&
 				trackBtn->getFocus()
 				&& (ev->motion.state & SDL_BUTTON_LMASK)) {
-		float rel = (float)(ev->motion.y - (ay + trackYMin)) /
+		float rel = (float)((int)ev->motion.y - (ay + trackYMin)) /
 						(trackYMax - trackYMin);
 		if (rel < 0)
 			rel = 0;
@@ -685,7 +681,7 @@ void Listbox::draw() {
 		end1 = items.size();
 
 	SDL_Rect cr = {ax+1,ay+1,w-2,h-2};
-	SDL_RenderSetClipRect(mrc,&cr);
+	SDL_SetRenderClipRect(mrc,&cr);
 
 	for (int i = start; i < end1; i++) {
 		font->setAlign(ALIGN_X_LEFT | ALIGN_Y_TOP);
@@ -695,14 +691,14 @@ void Listbox::draw() {
 			dr.w = w - 2*linePadding; /* fill all of line */
 			SDL_SetRenderDrawBlendMode(mrc, SDL_BLENDMODE_BLEND);
 			SDL_SetRenderDrawColor(mrc,  255, 230, 0, 128);
-			SDL_RenderFillRect(mrc, &dr);
+			lg_render_fill_rect(mrc, &dr);
 			SDL_SetRenderDrawBlendMode(mrc, SDL_BLENDMODE_NONE);
 		}
 		font->write(NULL,wx,wy,items[i].c_str());
 		wy += font->getLineHeight();
 	}
 
-	SDL_RenderSetClipRect(mrc,NULL);
+	SDL_SetRenderClipRect(mrc,NULL);
 	sbar->draw();
 }
 
@@ -720,25 +716,25 @@ void Listbox::handleEvent(const SDL_Event *ev)
 		changed = true;
 
 	if (hasFocus) {
-		if (ev->type == SDL_MOUSEBUTTONUP  &&
-			ev->button.x - ax < w - sbar->getWidth()) {
+		if (ev->type == SDL_EVENT_MOUSE_BUTTON_UP  &&
+			(int)ev->button.x - ax < w - sbar->getWidth()) {
 			sel = sbar->getValue();
-			sel += (ev->button.y - ay - linePadding) / font->getLineHeight();
+			sel += ((int)ev->button.y - ay - linePadding) / font->getLineHeight();
 			if ((unsigned)sel > items.size() - 1)
 				sel = items.size() - 1;
 			if (actionCB)
 				actionCB(actionID, this, ev);
 			changed = true;
-		} else if (ev->type == SDL_MOUSEWHEEL) {
+		} else if (ev->type == SDL_EVENT_MOUSE_WHEEL) {
 			if (ev->wheel.y < 0)
 				sbar->inc();
 			else
 				sbar->dec();
 			changed = true;
-		} else if (ev->type == SDL_KEYDOWN) {
-			if (ev->key.keysym.sym == SDLK_UP)
+		} else if (ev->type == SDL_EVENT_KEY_DOWN) {
+			if (ev->key.key == SDLK_UP)
 				sbar->dec();
-			else if (ev->key.keysym.sym == SDLK_DOWN)
+			else if (ev->key.key == SDLK_DOWN)
 				sbar->inc();
 			changed = true;
 		}
@@ -796,7 +792,7 @@ void ItemView::draw() {
 	for (int i = start; i < end1; i++) {
 		SDL_Rect drect = {cx, cy, cw, ch};
 		renderCB(i,ctex,cw,ch);
-		SDL_RenderCopy(mrc, ctex, NULL, &drect);
+		lg_render_copy(mrc, ctex, NULL, &drect);
 		if (sel == i) {
 			SDL_Point pts[5] = {
 					{cx, cy},
@@ -806,7 +802,7 @@ void ItemView::draw() {
 					{cx, cy}
 			};
 			SDL_SetRenderDrawColor(mrc, 255, 230, 0, 128);
-			SDL_RenderDrawLines(mrc, pts, 5);
+			lg_render_lines(mrc, pts, 5);
 		}
 		cx += cw + cpad;
 		if ((i+1) % ncols == 0) {
@@ -832,27 +828,27 @@ void ItemView::handleEvent(const SDL_Event *ev)
 		changed = true;
 
 	if (hasFocus) {
-		if (ev->type == SDL_MOUSEBUTTONUP  &&
-				ev->button.x - ax < w - sbar->getWidth()) {
+		if (ev->type == SDL_EVENT_MOUSE_BUTTON_UP  &&
+				(int)ev->button.x - ax < w - sbar->getWidth()) {
 			sel = sbar->getValue() * ncols;
-			int sx = (ev->button.x - ax - cpad) / (cw + cpad);
-			int sy = (ev->button.y - ay - cpad) / (ch + cpad);
+			int sx = ((int)ev->button.x - ax - cpad) / (cw + cpad);
+			int sy = ((int)ev->button.y - ay - cpad) / (ch + cpad);
 			sel += sy * ncols + sx;
 			if (sel > size - 1)
 				sel = size - 1;
 			if (actionCB)
 				actionCB(actionID, this, ev);
 			changed = true;
-		} else if (ev->type == SDL_MOUSEWHEEL) {
+		} else if (ev->type == SDL_EVENT_MOUSE_WHEEL) {
 			if (ev->wheel.y < 0)
 				sbar->inc();
 			else
 				sbar->dec();
 			changed = true;
-		} else if (ev->type == SDL_KEYDOWN) {
-			if (ev->key.keysym.sym == SDLK_UP)
+		} else if (ev->type == SDL_EVENT_KEY_DOWN) {
+			if (ev->key.key == SDLK_UP)
 				sbar->dec();
-			else if (ev->key.keysym.sym == SDLK_DOWN)
+			else if (ev->key.key == SDLK_DOWN)
 				sbar->inc();
 			changed = true;
 		}

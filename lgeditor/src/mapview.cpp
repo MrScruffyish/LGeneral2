@@ -14,9 +14,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
+#include "sdl3_compat.h"
 #include <stdio.h>
 #include <list>
 #include <string>
@@ -84,7 +82,7 @@ void MapView::render()
 					};
 					SDL_SetRenderDrawColor(mrc,
 							255, 255, 0, SDL_ALPHA_OPAQUE);
-					SDL_RenderDrawLines(mrc, pts, 5);
+					lg_render_lines(mrc, pts, 5);
 				}
 			}
 			/* add units */
@@ -253,10 +251,10 @@ void MapView::handleEvent(const SDL_Event *ev)
 		sx = -1;
 		sy = -1;
 		changed = true;
-	} else if (ev->type == SDL_MOUSEMOTION) {
+	} else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
 		int mx, my;
 		getMapCoordsFromPointer(
-				ev->motion.x - ax, ev->motion.y - ay, mx, my);
+				(int)ev->motion.x - ax, (int)ev->motion.y - ay, mx, my);
 		sx = vx + mx;
 		if (sx >= data->mapw)
 			sx = data->mapw - 1;
@@ -271,7 +269,7 @@ void MapView::handleEvent(const SDL_Event *ev)
 		else if (ev->motion.state & SDL_BUTTON_MMASK)
 			setTile(false,true);
 		changed = true;
-	} else if (ev->type == SDL_MOUSEBUTTONDOWN) {
+	} else if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 		if (ev->button.button == SDL_BUTTON_LEFT)
 			setTile(false,false);
 		else if (ev->button.button == SDL_BUTTON_MIDDLE)
@@ -279,7 +277,7 @@ void MapView::handleEvent(const SDL_Event *ev)
 		else
 			setTile(true,false);
 		changed = true;
-	} else if (ev->type == SDL_KEYDOWN) {
+	} else if (ev->type == SDL_EVENT_KEY_DOWN) {
 		/* do nothing scrolling is done in main event loop */
 	}
 
