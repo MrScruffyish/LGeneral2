@@ -15,7 +15,6 @@ option(LGENERAL_NLS "Build with gettext translations" ON)
 option(LGENERAL_INSTALL "Use installed data paths" OFF)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(SDL REQUIRED IMPORTED_TARGET sdl>=1.2.0)
 pkg_check_modules(SDL3 REQUIRED IMPORTED_TARGET sdl3)
 
 find_library(MATH_LIBRARY m)
@@ -26,13 +25,12 @@ endif()
 set(WITH_SOUND 0)
 set(HAVE_LIBSDL_MIXER 0)
 if(LGENERAL_SOUND)
-    find_path(SDL_MIXER_INCLUDE_DIR SDL_mixer.h HINTS ${SDL_INCLUDE_DIRS})
-    find_library(SDL_MIXER_LIBRARY SDL_mixer)
-    if(SDL_MIXER_INCLUDE_DIR AND SDL_MIXER_LIBRARY)
+    pkg_check_modules(SDL3_MIXER QUIET IMPORTED_TARGET sdl3-mixer)
+    if(SDL3_MIXER_FOUND)
         set(WITH_SOUND 1)
         set(HAVE_LIBSDL_MIXER 1)
     else()
-        message(STATUS "SDL_mixer not found; audio will be disabled")
+        message(STATUS "SDL3_mixer not found; audio will be disabled")
     endif()
 endif()
 
@@ -127,9 +125,9 @@ target_include_directories(lgeneral PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/util
 )
-target_link_libraries(lgeneral PRIVATE util PkgConfig::SDL ${MATH_LIBRARY})
+target_link_libraries(lgeneral PRIVATE util PkgConfig::SDL3 ${MATH_LIBRARY})
 if(WITH_SOUND)
-    target_link_libraries(lgeneral PRIVATE ${SDL_MIXER_LIBRARY})
+    target_link_libraries(lgeneral PRIVATE PkgConfig::SDL3_MIXER)
 endif()
 set_target_properties(lgeneral PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src

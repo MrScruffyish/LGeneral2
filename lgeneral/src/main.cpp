@@ -268,7 +268,7 @@ int main(int argc, char *argv[])
     init_sdl( SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO );
     set_video_mode( 800, 600, config.fullscreen );
     sprintf( window_name, tr("LGeneral %s"), VERSION );
-    SDL_WM_SetCaption( window_name, 0 );
+    set_window_title( window_name );
     event_enable_filter();
     
     /* show lgeneral title */

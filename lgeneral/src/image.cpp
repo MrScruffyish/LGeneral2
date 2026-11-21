@@ -15,7 +15,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <SDL.h>
+#include "sdl_compat.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include "lg-sdl.h"
 #include "image.h"
@@ -29,7 +30,7 @@ SDL must have been initialized before calling this.
 Buffer* buffer_create( int w, int h, SDL_Surface *surf, int x, int y )
 {
     Buffer *buffer = 0;
-    SDL_PixelFormat *format = 0;
+    SDL_PixelFormat format = SDL_PIXELFORMAT_RGBA8888;
     if ( SDL_GetVideoSurface() ) 
         format = SDL_GetVideoSurface()->format;
     else {
@@ -37,10 +38,7 @@ Buffer* buffer_create( int w, int h, SDL_Surface *surf, int x, int y )
         return 0;
     }
     buffer = (Buffer*)calloc( 1, sizeof( Buffer ) );
-    buffer->buf = SDL_CreateRGBSurface( SDL_SWSURFACE, w, h, 
-                                           format->BitsPerPixel,
-                                           format->Rmask, format->Gmask, format->Bmask,
-                                           format->Amask );
+    buffer->buf = SDL_CreateSurface( w, h, format );
     if ( buffer->buf == 0 ) {
         fprintf( stderr, "buffer_create: %s\n", SDL_GetError() );
         free( buffer );
@@ -323,7 +321,7 @@ Frame *frame_create( SDL_Surface *img, int alpha, SDL_Surface *surf, int x, int 
     SDL_Surface *empty_img;
     int w, h;
     Frame *frame = 0;
-    SDL_PixelFormat *format = 0;
+    SDL_PixelFormat format = SDL_PIXELFORMAT_RGBA8888;
     if ( SDL_GetVideoSurface() ) 
         format = SDL_GetVideoSurface()->format;
     else {
@@ -340,19 +338,13 @@ Frame *frame_create( SDL_Surface *img, int alpha, SDL_Surface *surf, int x, int 
     SDL_SetColorKey( frame->frame, SDL_SRCCOLORKEY, 0x0 );
     w = frame->frame->w; h = frame->frame->h;
     /* contents */
-    frame->contents = SDL_CreateRGBSurface( SDL_SWSURFACE, w, h, 
-                                            format->BitsPerPixel,
-                                            format->Rmask, format->Gmask, format->Bmask,
-                                            format->Amask );
+    frame->contents = SDL_CreateSurface( w, h, format );
     if ( frame->contents == 0 ) goto sdl_failure;
     SDL_SetColorKey( frame->contents, SDL_SRCCOLORKEY, 0x0 );
     /* shadow if any transparency  */
     frame->alpha = alpha;
     if ( alpha > 0 ) {
-        frame->shadow = SDL_CreateRGBSurface( SDL_SWSURFACE, w, h, 
-                                              format->BitsPerPixel,
-                                              format->Rmask, format->Gmask, format->Bmask,
-                                              format->Amask );
+        frame->shadow = SDL_CreateSurface( w, h, format );
         if ( frame->shadow == 0 ) goto sdl_failure;
         SDL_FillRect( frame->shadow, 0, 0x0 );
         SDL_SetColorKey( frame->shadow, SDL_SRCCOLORKEY, 0x0 );
@@ -361,10 +353,7 @@ Frame *frame_create( SDL_Surface *img, int alpha, SDL_Surface *surf, int x, int 
         SDL_SetAlpha( frame->shadow, SDL_SRCALPHA, alpha );
     }
     /* image (empty frame per default)*/
-    empty_img = SDL_CreateRGBSurface( SDL_SWSURFACE, w, h, 
-                                 format->BitsPerPixel,
-                                 format->Rmask, format->Gmask, format->Bmask,
-                                 format->Amask );
+    empty_img = SDL_CreateSurface( w, h, format );
     if ( empty_img == 0 ) goto sdl_failure;
     SDL_FillRect( empty_img, 0, 0x0 );
     SDL_SetColorKey( empty_img, SDL_SRCCOLORKEY, 0x0 );

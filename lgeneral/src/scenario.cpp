@@ -26,6 +26,8 @@
 #include "scenario.h"
 #include "localize.h"
 
+#include <ctype.h>
+
 #if DEBUG_CAMPAIGN
 #  include <stdio.h>
 #  include <stdlib.h>

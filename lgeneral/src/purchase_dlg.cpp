@@ -7,7 +7,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <SDL.h>
+#include "sdl_compat.h"
 #include <stdlib.h>
 #include "lgeneral.h"
 #include "lg-sdl.h"

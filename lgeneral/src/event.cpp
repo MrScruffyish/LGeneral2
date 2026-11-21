@@ -1,6 +1,6 @@
 /***************************************************************************
-                          event.c  -  description
-                             -------------------
+                           event.c  -  description
+                              -------------------
     begin                : Wed Mar 20 2002
     copyright            : (C) 2001 by Michael Speck
     email                : kulkanie@gmx.net
@@ -18,17 +18,21 @@
 #include "lgeneral.h"
 #include "event.h"
 
+#include <cstring>
+
 int buttonup = 0, buttondown = 0;
 int motion = 0;
 int motion_x = 50, motion_y = 50;
-int keystate[SDLK_LAST];
-int buttonstate[10];
 int sdl_quit = 0;
 
+/* SDL3 exposes key state by scancode rather than by key symbol. */
+static bool key_state[SDL_SCANCODE_COUNT];
+static int buttonstate[10];
+
 /*
-====================================================================
+=====================================================================
 Locals
-====================================================================
+=====================================================================
 */
 
 /*
@@ -39,7 +43,14 @@ event queue.
 */
 int all_filter( const SDL_Event *event )
 {
+    (void)event;
     return 0;
+}
+
+static bool SDLCALL sdl3_event_filter( void *userdata, SDL_Event *event )
+{
+    (void)userdata;
+    return event_filter( event ) != 0;
 }
 
 /*
@@ -49,16 +60,20 @@ Returns whether any mouse button is pressed
 */
 static int event_is_button_pressed()
 {
-    return (SDL_GetMouseState(0,0)!=0);
+    float x = 0.0f, y = 0.0f;
+    return SDL_GetMouseState( &x, &y ) != 0;
 }
 static int event_is_key_pressed()
 {
-    int i;
-    Uint8 *keystate=SDL_GetKeyState(0);
-    for (i=0;i<SDLK_LAST;i++) 
-    {
-        if (i==SDLK_NUMLOCK||i==SDLK_CAPSLOCK||i==SDLK_SCROLLOCK) continue;
-        if (keystate[i]) return 1;
+    const bool *keys = SDL_GetKeyboardState( nullptr );
+    if ( !keys )
+        return 0;
+    for ( int i = 0; i < SDL_SCANCODE_COUNT; i++ ) {
+        if ( i == SDL_SCANCODE_NUMLOCKCLEAR || i == SDL_SCANCODE_CAPSLOCK ||
+             i == SDL_SCANCODE_SCROLLLOCK )
+            continue;
+        if ( keys[i] )
+            return 1;
     }
     return 0;
 }
@@ -73,9 +88,17 @@ int event_filter( const SDL_Event *event )
 {
     switch ( event->type ) {
         case SDL_MOUSEMOTION:
-            motion_x = event->motion.x;
-            motion_y = event->motion.y;
-            buttonstate[event->motion.state] = 1;
+            motion_x = static_cast<int>( event->motion.x );
+            motion_y = static_cast<int>( event->motion.y );
+            /* SDL3 reports the button state as a bit mask; map it to the
+               button indices used by the game (the SDL 1.2 code indexed the
+               state array with the mask, which mismatched the right button). */
+            if ( event->motion.state & SDL_BUTTON_LMASK )
+                buttonstate[BUTTON_LEFT] = 1;
+            if ( event->motion.state & SDL_BUTTON_MMASK )
+                buttonstate[BUTTON_MIDDLE] = 1;
+            if ( event->motion.state & SDL_BUTTON_RMASK )
+                buttonstate[BUTTON_RIGHT] = 1;
             motion = 1;
             return 0;
         case SDL_MOUSEBUTTONUP:
@@ -87,16 +110,17 @@ int event_filter( const SDL_Event *event )
             buttondown = event->button.button;
             return 0;
         case SDL_KEYUP:
-            keystate[event->key.keysym.sym] = 0;
+            key_state[event->key.scancode] = false;
             return 0;
         case SDL_KEYDOWN:
-            keystate[event->key.keysym.sym] = 1;
+            key_state[event->key.scancode] = true;
             return 1;
         case SDL_QUIT:
             sdl_quit = 1;
             return 0;
+        default:
+            return 1;
     }
-    return 1;
 }
 
 /*
@@ -112,17 +136,17 @@ Enable/Disable event filtering of mouse and keyboard.
 */
 void event_enable_filter( void )
 {
-    SDL_SetEventFilter( event_filter );
+    SDL_SetEventFilter( sdl3_event_filter, nullptr );
     event_clear();
 }
 void event_disable_filter( void )
 {
-    SDL_SetEventFilter( 0 );
+    SDL_SetEventFilter( nullptr, nullptr );
 }
 void event_clear( void )
 {
-    memset( keystate, 0, sizeof( int ) * SDLK_LAST );
-    memset( buttonstate, 0, sizeof( int ) * 10 );
+    std::memset( key_state, 0, sizeof( key_state ) );
+    std::memset( buttonstate, 0, sizeof( buttonstate ) );
     buttonup = buttondown = motion = 0;
 }
 
@@ -186,6 +210,8 @@ Check if 'button' button is currently set.
 */
 int event_check_button( int button )
 {
+    if ( button < 0 || button >= static_cast<int>( sizeof( buttonstate ) / sizeof( buttonstate[0] ) ) )
+        return 0;
     return buttonstate[button];
 }
 
@@ -196,7 +222,11 @@ Check if 'key' is currently set.
 */
 int event_check_key( int key )
 {
-    return keystate[key];
+    const SDL_Scancode scancode =
+        SDL_GetScancodeFromKey( static_cast<SDL_Keycode>( key ), nullptr );
+    if ( scancode < 0 || scancode >= SDL_SCANCODE_COUNT )
+        return 0;
+    return key_state[scancode] ? 1 : 0;
 }
 
 /*
@@ -217,9 +247,9 @@ Clear the SDL event key (keydown events)
 void event_clear_sdl_queue()
 {
     SDL_Event event;
-    SDL_SetEventFilter( all_filter );
+    SDL_SetEventFilter( []( void *, SDL_Event * ) { return false; }, nullptr );
     while ( SDL_PollEvent( &event ) );
-    SDL_SetEventFilter( event_filter );
+    SDL_SetEventFilter( sdl3_event_filter, nullptr );
 }
 
 /*

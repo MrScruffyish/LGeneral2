@@ -2620,6 +2620,26 @@ static void engine_undeploy_unit( Unit *unit )
     gui_add_deploy_unit( unit );
 }
 
+/* Return the first Unicode code point of an SDL3 text input event. */
+static int first_utf8_codepoint( const char *text )
+{
+    const unsigned char *s = reinterpret_cast<const unsigned char *>( text );
+    if ( !s || !*s )
+        return 0;
+    if ( s[0] < 0x80 )
+        return s[0];
+    if ( ( s[0] & 0xe0 ) == 0xc0 && ( s[1] & 0xc0 ) == 0x80 )
+        return ((s[0] & 0x1f) << 6) | (s[1] & 0x3f);
+    if ( ( s[0] & 0xf0 ) == 0xe0 && ( s[1] & 0xc0 ) == 0x80 &&
+         ( s[2] & 0xc0 ) == 0x80 )
+        return ((s[0] & 0x0f) << 12) | ((s[1] & 0x3f) << 6) | (s[2] & 0x3f);
+    if ( ( s[0] & 0xf8 ) == 0xf0 && ( s[1] & 0xc0 ) == 0x80 &&
+         ( s[2] & 0xc0 ) == 0x80 && ( s[3] & 0xc0 ) == 0x80 )
+        return ((s[0] & 0x07) << 18) | ((s[1] & 0x3f) << 12) |
+               ((s[2] & 0x3f) << 6) | (s[3] & 0x3f);
+    return 0;
+}
+
 /*
 ====================================================================
 Get actions from input events or CPU and queue them.
@@ -2632,7 +2652,8 @@ static void engine_check_events(int *reinit)
     SDL_Event event;
     Unit *unit;
     int cx, cy, button = 0;
-    int mx, my, keypressed = 0;
+    int mx, my;
+    [[maybe_unused]] int keypressed = 0;
     int nx, ny;
     SDL_PumpEvents(); /* gather events in the queue */
     if ( sdl_quit ) term_game = 1; /* end game by window manager */
@@ -3042,20 +3063,31 @@ static void engine_check_events(int *reinit)
             }
         if ( SDL_PollEvent( &event ) )
         {
-            if ( event.type == SDL_KEYDOWN ) 
+            if ( event.type == SDL_TEXTINPUT ) {
+                if ( status == STATUS_RENAME || status == STATUS_SAVE ) {
+                    const int unicode = first_utf8_codepoint( event.text.text );
+                    if ( unicode > 0 ) {
+                        edit_handle_key( gui->edit, 0, 0, unicode );
+#ifdef WITH_SOUND
+                        wav_play( gui->wav_edit );
+#endif
+                    }
+                }
+            }
+            else if ( event.type == SDL_KEYDOWN )
             {
                 /* allow mirroring anywhere */
-                if (event.key.keysym.sym==SDLK_TAB)
+                if (event.key.key==SDLK_TAB)
                 {
                     gui_mirror_asymm_windows();
                     keypressed = 1;
                 }
                 if ( status == STATUS_NONE || status == STATUS_INFO || status == STATUS_UNIT_MENU ) {
-                    int shiftPressed = event.key.keysym.mod&KMOD_LSHIFT||event.key.keysym.mod&KMOD_RSHIFT;
-                    if ( (status != STATUS_UNIT_MENU) && (event.key.keysym.sym == SDLK_n || 
-                         (event.key.keysym.sym == SDLK_f&&!shiftPressed) || 
-                         (event.key.keysym.sym == SDLK_m&&!shiftPressed) ) ) {
-                        int stype = (event.key.keysym.sym==SDLK_n)?0:(event.key.keysym.sym==SDLK_f)?1:2;
+                    int shiftPressed = event.key.mod&KMOD_LSHIFT||event.key.mod&KMOD_RSHIFT;
+                    if ( (status != STATUS_UNIT_MENU) && (event.key.key == SDLK_n ||
+                         (event.key.key == SDLK_f&&!shiftPressed) ||
+                         (event.key.key == SDLK_m&&!shiftPressed) ) ) {
+                        int stype = (event.key.key==SDLK_n)?0:(event.key.key==SDLK_f)?1:2;
                         /* select next unit that has either movement
                            or attack left */
                         list_reset( units );
@@ -3095,10 +3127,10 @@ static void engine_check_events(int *reinit)
                         }
                         keypressed = 1;
                     } else
-                    if ( (status != STATUS_UNIT_MENU) && (event.key.keysym.sym == SDLK_p ||
-                         (event.key.keysym.sym == SDLK_f&&shiftPressed) || 
-                         (event.key.keysym.sym == SDLK_m&&shiftPressed) ) ) {
-                        int stype = (event.key.keysym.sym==SDLK_p)?0:(event.key.keysym.sym==SDLK_f)?1:2;
+                    if ( (status != STATUS_UNIT_MENU) && (event.key.key == SDLK_p ||
+                         (event.key.key == SDLK_f&&shiftPressed) ||
+                         (event.key.key == SDLK_m&&shiftPressed) ) ) {
+                        int stype = (event.key.key==SDLK_p)?0:(event.key.key==SDLK_f)?1:2;
                         /* select previous unit that has either movement
                            or attack left */
                         list_reset( units );
@@ -3138,9 +3170,8 @@ static void engine_check_events(int *reinit)
                         }
                         keypressed = 1;
                     } else {
-                        Uint8 *keystate; int numkeys;
                         keypressed = 1;
-                        switch (event.key.keysym.sym)
+                        switch (event.key.key)
                         {
                             case SDLK_t: if (status!=STATUS_UNIT_MENU) engine_handle_button(ID_AIR_MODE); break;
                             case SDLK_o: if (status!=STATUS_UNIT_MENU) engine_handle_button(ID_STRAT_MAP); break;
@@ -3163,9 +3194,15 @@ static void engine_check_events(int *reinit)
                             case SDLK_7:
                             case SDLK_8:
                             case SDLK_9:
-                                keystate = SDL_GetKeyState(&numkeys);
-                                if (keystate[SDLK_x])
-                                        engine_handle_button(ID_SPLIT_1+event.key.keysym.sym-SDLK_1); 
+                                {
+                                    int numkeys = 0;
+                                    const bool *keystate = SDL_GetKeyboardState(&numkeys);
+                                    const SDL_Scancode x_scancode =
+                                        SDL_GetScancodeFromKey( SDLK_x, nullptr );
+                                    if ( x_scancode >= 0 && x_scancode < numkeys &&
+                                         keystate[x_scancode] )
+                                        engine_handle_button(ID_SPLIT_1+event.key.key-SDLK_1);
+                                }
                                 break;
                             case SDLK_MINUS:
                                 if (cur_unit) cur_unit->is_guarding = !cur_unit->is_guarding;
@@ -3175,12 +3212,12 @@ static void engine_check_events(int *reinit)
                         }
                     }
                 } else if ( status == STATUS_CONF ) {
-                    if ( event.key.keysym.sym == SDLK_RETURN )
+                    if ( event.key.key == SDLK_RETURN )
                         engine_handle_button(ID_OK);
-                    else if ( event.key.keysym.sym == SDLK_ESCAPE )
+                    else if ( event.key.key == SDLK_ESCAPE )
                         engine_handle_button(ID_CANCEL);
                 } else if ( status == STATUS_RENAME || status == STATUS_SAVE ) {
-                    if ( event.key.keysym.sym == SDLK_RETURN ) {
+                    if ( event.key.key == SDLK_RETURN ) {
                         /* apply */
                         switch ( status ) {
                             case STATUS_RENAME:
@@ -3197,7 +3234,7 @@ static void engine_check_events(int *reinit)
                         keypressed = 1;
                     }
                     else
-                        if ( event.key.keysym.sym == SDLK_ESCAPE )
+                        if ( event.key.key == SDLK_ESCAPE )
                             hide_edit = 1;
                     if ( hide_edit ) {    
                         engine_set_status( STATUS_NONE );
@@ -3206,7 +3243,7 @@ static void engine_check_events(int *reinit)
                         scroll_block_keys = 0;
                     }
                     else {
-                        edit_handle_key( gui->edit, event.key.keysym.sym, event.key.keysym.mod, event.key.keysym.unicode );
+                        edit_handle_key( gui->edit, event.key.key, event.key.mod, 0 );
 #ifdef WITH_SOUND
                         wav_play( gui->wav_edit );
 #endif
@@ -3351,7 +3388,6 @@ static void engine_handle_next_action( int *reinit )
 {
     Action *action = 0;
     int enemy_spotted = 0;
-    int depth, flags;
     /* lock action queue? */
     if ( status == STATUS_CONF || status == STATUS_ATTACK || status == STATUS_STRAT_ATTACK || status == STATUS_MOVE )
         return;
@@ -3395,19 +3431,14 @@ static void engine_handle_next_action( int *reinit )
             end_scen = 1;
             break;
         case ACTION_SET_VMODE:
-            flags = SDL_SWSURFACE;
-            if ( action->full ) flags |= SDL_FULLSCREEN;
-            depth = SDL_VideoModeOK( action->w, action->h, 32, flags );
-            if ( depth == 0 ) {
-                fprintf( stderr, tr("Video Mode: %ix%i, Fullscreen: %i not available\n"), 
+            if ( set_video_mode( action->w, action->h, action->full ) != 0 ) {
+                fprintf( stderr, tr("Video Mode: %ix%i, Fullscreen: %i not available\n"),
                          action->w, action->h, action->full );
             }
             else {
-                /* videomode */
-                SDL_SetVideoMode( action->w, action->h, depth, flags );
                 printf(tr("Applied video mode %dx%dx%d %s\n"),
-                                        action->w, action->h, depth,
-                                        (flags&SDL_FULLSCREEN)?tr("Fullscreen"):
+                                        action->w, action->h, 32,
+                                        action->full?tr("Fullscreen"):
                                             tr("Window"));
                 /* adjust windows */
                 gui_resize_panel();
@@ -3434,7 +3465,7 @@ static void engine_handle_next_action( int *reinit )
                 /* set config */
                 config.width = action->w;
                 config.height = action->h;
-                config.fullscreen = (flags & SDL_FULLSCREEN)?1:0;
+                config.fullscreen = action->full ? 1 : 0;
             }
             break;
         case ACTION_SET_SPOT_MASK:
@@ -3692,8 +3723,8 @@ static void engine_update( int ms )
                                                    sdl.screen, 0, 0 ); 
                         image_set_region( move_image, move_unit->icon_offset, 0, 
                                           move_unit->sel_prop->icon_w, move_unit->sel_prop->icon_h );
-                        SDL_FillRect( move_image->img, 0, move_unit->sel_prop->icon->format->colorkey );
-                        SDL_SetColorKey( move_image->img, SDL_SRCCOLORKEY, move_unit->sel_prop->icon->format->colorkey );
+                        SDL_FillRect( move_image->img, 0, 0 );
+                        SDL_SetColorKey( move_image->img, SDL_SRCCOLORKEY, 0 );
                         FULL_DEST( move_image->img );
                         FULL_SOURCE( move_unit->sel_prop->icon );
                         blit_surf();

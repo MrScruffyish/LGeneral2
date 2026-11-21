@@ -17,8 +17,8 @@
 
 #ifdef WITH_SOUND
 
-#include <SDL.h>
-#include <SDL_mixer.h>
+#include "sdl_compat.h"
+#include <SDL3_mixer/SDL_mixer.h>
 #include <stdio.h>
 #include <stdlib.h>
 

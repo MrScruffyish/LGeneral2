@@ -2,7 +2,6 @@ DEFS = @DEFS@ @sound_flag@ @dl_flag@ @inst_flag@
 
 bin_PROGRAMS = lgeneral
 
-AM_CPPFLAGS = -I$(top_srcdir)/util $(INTLINCLUDES)
 lgeneral_SOURCES = main.cpp \
 config.cpp date.cpp \
 file.cpp map.cpp nation.cpp \
@@ -13,12 +12,12 @@ event.cpp windows.cpp action.cpp campaign.cpp \
 strat_map.cpp ai.cpp engine.cpp ai_group.cpp ai_tools.cpp \
 lgeneral.6
 
-AM_CFLAGS = @SDL_CFLAGS@
+AM_CPPFLAGS = -I$(top_srcdir)/util $(INTLINCLUDES) @SDL3_CFLAGS@
 lgeneral_LDFLAGS = @export_flag@
-lgeneral_LDADD   = @mixer_flag@ @dl_lib_flag@ $(top_builddir)/util/libutil.a $(INTLLIBS) @SDL_LIBS@
+lgeneral_LDADD   = @mixer_flag@ @dl_lib_flag@ $(top_builddir)/util/libutil.a $(INTLLIBS) @SDL3_LIBS@
 man_MANS = lgeneral.6
 
-EXTRA_DIST = lgeneral.h \
+EXTRA_DIST = lgeneral.h sdl_compat.h \
 config.h date.h engine.h \
 file.h map.h nation.h player.h \
 player.h scenario.h lg-sdl.h misc.h unit.h unit.h \

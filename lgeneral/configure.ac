@@ -124,21 +124,22 @@ AC_MSG_RESULT($ac_can_determ_paths)
 AC_MSG_RESULT(executable's path determination strategy... $ac_paths_determ)
 AM_CONDITIONAL(compile_paths_linux, test x$ac_paths_determ = xlinux)
 
-dnl check SDL version via pkg-config; sdl12_compat provides the "sdl" module.
-PKG_CHECK_MODULES([SDL], [sdl >= 1.2.0], [],
-                  [AC_MSG_ERROR([lib SDL >= 1.2 is needed])])
+dnl SDL3 is used by the game, the converter and the editor toolchain.
 PKG_CHECK_MODULES([SDL3], [sdl3], [],
-                  [AC_MSG_ERROR([lib SDL3 is needed for the converter])])
+                  [AC_MSG_ERROR([lib SDL3 is needed])])
 
 dnl check sound
-sound_flag="-DWITH_SOUND"
-mixer_flag="-lSDL_mixer"
+sound_flag=""
+mixer_flag=""
 AC_ARG_ENABLE( sound,
-[  --disable-sound         Disables sound], sound_flag=""; mixer_flag="")
+[  --disable-sound         Disables sound], [enable_sound=no], [enable_sound=yes])
 
-dnl check if SDL_mixer is installed
-AC_CHECK_LIB(SDL_mixer, main, , 
-AC_MSG_RESULT("SDL_Mixer NOT found \(get it at http://libsdl.org\): Audio disabled"); sound_flag=""; mixer_flag="")
+dnl check if SDL3_mixer is installed
+if test "x$enable_sound" = xyes ; then
+  PKG_CHECK_MODULES([SDL3_MIXER], [sdl3-mixer],
+                    [sound_flag="-DWITH_SOUND"; mixer_flag="$SDL3_MIXER_LIBS"],
+                    [AC_MSG_RESULT([SDL3_mixer not found: audio disabled])])
+fi
 AC_SUBST(sound_flag)
 AC_SUBST(mixer_flag)
 

@@ -28,9 +28,9 @@ extern "C" {
 General system includes.
 ====================================================================
 */
-#include <SDL.h>
+#include "sdl_compat.h"
 #ifdef WITH_SOUND
-    #include <SDL_mixer.h>
+    #include <SDL3_mixer/SDL_mixer.h>
     #include "audio.h"
 #endif
 #include <stdlib.h>

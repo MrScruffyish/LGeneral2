@@ -15,7 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <SDL.h>
+#include "sdl_compat.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

@@ -476,7 +476,7 @@ int unit_lib_load( char *fname, int main )
             /* set transparency */
             SDL_SetColorKey( unit->icon, SDL_SRCCOLORKEY, color_key );
             /* get format info */
-            byte_size = icons->format->BytesPerPixel;
+            byte_size = LG_BYTES_PER_PIXEL( icons );
             y_offset = 0;
             pix_buffer = (char*)calloc( byte_size, sizeof( char ) );
             /* get second by flipping first one */
@@ -540,7 +540,7 @@ int unit_lib_load( char *fname, int main )
                 for ( i = 0; i < log_dot_count; i++ )
                     log_str[3 + i] = '*';
                 write_text( log_font, sdl.screen, log_x, log_y, log_str, 255 );
-                SDL_UpdateRect( sdl.screen, log_font->last_x, log_font->last_y, log_font->last_width, log_font->last_height );
+                refresh_screen( log_font->last_x, log_font->last_y, log_font->last_width, log_font->last_height );
             }
         }
     }

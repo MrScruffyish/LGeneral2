@@ -236,7 +236,7 @@ int terrain_load( char *fname )
         for ( k = 0; k < i * log_dot_limit / entries->count; k++ )
             log_str[3 + k] = '*';
         write_text( log_font, sdl.screen, log_x, log_y, log_str, 255 );
-        SDL_UpdateRect( sdl.screen, log_font->last_x, log_font->last_y, log_font->last_width, log_font->last_height );
+        refresh_screen( log_font->last_x, log_font->last_y, log_font->last_width, log_font->last_height );
     }
     parser_free( &pd );
     /* LOG */

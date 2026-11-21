@@ -15,10 +15,10 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef SDL_H
-#define SDL_H
+#ifndef LG_SDL_H
+#define LG_SDL_H
 
-#include <SDL.h>
+#include "sdl_compat.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,7 +38,6 @@ typedef struct {
 } DrawRgn;
 
 // Sdl Surface //
-#define SDL_NONFATAL 0x10000000
 SDL_Surface* load_surf(const char *fname, int f);
 SDL_Surface* create_surf(int w, int h, int f);
 void free_surf( SDL_Surface **surf );
@@ -121,6 +120,7 @@ typedef struct {
 } Sdl;
 void init_sdl( int f );
 void quit_sdl();
+void set_window_title( const char *title );
 int get_video_modes( VideoModeInfo **vmi );
 int  set_video_mode( int width, int height, int fullscreen );
 void hardware_cap();
