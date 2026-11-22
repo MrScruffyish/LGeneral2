@@ -22,6 +22,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#include <string>
+
 #include "lg-sdl.h"
 #include "config.h"
 #include "parser.h"
@@ -87,14 +90,13 @@ void reset_config()
 /* load config */
 void load_config( )
 {
-    char file_name[1024];
     PData *pd; 
     /* set to defaults */
     check_config_dir_name();
     reset_config();
     /* load config */
-    snprintf( file_name, 1024, "%s/%s", config.dir_name, "lgeneral.conf" );
-    if ( ( pd = parser_read_file( "config", file_name ) ) == 0 ) {
+    const std::string file_name = std::string( config.dir_name ) + "/lgeneral.conf";
+    if ( ( pd = parser_read_file( "config", file_name.c_str() ) ) == 0 ) {
         fprintf( stderr, "%s\n", parser_get_error() );
         return;
     }
@@ -128,11 +130,10 @@ void load_config( )
 void save_config( )
 {
     FILE *file = 0;
-    char file_name[1024];
+    const std::string file_name = std::string( config.dir_name ) + "/lgeneral.conf";
 
-    snprintf( file_name, 1024, "%s/%s", config.dir_name, "lgeneral.conf" );
-    if ( ( file = fopen( file_name, "wb" ) ) == 0 )
-        fprintf( stderr, tr("Cannot access config file '%s' to save settings\n"), file_name );
+    if ( ( file = fopen( file_name.c_str(), "wb" ) ) == 0 )
+        fprintf( stderr, tr("Cannot access config file '%s' to save settings\n"), file_name.c_str() );
     else {
         fprintf( file, "@\n" );
         fprintf( file, "grid=%i\n", config.grid );
