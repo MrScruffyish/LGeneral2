@@ -560,7 +560,6 @@ Check unit buttons. (use current unit)
 */
 static void engine_check_unit_buttons()
 {
-    char str[128];
     if ( cur_unit == 0 || status == STATUS_TITLE_MENU) {
 	    group_set_active( gui->unit_buttons, ID_RENAME, 0 );
 	    group_set_active( gui->unit_buttons, ID_SUPPLY, 0 );
@@ -577,8 +576,11 @@ static void engine_check_unit_buttons()
     if ( unit_check_supply( cur_unit, UNIT_SUPPLY_ANYTHING, 0, 0 ) ) {
         group_set_active( gui->unit_buttons, ID_SUPPLY, 1 );
         /* show supply level */
-        sprintf( str, tr("Supply Unit [s] (Rate:%3i%%)"), cur_unit->supply_level );
-        strcpy( group_get_button( gui->unit_buttons, ID_SUPPLY )->tooltip, str );
+        Button *supply = group_get_button( gui->unit_buttons, ID_SUPPLY );
+        if ( supply ) {
+            snprintf( supply->tooltip, sizeof supply->tooltip,
+                      tr("Supply Unit [s] (Rate:%3i%%)"), cur_unit->supply_level );
+        }
     }
     else
         group_set_active( gui->unit_buttons, ID_SUPPLY, 0 );

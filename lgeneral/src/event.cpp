@@ -84,6 +84,18 @@ Event filter. As long as this is active no KEY or MOUSE events
 will be available by SDL_PollEvent().
 ====================================================================
 */
+/* SDL3 uses distinct button numbers for X1/X2; the game enum reserves 4/5 for
+   wheel events inherited from SDL 1.2. Only forward the three real buttons. */
+static int game_button( Uint8 button )
+{
+    switch ( button ) {
+        case SDL_BUTTON_LEFT:   return BUTTON_LEFT;
+        case SDL_BUTTON_MIDDLE: return BUTTON_MIDDLE;
+        case SDL_BUTTON_RIGHT:  return BUTTON_RIGHT;
+        default:                return BUTTON_NONE;
+    }
+}
+
 int event_filter( const SDL_Event *event )
 {
     switch ( event->type ) {
@@ -101,14 +113,30 @@ int event_filter( const SDL_Event *event )
                 buttonstate[BUTTON_RIGHT] = 1;
             motion = 1;
             return 0;
-        case SDL_MOUSEBUTTONUP:
-            buttonstate[event->button.button] = 0;
-            buttonup = event->button.button;
+        case SDL_MOUSEBUTTONUP: {
+            const int button = game_button( event->button.button );
+            if ( button != BUTTON_NONE )
+                buttonstate[button] = 0;
+            buttonup = button;
             return 0;
-        case SDL_MOUSEBUTTONDOWN:
-            buttonstate[event->button.button] = 1;
-            buttondown = event->button.button;
+        }
+        case SDL_MOUSEBUTTONDOWN: {
+            const int button = game_button( event->button.button );
+            if ( button != BUTTON_NONE )
+                buttonstate[button] = 1;
+            buttondown = button;
             return 0;
+        }
+        case SDL_EVENT_MOUSE_WHEEL: {
+            float y = event->wheel.y;
+            if ( event->wheel.direction == SDL_MOUSEWHEEL_FLIPPED )
+                y = -y;
+            if ( y > 0 )
+                buttonup = buttondown = WHEEL_UP;
+            else if ( y < 0 )
+                buttonup = buttondown = WHEEL_DOWN;
+            return 0;
+        }
         case SDL_KEYUP:
             key_state[event->key.scancode] = false;
             return 0;

@@ -72,6 +72,8 @@ for mode in normal trace; do
     if [ "$mode" = normal ]; then
         echo "==> smoke: translation check"
         "$tmp/tests/test-translations.sh" "$build"
+        echo "==> smoke: event mapping check"
+        "$tmp/tests/test-events.sh" "$tmp"
     fi
 
     echo "==> smoke: runtime launch ($mode)"

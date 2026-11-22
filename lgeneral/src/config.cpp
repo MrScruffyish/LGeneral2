@@ -106,6 +106,10 @@ void load_config( )
     parser_get_int( pd, "height", &config.height );
     parser_get_int( pd, "fullscreen", &config.fullscreen );
     parser_get_int( pd, "anim_speed", &config.anim_speed );
+    if ( config.anim_speed < 1 ) {
+        fprintf( stderr, "%s", tr("Invalid animation speed; using 1\n") );
+        config.anim_speed = 1;
+    }
     parser_get_int( pd, "supply", &config.supply );
     parser_get_int( pd, "weather", &config.weather );
     parser_get_int( pd, "fog_of_war", &config.fog_of_war );

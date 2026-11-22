@@ -191,7 +191,7 @@ Uint32 set_pixel( SDL_Surface *surf, int x, int y, int pixel )
 {
     int pos = 0;
 
-    if (x < 0 || y < 0 || x >= surf->w || y >= surf->h)
+    if ( !surf || x < 0 || y < 0 || x >= surf->w || y >= surf->h )
 	    return pixel;
 
     const int bytes = LG_BYTES_PER_PIXEL( surf );
@@ -205,6 +205,9 @@ Uint32 get_pixel( SDL_Surface *surf, int x, int y )
 {
     int pos = 0;
     Uint32 pixel = 0;
+
+    if ( !surf || x < 0 || y < 0 || x >= surf->w || y >= surf->h )
+        return pixel;
 
     const int bytes = LG_BYTES_PER_PIXEL( surf );
     pos = y * surf->pitch + x * bytes;
@@ -336,7 +339,7 @@ void font_load_glyphs(Font *font, const char *fname)
             pixel &= 0xf8f8f8;	/* cope with RGB565 and other perversions */
             if (i != 0 && pixel != 0xf800f8 && pixel != 0xf80000) continue;
 
-            if (code > 256) {
+            if (code >= 256) {
                 fprintf(stderr, tr("font '%s' contains too many glyphs\n"), path);
                 break;
             }
@@ -390,7 +393,7 @@ void font_load_glyphs(Font *font, const char *fname)
 
         /* fix up offsets of successors */
         for (i = code; i < 256; i++)
-            font->char_offset[code] += fixup;
+            font->char_offset[i] += fixup;
         font->width += fixup;
     }
     

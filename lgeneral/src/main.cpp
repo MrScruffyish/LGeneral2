@@ -209,7 +209,9 @@ static void eval_cmdline(int argc, char **argv)
             case OPT_CAMPAIGN_START: camp_scen_state = optarg; break;
             case OPT_CONTROL: add_control(optarg); break;
             case OPT_SPEED: 
-                config.anim_speed = atoi(optarg); 
+                config.anim_speed = atoi(optarg);
+                if ( config.anim_speed < 1 )
+                    config.anim_speed = 1;
                 printf(tr("Animation speed up: x%d\n"),config.anim_speed);
                 break;
             case OPT_AI_DEBUG:

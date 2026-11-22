@@ -180,9 +180,12 @@ Wave
 */
 Wav* wav_load( char *fname, int channel )
 {
-    if ( !audio_ok )
+    if ( !audio_ok || !fname )
         return nullptr;
-    const std::string path = std::string( get_gamedir() ) + "/sounds/" + fname;
+    const char *gamedir = get_gamedir();
+    if ( !gamedir )
+        return nullptr;
+    const std::string path = std::string( gamedir ) + "/sounds/" + fname;
     MIX_Audio *audio = MIX_LoadAudio( audio_mixer, path.c_str(), true );
     if ( !audio ) {
         fprintf( stderr, "%s\n", SDL_GetError() );
@@ -201,14 +204,16 @@ Wav* wav_load( char *fname, int channel )
 
 void wav_free( Wav *wav )
 {
-    if ( !audio_ok || !wav )
+    if ( !wav )
         return;
-    if ( wav->audio ) {
+    if ( audio_ok && wav->audio ) {
         MIX_Track *track = valid_channel( wav->channel ) ? audio_tracks[wav->channel] : nullptr;
         if ( track && MIX_GetTrackAudio( track ) == wav->audio )
             MIX_SetTrackAudio( track, nullptr );
         MIX_DestroyAudio( wav->audio );
     }
+    /* If audio_ok is already false, MIX_Quit owns any remaining audio data;
+       the wrapper still needs to be released. */
     free( wav );
 }
 
