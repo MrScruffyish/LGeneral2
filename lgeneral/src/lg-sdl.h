@@ -123,6 +123,8 @@ void quit_sdl();
 void set_window_title( const char *title );
 int get_video_modes( VideoModeInfo **vmi );
 int  set_video_mode( int width, int height, int fullscreen );
+int  lg_get_window_size( int *width, int *height );
+int  lg_is_fullscreen();
 void hardware_cap();
 void refresh_screen( int x, int y, int w, int h );
 void refresh_rects();

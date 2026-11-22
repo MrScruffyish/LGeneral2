@@ -28,6 +28,10 @@ int sdl_quit = 0;
 /* SDL3 exposes key state by scancode rather than by key symbol. */
 static bool key_state[SDL_SCANCODE_COUNT];
 static int buttonstate[10];
+static bool resize_pending = false;
+static int resize_width = 0, resize_height = 0;
+static bool pixel_size_pending = false;
+static int pixel_width = 0, pixel_height = 0;
 
 /*
 =====================================================================
@@ -143,6 +147,24 @@ int event_filter( const SDL_Event *event )
         case SDL_KEYDOWN:
             key_state[event->key.scancode] = true;
             return 1;
+        case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+            if ( event->window.data1 > 0 && event->window.data2 > 0 ) {
+                /* The window surface uses pixels, so prefer this over the
+                 * logical coordinates in SDL_EVENT_WINDOW_RESIZED. */
+                pixel_width = static_cast<int>( event->window.data1 );
+                pixel_height = static_cast<int>( event->window.data2 );
+                pixel_size_pending = true;
+                resize_pending = true;
+            }
+            return 0;
+        case SDL_EVENT_WINDOW_RESIZED:
+            if ( event->window.data1 > 0 && event->window.data2 > 0 &&
+                 !pixel_size_pending ) {
+                resize_width = static_cast<int>( event->window.data1 );
+                resize_height = static_cast<int>( event->window.data2 );
+                resize_pending = true;
+            }
+            return 0;
         case SDL_QUIT:
             sdl_quit = 1;
             return 0;
@@ -176,6 +198,32 @@ void event_clear( void )
     std::memset( key_state, 0, sizeof( key_state ) );
     std::memset( buttonstate, 0, sizeof( buttonstate ) );
     buttonup = buttondown = motion = 0;
+    resize_pending = false;
+    resize_width = resize_height = 0;
+    pixel_size_pending = false;
+    pixel_width = pixel_height = 0;
+}
+
+/*
+====================================================================
+Return the latest window drawable size reported by SDL and consume it.
+====================================================================
+*/
+int event_check_window_resize( int *width, int *height )
+{
+    if ( !resize_pending )
+        return 0;
+    if ( pixel_size_pending ) {
+        if ( width ) *width = pixel_width;
+        if ( height ) *height = pixel_height;
+    }
+    else {
+        if ( width ) *width = resize_width;
+        if ( height ) *height = resize_height;
+    }
+    resize_pending = false;
+    pixel_size_pending = false;
+    return 1;
 }
 
 /*

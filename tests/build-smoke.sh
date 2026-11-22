@@ -80,6 +80,8 @@ for mode in normal trace; do
         "$tmp/tests/test-translations.sh" "$build"
         echo "==> smoke: event mapping check"
         "$tmp/tests/test-events.sh" "$tmp"
+        echo "==> smoke: resize event check"
+        "$tmp/tests/test-resize.sh" "$tmp"
         echo "==> smoke: date parser check"
         "$tmp/tests/test-date.sh" "$tmp"
         echo "==> smoke: alpha blit check"

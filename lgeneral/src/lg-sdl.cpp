@@ -656,24 +656,40 @@ Switch to passed video mode.
 */
 int set_video_mode( int width, int height, int fullscreen )
 {
+    const bool want_fullscreen = fullscreen != 0;
+    const bool size_changed = !sdl.screen ||
+                              sdl.screen->w != width || sdl.screen->h != height;
+    const bool fullscreen_changed = game_fullscreen != want_fullscreen;
     if ( !game_window ) {
-        game_window = SDL_CreateWindow( "LGeneral", width, height, 0 );
+        game_window = SDL_CreateWindow( "LGeneral", width, height,
+                                        SDL_WINDOW_RESIZABLE );
         if ( !game_window ) {
             fprintf(stderr, "%s", SDL_GetError());
             return 1;
         }
-    } else if ( sdl.screen && sdl.screen->w == width &&
-                sdl.screen->h == height && game_fullscreen == (fullscreen != 0) ) {
-        return 1;
+        SDL_SetWindowMinimumSize( game_window, 800, 600 );
     } else {
-        SDL_SetWindowSize( game_window, width, height );
+        /* Apply the window size after leaving fullscreen; some platforms ignore
+         * SDL_SetWindowSize() while the window is fullscreen. */
+        if ( game_fullscreen && !want_fullscreen )
+            if ( !SDL_SetWindowFullscreen( game_window, false ) ) {
+                fprintf(stderr, "%s", SDL_GetError());
+                return 1;
+            }
+        if ( size_changed )
+            if ( !SDL_SetWindowSize( game_window, width, height ) ) {
+                fprintf(stderr, "%s", SDL_GetError());
+                return 1;
+            }
+        if ( fullscreen_changed )
+            if ( !SDL_SetWindowFullscreen( game_window, want_fullscreen ) ) {
+                fprintf(stderr, "%s", SDL_GetError());
+                return 1;
+            }
     }
-
-    if ( !SDL_SetWindowFullscreen( game_window, fullscreen != 0 ) ) {
-        fprintf(stderr, "%s", SDL_GetError());
-        return 1;
-    }
-    game_fullscreen = fullscreen != 0;
+    game_fullscreen = want_fullscreen;
+    /* SDL3 invalidates the window surface whenever the window changes, so
+     * always fetch it again instead of relying on the old pointer. */
     sdl.screen = SDL_GetWindowSurface( game_window );
     if ( !sdl.screen ) {
         fprintf(stderr, "%s", SDL_GetError());
@@ -683,6 +699,20 @@ int set_video_mode( int width, int height, int fullscreen )
     if ( !SDL_TextInputActive( game_window ) )
         SDL_StartTextInput( game_window );
     return 0;
+}
+
+/** Return the drawable size of the game window. */
+int lg_get_window_size( int *width, int *height )
+{
+    if ( !game_window )
+        return 0;
+    return SDL_GetWindowSizeInPixels( game_window, width, height ) ? 1 : 0;
+}
+
+/** Return whether the game window is currently fullscreen. */
+int lg_is_fullscreen()
+{
+    return game_fullscreen ? 1 : 0;
 }
 
 /*

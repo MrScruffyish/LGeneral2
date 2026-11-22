@@ -132,6 +132,7 @@ int map_x, map_y;              /* current position in map */
 int map_sw, map_sh;            /* number of tiles drawn to screen */
 int map_sx, map_sy;            /* position where to draw first tile */
 int mapview_w = 0;	/* remainder to full screen width, updated before use */
+static int windowed_width = 800, windowed_height = 600; /* last windowed size */
 int draw_map = 0;              /* if this flag is true engine_update() calls engine_draw_map() */
 enum {
     SCROLL_NONE = 0,
@@ -2203,15 +2204,15 @@ static void engine_handle_button( int id )
             config.show_cpu_turn = !config.show_cpu_turn;
             break;
         case ID_C_VMODE:
-        	/* no video mode menu: change fullscreen, is all */
-        	if (config.fullscreen) {
-        		config.fullscreen = 0;
-                	action_queue_set_vmode(800, 600, 0);
-        	} else {
-        		config.fullscreen = 1;
-        		action_queue_set_vmode(1280, 720, 1);
-        	}
-        	group_hide(gui->opt_menu,1);
+            /* no video mode menu: toggle fullscreen but keep the window size */
+            if (lg_is_fullscreen())
+                action_queue_set_vmode(windowed_width, windowed_height, 0);
+            else {
+                windowed_width = sdl.screen->w;
+                windowed_height = sdl.screen->h;
+                action_queue_set_vmode(windowed_width, windowed_height, 1);
+            }
+            group_hide(gui->opt_menu,1);
             /*engine_hide_game_menu();
             gui_vmode_dlg_show();
             status = STATUS_VMODE_DLG;*/
@@ -2659,6 +2660,8 @@ static void engine_check_events(int *reinit)
     int nx, ny;
     SDL_PumpEvents(); /* gather events in the queue */
     if ( sdl_quit ) term_game = 1; /* end game by window manager */
+    if ( event_check_window_resize( &nx, &ny ) )
+        action_queue_set_vmode( nx, ny, lg_is_fullscreen() );
     if ( status == STATUS_MOVE || status == STATUS_ATTACK || status == STATUS_STRAT_ATTACK )
         return;
     if ( cur_ctrl == PLAYER_CTRL_CPU ) {
@@ -3439,11 +3442,13 @@ static void engine_handle_next_action( int *reinit )
             }
             else {
                 printf(tr("Applied video mode %dx%dx%d %s\n"),
-                                        action->w, action->h, 32,
-                                        action->full?tr("Fullscreen"):
+                                        sdl.screen->w, sdl.screen->h, 32,
+                                        lg_is_fullscreen()?tr("Fullscreen"):
                                             tr("Window"));
-                /* adjust windows */
+                /* rebind widgets to the new window surface and re-layout */
                 gui_resize_panel();
+                gui_rebind_surfaces( sdl.screen );
+                terrain_set_screen_surface();
                 gui_adjust();
                 if ( setup.type != SETUP_RUN_TITLE ) {
                 	engine_update_mapview_size();
@@ -3464,10 +3469,15 @@ static void engine_handle_next_action( int *reinit )
                 }
                 /* redraw map */
                 draw_map = 1;
-                /* set config */
-                config.width = action->w;
-                config.height = action->h;
-                config.fullscreen = action->full ? 1 : 0;
+                /* set config from the actual drawable size */
+                config.width = sdl.screen->w;
+                config.height = sdl.screen->h;
+                config.fullscreen = lg_is_fullscreen() ? 1 : 0;
+                if ( !config.fullscreen ) {
+                    windowed_width = config.width;
+                    windowed_height = config.height;
+                }
+                group_lock_button( gui->opt_menu, ID_C_VMODE, !config.fullscreen );
             }
             break;
         case ACTION_SET_SPOT_MASK:

@@ -608,6 +608,40 @@ void gui_adjust()
 
 /*
 ====================================================================
+Rebind all widgets to a new window surface after a resize.
+====================================================================
+*/
+void gui_rebind_surfaces( SDL_Surface *screen )
+{
+    image_set_surface( gui->cursors, screen );
+    label_set_surface( gui->label, screen );
+    label_set_surface( gui->label2, screen );
+    frame_set_surface( gui->qinfo1, screen );
+    frame_set_surface( gui->qinfo2, screen );
+    frame_set_surface( gui->finfo, screen );
+    frame_set_surface( gui->sinfo, screen );
+    frame_set_surface( gui->unit_list, screen );
+    frame_set_surface( gui->panel, screen );
+    frame_set_surface( gui->minimap->minimap_frame, screen );
+    group_set_surface( gui->unit_buttons, screen );
+    group_set_surface( gui->split_menu, screen );
+    group_set_surface( gui->confirm, screen );
+    group_set_surface( gui->deploy_window, screen );
+    edit_set_surface( gui->edit, screen );
+    group_set_surface( gui->base_menu, screen );
+    group_set_surface( gui->main_menu, screen );
+    group_set_surface( gui->opt_menu, screen );
+    group_set_surface( gui->load_menu, screen );
+    group_set_surface( gui->save_menu, screen );
+    group_set_surface( gui->vmode_dlg->button_group, screen );
+    lbox_set_surface( gui->vmode_dlg->select_lbox, screen );
+    sdlg_set_surface( gui->scen_dlg, screen );
+    fdlg_set_surface( gui->camp_dlg, screen );
+    purchase_dlg_set_surface( gui->purchase_dlg, screen );
+}
+
+/*
+====================================================================
 Change all GUI graphics to the one found in gfx/theme/path.
 ====================================================================
 */

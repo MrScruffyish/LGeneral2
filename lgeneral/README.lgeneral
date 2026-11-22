@@ -75,10 +75,11 @@ the rpm option --replacefiles for installing the devel package.
   2) The same applies to SDL3_mixer!
   3) If your sound is out of sync, try selecting a different SDL audio driver
 with the SDL_AUDIODRIVER environment variable.
-  4) Window mode is fixed to 800x600 and fullscreen mode to 1280x720 which 
-seems reasonable. However, you can manually overwrite by changing width and 
-height in lgeneral.conf (in Linux this file resides in ~/.lgames and in Windows
-it is in the same directory like the binary).
+  4) The window can be resized down to 800x600; the map hexes keep their
+original size, so a larger window simply shows more of the map. Fullscreen uses
+the last window size. You can still set the initial width and height in
+lgeneral.conf (in Linux this file resides in ~/.lgames and in Windows it is in
+the same directory like the binary).
 
 4. Main Menu
 ------------

@@ -125,6 +125,13 @@ void terrain_delete( void );
 
 /*
 ====================================================================
+Rebind terrain animations to a new window surface after a resize.
+====================================================================
+*/
+void terrain_set_screen_surface( void );
+
+/*
+====================================================================
 Get the movement cost for a terrain type by passing movement
 type id and weather id in addition.
 Return -1 if all movement points are consumed

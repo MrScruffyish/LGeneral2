@@ -717,6 +717,20 @@ void purchase_dlg_move( PurchaseDlg *pdlg, int px, int py)
 	lbox_move(pdlg->reinf_lbox, sx, sy + reinf_offset );
 }
 
+/** Rebind the dialogue to a new window surface after a resize. */
+void purchase_dlg_set_surface( PurchaseDlg *pdlg, SDL_Surface *surf )
+{
+	if ( !pdlg )
+		return;
+	group_set_surface( pdlg->main_group, surf );
+	frame_set_surface( pdlg->ulimit_frame, surf );
+	lbox_set_surface( pdlg->nation_lbox, surf );
+	lbox_set_surface( pdlg->uclass_lbox, surf );
+	lbox_set_surface( pdlg->unit_lbox, surf );
+	lbox_set_surface( pdlg->trsp_lbox, surf );
+	lbox_set_surface( pdlg->reinf_lbox, surf );
+}
+
 /* Hide, draw, draw background, get background for purchase dialogue @pdlg by
  * applying action to all separate components. */
 void purchase_dlg_hide( PurchaseDlg *pdlg, int value)

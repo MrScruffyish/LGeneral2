@@ -42,6 +42,13 @@ void event_clear( void );
 
 /*
 ====================================================================
+Return the latest window drawable size reported by SDL and consume it.
+====================================================================
+*/
+int event_check_window_resize( int *width, int *height );
+
+/*
+====================================================================
 Check if an motion event occured since last call.
 ====================================================================
 */

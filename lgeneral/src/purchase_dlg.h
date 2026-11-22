@@ -42,6 +42,7 @@ int purchase_dlg_get_width(PurchaseDlg *pdlg);
 int purchase_dlg_get_height(PurchaseDlg *pdlg);
 
 void purchase_dlg_move( PurchaseDlg *pdlg, int px, int py);
+void purchase_dlg_set_surface( PurchaseDlg *pdlg, SDL_Surface *surf );
 void purchase_dlg_hide( PurchaseDlg *pdlg, int value);
 void purchase_dlg_draw( PurchaseDlg *pdlg);
 void purchase_dlg_draw_bkgnd( PurchaseDlg *pdlg);

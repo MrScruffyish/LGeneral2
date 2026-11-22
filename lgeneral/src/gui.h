@@ -205,6 +205,13 @@ void gui_adjust();
 
 /*
 ====================================================================
+Rebind all widgets to a new window surface after a resize.
+====================================================================
+*/
+void gui_rebind_surfaces( SDL_Surface *screen );
+
+/*
+====================================================================
 Change all GUI graphics to the one found in gfx/theme/path.
 ====================================================================
 */
