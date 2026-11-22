@@ -18,6 +18,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <string>
+
 #include "date.h"
 #include "misc.h"
 #include "localize.h"
@@ -70,21 +73,21 @@ const char short_month_names[][4] = {
     TR_NOOP("Dec")
 };
 
-/* Copy one date field, stopping at 'end' (or at the end of the string). */
-static void date_copy_field( char *dst, size_t dst_size,
-                             const char *start, const char *end )
+/* Extract one date field, stopping at 'end' (or at the end of the string).
+   The old fixed-size buffer accepted at most 11 characters. */
+static std::string date_field( const char *start, const char *end )
 {
-    size_t len = end ? static_cast<size_t>( end - start ) : strlen( start );
-    if ( len >= dst_size )
-        len = dst_size - 1;
-    memcpy( dst, start, len );
-    dst[len] = 0;
+    if ( !start )
+        return std::string();
+    std::string field = end ? std::string( start, end ) : std::string( start );
+    if ( field.size() > 11 )
+        field.resize( 11 );
+    return field;
 }
 
 /* converts a string to date */
 void str_to_date( Date *date, char *str )
 {
-    char aux_str[12];
     const char *pos = str;
     const char *dot;
 
@@ -98,21 +101,18 @@ void str_to_date( Date *date, char *str )
     dot = strchr( pos, '.' );
     if ( !dot )
         return;
-    date_copy_field( aux_str, sizeof aux_str, pos, dot );
-    date->day = atoi( aux_str );
+    date->day = atoi( date_field( pos, dot ).c_str() );
 
     /* month */
     pos = dot + 1;
     dot = strchr( pos, '.' );
     if ( !dot )
         return;
-    date_copy_field( aux_str, sizeof aux_str, pos, dot );
-    date->month = atoi( aux_str );
+    date->month = atoi( date_field( pos, dot ).c_str() );
 
     /* year */
     pos = dot + 1;
-    date_copy_field( aux_str, sizeof aux_str, pos, 0 );
-    date->year = atoi( aux_str );
+    date->year = atoi( date_field( pos, nullptr ).c_str() );
 }
 
 /* converts a date to a string */
