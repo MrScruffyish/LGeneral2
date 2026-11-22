@@ -136,7 +136,7 @@ AC_ARG_ENABLE( sound,
 
 dnl check if SDL3_mixer is installed
 if test "x$enable_sound" = xyes ; then
-  PKG_CHECK_MODULES([SDL3_MIXER], [sdl3-mixer],
+  PKG_CHECK_MODULES([SDL3_MIXER], [sdl3-mixer >= 3.2.0],
                     [sound_flag="-DWITH_SOUND"; mixer_flag="$SDL3_MIXER_LIBS"],
                     [AC_MSG_RESULT([SDL3_mixer not found: audio disabled])])
 fi

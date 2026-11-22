@@ -25,6 +25,8 @@ extern "C" {
 
 #ifdef WITH_SOUND
 
+#include <SDL3_mixer/SDL_mixer.h>
+
 /*
 ====================================================================
 Wrapper for the SDL_mixer functions.
@@ -54,14 +56,15 @@ Wave
 ====================================================================
 */
 typedef struct {
-    Mix_Chunk   *chunk;     /* sound */
-    int         channel;    /* chunk is played at this channel */
+    MIX_Audio   *audio;     /* decoded sound */
+    int         channel;    /* audio is played at this channel */
 } Wav;
 Wav* wav_load( char *fname, int channel );
 void wav_free( Wav *wav );
 void wav_set_channel( Wav *wav, int channel );
 void wav_play( Wav *wav );
 void wav_play_at( Wav *wav, int channel );
+void wav_fade_out( Wav *wav, int ms );
 
 #endif
 

@@ -38,8 +38,8 @@ data, after you have installed LGeneral itself as described below.
 2. Installation
 ---------------
 
-LGeneral runs in X and uses SDL (>= 1.1.4) and SDL_mixer (optional, any 
-version). Both libraries can be found at http://libsdl.org.
+LGeneral runs in X and uses SDL3 and SDL3_mixer (>= 3.2.0, optional).
+Both libraries can be found at http://libsdl.org.
 Now enter your favorite shell and type in the following stuff (in the
 directory you extracted the LGeneral source)
   > ./configure [--disable-sound] [--disable-install] [--disable-dl]
@@ -72,9 +72,9 @@ package for compiling though not for running. (a popular Mandrake user mistake)
 somewhat broken. When you try to install the latest devel package, it might fail
 because some files have to be replaced. Easier than re-installing SDL is to use
 the rpm option --replacefiles for installing the devel package.
-  2) The same applies to SDL_mixer!
-  3) If your sound is out of sync change the last argument for Mix_OpenAudio()
-in audio_open() in audio.c from 256 to 2048. This might help.
+  2) The same applies to SDL3_mixer!
+  3) If your sound is out of sync, try selecting a different SDL audio driver
+with the SDL_AUDIODRIVER environment variable.
   4) Window mode is fixed to 800x600 and fullscreen mode to 1280x720 which 
 seems reasonable. However, you can manually overwrite by changing width and 
 height in lgeneral.conf (in Linux this file resides in ~/.lgames and in Windows
