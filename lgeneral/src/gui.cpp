@@ -1276,7 +1276,10 @@ void gui_show_deploy_window()
     list_reset( avail_units );
     list_clear( left_deploy_units );
     while ( ( unit = (Unit*)list_next( avail_units ) ) ) {
+        if ( unit->x >= 0 && unit->y >= 0 )
+            map_remove_unit( unit );
         unit->x = -1;
+        unit->y = -1;
         list_add( left_deploy_units, unit );
     }
     /* add units */

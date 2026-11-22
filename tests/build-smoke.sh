@@ -88,6 +88,11 @@ for mode in normal trace; do
 
     echo "==> smoke: runtime launch ($mode)"
     "$tmp/tests/run-smoke.sh" "$build/src/lgeneral"
+
+    if [ "$mode" = trace ]; then
+        echo "==> smoke: deployment map cleanup check"
+        "$tmp/tests/test-deploy.sh" "$build/src/lgeneral"
+    fi
 done
 
 if ! strings "$tmp/.build/lgeneral-trace/src/lgeneral" | grep -q '\[trace\]'; then

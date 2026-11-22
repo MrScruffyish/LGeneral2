@@ -96,6 +96,41 @@ def main():
          '  } }'],
     )
 
+    map_cpp = root / "map.cpp"
+    replace_once(
+        map_cpp,
+        """
+void map_remove_unit( Unit *unit )
+{
+    if ( unit->sel_prop->flags & FLYING )
+        map_tile( unit->x, unit->y )->a_unit = 0;
+    else
+        map_tile( unit->x, unit->y )->g_unit = 0;
+}
+""",
+        """
+void map_remove_unit( Unit *unit )
+{
+    if ( unit->sel_prop->flags & FLYING )
+        map_tile( unit->x, unit->y )->a_unit = 0;
+    else
+        map_tile( unit->x, unit->y )->g_unit = 0;
+}
+
+int lgtrace_count_map_refs( Unit *unit )
+{
+    int x, y, count = 0;
+    for ( x = 0; x < map_w; x++ )
+        for ( y = 0; y < map_h; y++ ) {
+            Map_Tile *tile = map_tile( x, y );
+            if ( tile->g_unit == unit || tile->a_unit == unit )
+                count++;
+        }
+    return count;
+}
+""",
+    )
+
     engine = root / "engine.cpp"
     replace_once(
         engine,
@@ -164,6 +199,24 @@ def main():
 """,
     )
 
+    insert_after(
+        engine,
+        "old_unit = map_swap_unit( deploy_unit );",
+        ['lgtrace("[trace] deploy place %s at=%d,%d old=%s left=%d avail=%d\\n",',
+         '        deploy_unit ? deploy_unit->name : "(none)", mx, my,',
+         '        old_unit ? old_unit->name : "(none)",',
+         '        left_deploy_units ? left_deploy_units->count : -1,',
+         '        avail_units ? avail_units->count : -1);'],
+    )
+    insert_after(
+        engine,
+        "engine_undeploy_unit( unit );",
+        ['lgtrace("[trace] deploy undeploy %s at=%d,%d left=%d avail=%d\\n",',
+         '        unit ? unit->name : "(none)", mx, my,',
+         '        left_deploy_units ? left_deploy_units->count : -1,',
+         '        avail_units ? avail_units->count : -1);'],
+    )
+
     gui = root / "gui.cpp"
     insert_after(
         gui,
@@ -171,6 +224,39 @@ def main():
         ['lgtrace("[trace] deploy window avail=%d first=%s\\n",',
          '        avail_units ? avail_units->count : -1,',
          '        deploy_unit ? deploy_unit->name : "(none)");'],
+    )
+    replace_once(
+        gui,
+        """
+    while ( ( unit = (Unit*)list_next( avail_units ) ) ) {
+        if ( unit->x >= 0 && unit->y >= 0 )
+            map_remove_unit( unit );
+        unit->x = -1;
+        unit->y = -1;
+        list_add( left_deploy_units, unit );
+    }
+""",
+        """
+    while ( ( unit = (Unit*)list_next( avail_units ) ) ) {
+        if ( unit->x >= 0 && unit->y >= 0 ) {
+            lgtrace("[trace] deploy window clear %s from=%d,%d\\n",
+                    unit->name, unit->x, unit->y);
+            map_remove_unit( unit );
+        }
+        unit->x = -1;
+        unit->y = -1;
+        list_add( left_deploy_units, unit );
+    }
+    {
+        extern int lgtrace_count_map_refs( Unit *unit );
+        int stale = 0;
+        Unit *stale_unit;
+        list_reset( avail_units );
+        while ( ( stale_unit = (Unit*)list_next( avail_units ) ) )
+            stale += lgtrace_count_map_refs( stale_unit );
+        lgtrace("[trace] deploy window stale map refs=%d\\n", stale);
+    }
+""",
     )
 
     player = root / "player.cpp"

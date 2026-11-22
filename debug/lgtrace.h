@@ -11,8 +11,20 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
-static inline void lgtrace(const char *fmt, ...)
+inline void lgtrace_header(FILE *fp)
+{
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
+        fputs("[no-clock] ", fp);
+        return;
+    }
+    fprintf(fp, "[%llu.%09ld] ",
+            static_cast<unsigned long long>(ts.tv_sec), ts.tv_nsec);
+}
+
+inline void lgtrace(const char *fmt, ...)
 {
     static FILE *lgtrace_fp = NULL;
     va_list ap;
@@ -25,8 +37,12 @@ static inline void lgtrace(const char *fmt, ...)
         if (lgtrace_fp == NULL)
             return;
         setvbuf(lgtrace_fp, NULL, _IOLBF, 0);
+        fputc('\n', lgtrace_fp);
+        lgtrace_header(lgtrace_fp);
+        fputs("=== trace session ===\n", lgtrace_fp);
     }
     va_start(ap, fmt);
+    lgtrace_header(lgtrace_fp);
     vfprintf(lgtrace_fp, fmt, ap);
     va_end(ap);
 }
