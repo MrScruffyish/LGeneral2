@@ -50,8 +50,14 @@ inline SDL_Surface *lg_create_surface(int /*flags*/, int width, int height)
 
 inline bool lg_set_alpha(SDL_Surface *surface, int flag, int alpha)
 {
-    return SDL_SetSurfaceAlphaMod(surface,
-                                  flag != 0 ? static_cast<Uint8>(alpha) : 255);
+    /* SDL 1.2's SDL_SRCALPHA enabled blending implicitly. SDL3 keeps the blend
+       mode and alpha modifier separate, so setting the modifier alone has no
+       effect on non-alpha formats. */
+    const SDL_BlendMode blend = flag != 0 ? SDL_BLENDMODE_BLEND
+                                           : SDL_BLENDMODE_NONE;
+    const Uint8 modifier = flag != 0 ? static_cast<Uint8>(alpha) : 255;
+    return SDL_SetSurfaceBlendMode(surface, blend) &&
+           SDL_SetSurfaceAlphaMod(surface, modifier);
 }
 
 /* Surface flags no longer exist in SDL3; the game only used them as no-ops. */
