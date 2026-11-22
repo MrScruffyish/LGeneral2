@@ -26,6 +26,11 @@ or an unpacked `pg-data` directory:
 PG_DATA=~/PG_DATA/pg-data.tar.gz make
 ```
 
+The converted data is cached in `.build/game-data` and copied into the game's
+data directory after each build. You only need `PG_DATA` for the first build or
+after changing the source data; later plain `make` runs keep the scenarios and
+databases.
+
 Sound is optional and requires SDL3_mixer 3.2 or newer. If it is installed
 system-wide, the game enables it automatically. Otherwise point `make` at a
 prefix containing `sdl3-mixer.pc`:

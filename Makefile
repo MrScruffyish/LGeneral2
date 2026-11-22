@@ -48,6 +48,10 @@ BUILD_ROOT := $(CURDIR)/.build
 LGENERAL_BUILD := $(BUILD_ROOT)/lgeneral$(TRACE_SUFFIX)
 LGEDITOR_BUILD := $(BUILD_ROOT)/lgeditor$(TRACE_SUFFIX)
 GAME_DATA := $(LGENERAL_BUILD)/src
+# Converted data is cached outside the disposable lgeneral build copy so a
+# source-triggered rebuild does not silently remove scenarios and databases.
+DATA_STAGE := $(BUILD_ROOT)/game-data
+GAME_DATA_DIRS := ai_modules campaigns convdata gfx maps music nations scenarios sounds terrain themes units
 EXTRACTED_PG_DATA := $(BUILD_ROOT)/pg-data
 
 # Extra options passed to the sub-projects' CMake configuration steps.
@@ -117,6 +121,15 @@ lgeneral: $(LGENERAL_BUILD)/.synced
 		'fog_of_war=1' 'cpu_turn=1' 'deploy=1' 'purchase=1' \
 		'ai_debug=0' 'sound_on=1' 'sound_volume=96' 'music_on=1' \
 		'music_volume=96' > $(GAME_DATA)/lgeneral.conf
+	@set -e; \
+	if [ -d "$(DATA_STAGE)" ]; then \
+		for dir in $(GAME_DATA_DIRS); do \
+			if [ -d "$(DATA_STAGE)/$$dir" ]; then \
+				rm -rf "$(GAME_DATA)/$$dir"; \
+				cp -a "$(DATA_STAGE)/$$dir" "$(GAME_DATA)/$$dir"; \
+			fi; \
+		done; \
+	fi
 
 lgeditor: $(LGEDITOR_BUILD)/.synced
 	@echo "==> Building $(LGEDITOR)"
@@ -131,22 +144,38 @@ data: lgeneral
 	@set -e; \
 	if [ -z "$(strip $(PG_DATA))" ]; then \
 		echo "PG_DATA is empty; skipping data conversion" >&2; \
-	elif [ -d "$(PG_DATA)" ]; then \
-		source_dir=$$(cd "$(PG_DATA)" && pwd); \
-	elif [ -f "$(PG_DATA)" ]; then \
-		source_dir="$(EXTRACTED_PG_DATA)"; \
-		rm -rf "$$source_dir"; \
-		mkdir -p "$$source_dir"; \
-		tar -xzf "$(PG_DATA)" -C "$$source_dir" --strip-components=1; \
 	else \
-		echo "PG_DATA not found: $(PG_DATA)" >&2; \
-		exit 1; \
-	fi; \
-	if [ -n "$$source_dir" ]; then \
-		rm -rf $(GAME_DATA)/convdata; \
-		cp -a $(LGENERAL_BUILD)/lgc-pg/convdata $(GAME_DATA)/convdata; \
-		cd $(GAME_DATA) && \
-			../lgc-pg/lgc-pg -s "$$source_dir" -d .; \
+		if [ -d "$(PG_DATA)" ]; then \
+			source_dir=$$(cd "$(PG_DATA)" && pwd); \
+		elif [ -f "$(PG_DATA)" ]; then \
+			source_dir="$(EXTRACTED_PG_DATA)"; \
+			rm -rf "$$source_dir"; \
+			mkdir -p "$$source_dir"; \
+			tar -xzf "$(PG_DATA)" -C "$$source_dir" --strip-components=1; \
+		else \
+			echo "PG_DATA not found: $(PG_DATA)" >&2; \
+			exit 1; \
+		fi; \
+		rm -rf "$(DATA_STAGE)"; \
+		mkdir -p "$(DATA_STAGE)"; \
+		for dir in $(GAME_DATA_DIRS); do \
+			if [ "$$dir" != convdata ] && [ -d "$(LGENERAL_BUILD)/src/$$dir" ]; then \
+				cp -a "$(LGENERAL_BUILD)/src/$$dir" "$(DATA_STAGE)/$$dir"; \
+			fi; \
+		done; \
+		mkdir -p "$(DATA_STAGE)/convdata"; \
+		cp -a $(LGENERAL_BUILD)/lgc-pg/convdata/. "$(DATA_STAGE)/convdata"; \
+		cd "$(DATA_STAGE)" && \
+			$(LGENERAL_BUILD)/lgc-pg/lgc-pg -s "$$source_dir" -d .; \
+	fi
+	@set -e; \
+	if [ -d "$(DATA_STAGE)" ]; then \
+		for dir in $(GAME_DATA_DIRS); do \
+			if [ -d "$(DATA_STAGE)/$$dir" ]; then \
+				rm -rf "$(GAME_DATA)/$$dir"; \
+				cp -a "$(DATA_STAGE)/$$dir" "$(GAME_DATA)/$$dir"; \
+			fi; \
+		done; \
 	fi
 
 # The game looks up data (and its config file) relative to the working
