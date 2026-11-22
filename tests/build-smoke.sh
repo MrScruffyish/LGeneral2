@@ -64,6 +64,12 @@ for mode in normal trace; do
         fi
     done
 
+    if [ -n "${SDL3_MIXER_PREFIX:-}" ] && \
+       ! ldd "$build/src/lgeneral" | grep -q 'SDL3_mixer'; then
+        echo "smoke: SDL3_MIXER_PREFIX was set but the game did not link SDL3_mixer" >&2
+        exit 1
+    fi
+
     if [ ! -f "$build/src/lgeneral.conf" ]; then
         echo "smoke: missing generated config: $build/src/lgeneral.conf" >&2
         exit 1

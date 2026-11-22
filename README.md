@@ -16,16 +16,27 @@ The top-level `Makefile` builds both sub-projects into `.build/`:
 make
 ```
 
-It needs CMake 3.16 or newer, `pkg-config`, SDL 1.2 with SDL_mixer (the
-`sdl12_compat` packages work), SDL2 with SDL2_image and SDL2_ttf, and gettext
-0.21 or newer. CMake runs inside an isolated `.build/` copy, so generated
-files are never added to the source tree. To also convert the Panzer General
-data into the game's data directory, set `PG_DATA` to `pg-data.tar.gz` or an
-unpacked `pg-data` directory:
+It needs CMake 3.16 or newer, `pkg-config`, SDL3 with SDL3_image and SDL3_ttf,
+and gettext 0.21 or newer. CMake runs inside an isolated `.build/` copy, so
+generated files are never added to the source tree. To also convert the Panzer
+General data into the game's data directory, set `PG_DATA` to `pg-data.tar.gz`
+or an unpacked `pg-data` directory:
 
 ```bash
 PG_DATA=~/PG_DATA/pg-data.tar.gz make
 ```
+
+Sound is optional and requires SDL3_mixer 3.2 or newer. If it is installed
+system-wide, the game enables it automatically. Otherwise point `make` at a
+prefix containing `sdl3-mixer.pc`:
+
+```bash
+SDL3_MIXER_PREFIX=~/sdl3-mixer-root make
+```
+
+The mixer library directory is added to the executable's rpath, so `make run`
+then works without setting `LD_LIBRARY_PATH`. Without SDL3_mixer, the game
+still builds and runs silently.
 
 The executables end up in `.build/lgeneral/src/lgeneral`,
 `.build/lgeneral/lgc-pg/lgc-pg` and `.build/lgeditor/src/lgeditor`. Start the

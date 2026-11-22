@@ -5,6 +5,7 @@
 #
 #   make                                   # build everything
 #   PG_DATA=/path/to/pg-data.tar.gz make    # tarball or unpacked directory
+#   SDL3_MIXER_PREFIX=/path/to/prefix make  # enable sound with SDL3_mixer >= 3.2
 #   make run                               # start the game from its data dir
 #   make smoke                             # clean builds + runtime launch test
 #   make clean                             # remove build output
@@ -22,6 +23,23 @@ TRACE_CMAKE := $(if $(filter 1,$(TRACE)),ON,OFF)
 # Path to pg-data.tar.gz or an unpacked pg-data directory, supplied through
 # the environment (e.g. export PG_DATA=~/PG_DATA/pg-data.tar.gz).
 PG_DATA ?=
+
+# Optional prefix containing sdl3-mixer >= 3.2. When set, both pkg-config and
+# the runtime loader are pointed at it, so the resulting binary has sound
+# without needing LD_LIBRARY_PATH at launch time.
+SDL3_MIXER_PREFIX ?=
+ifneq ($(strip $(SDL3_MIXER_PREFIX)),)
+SDL3_MIXER_PREFIX := $(abspath $(SDL3_MIXER_PREFIX))
+export SDL3_MIXER_PREFIX
+SDL3_MIXER_PKG_CONFIG_PATH := $(SDL3_MIXER_PREFIX)/lib/pkgconfig:$(SDL3_MIXER_PREFIX)/lib64/pkgconfig
+SDL3_MIXER_LIBDIR := $(shell PKG_CONFIG_PATH='$(SDL3_MIXER_PKG_CONFIG_PATH)$(if $(PKG_CONFIG_PATH),:$(PKG_CONFIG_PATH))' pkg-config --variable=libdir sdl3-mixer 2>/dev/null)
+SDL3_MIXER_RPATH := $(if $(SDL3_MIXER_LIBDIR),$(SDL3_MIXER_LIBDIR),$(SDL3_MIXER_PREFIX)/lib:$(SDL3_MIXER_PREFIX)/lib64)
+MIXER_CMAKE_ENV := PKG_CONFIG_PATH='$(SDL3_MIXER_PKG_CONFIG_PATH)$(if $(PKG_CONFIG_PATH),:$(PKG_CONFIG_PATH))'
+MIXER_CMAKE_ARGS := -DCMAKE_PREFIX_PATH='$(SDL3_MIXER_PREFIX)' -DCMAKE_BUILD_RPATH='$(SDL3_MIXER_RPATH)'
+else
+MIXER_CMAKE_ENV :=
+MIXER_CMAKE_ARGS :=
+endif
 
 LGENERAL := lgeneral
 LGEDITOR := lgeditor
@@ -75,11 +93,11 @@ lgeneral: $(LGENERAL_BUILD)/.synced
 		cp debug/lgtrace.h $(LGENERAL_BUILD)/src/; \
 		python3 debug/instrument.py $(LGENERAL_BUILD); \
 	fi
-	cmake -S $(LGENERAL_BUILD) -B $(LGENERAL_BUILD) \
+	$(MIXER_CMAKE_ENV) cmake -S $(LGENERAL_BUILD) -B $(LGENERAL_BUILD) \
 		-DCMAKE_BUILD_TYPE= \
 		-DCMAKE_C_FLAGS='$(CMAKE_C_FLAGS)' \
 		-DCMAKE_CXX_FLAGS='$(CMAKE_CXX_FLAGS)' \
-		-DLGENERAL_TRACE=$(TRACE_CMAKE) $(LGENERAL_CMAKE_ARGS)
+		-DLGENERAL_TRACE=$(TRACE_CMAKE) $(MIXER_CMAKE_ARGS) $(LGENERAL_CMAKE_ARGS)
 	cmake --build $(LGENERAL_BUILD) -j$(JOBS)
 	@echo "==> Staging translations"
 	@set -e; for dom in lgeneral pg; do \
