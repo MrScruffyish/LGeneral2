@@ -50,8 +50,9 @@ int main(void)
 }
 EOF
 
-cc=${CC:-cc}
-$cc -DHAVE_CONFIG_H -I"$build" -I"$build/util" -I"$util_src" \
+# libutil.a contains C++ objects, so link the probe with the C++ compiler.
+cxx=${CXX:-c++}
+"$cxx" -DHAVE_CONFIG_H -I"$build" -I"$build/util" -I"$util_src" \
     "$tmp/test-i18n.c" "$build/util/libutil.a" -lm -o "$tmp/test-i18n"
 
 (cd "$data" && LANGUAGE=de "$tmp/test-i18n")

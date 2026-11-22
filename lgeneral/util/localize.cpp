@@ -25,15 +25,15 @@
 */
 
 #include "localize.h"
-#include "hashtable.h"
-
-#include "hash-string.h"
 
 #include <assert.h>
 #include <locale.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <string>
+#include <unordered_set>
 
 #ifdef WIN32
   extern int setenv(const char *name, const char *value, int override);
@@ -42,13 +42,10 @@
 /** internal language code. LC_C means default as well as unknown. */
 typedef enum { LC_C, LC_DE, LC_EN } LanguageCode;
 
-/** info about a loaded domain */
-struct DomainInfo {
-  int dummy; /* none yet */
-};
-
 static LanguageCode lang_code;
-static struct hashtable *domain_map;
+/* Only domain presence matters here; the value of the old hashtable was a
+ * dummy struct that was never read. */
+static std::unordered_set<std::string> loaded_domains;
 
 /* NOTE: Keep in sync with LanguageCode enum.
  * It serves as an index into this table
@@ -64,36 +61,6 @@ lang_data[] = {
   { "en", "ISO-8859-1" },
 };
 
-/** deletes a domain-info-entry */
-static void domain_info_delete(void *d) {
-  free(d);
-}
-
-/** returns the domain-map */
-static inline struct hashtable *domain_map_instance() {
-  if (!domain_map) {
-    domain_map = create_hashtable(10, (unsigned int (*) (void*))hash_string,
-                              (int (*)(void *, void *))strcmp,
-                              domain_info_delete);
-  }
-  return domain_map;
-}
-
-/** inserts a new entry into the domain-map */
-static void domain_map_insert(const char *domain, struct DomainInfo *info) {
-  struct hashtable *dm = domain_map_instance();
-  /* The table owns its keys; callers may free the domain string. */
-  hashtable_insert(dm, strdup(domain), info);
-}
-
-#ifdef __NOTUSED
-/** removes an entry from the domain-map */
-static void domain_map_remove(const char *domain) {
-  struct hashtable *dm = domain_map_instance();
-  hashtable_remove(dm, (void *)domain);
-}
-#endif
-
 #if 0
 const char *tr(const char *s) {
   const char *r = gettext(s);
@@ -101,15 +68,6 @@ const char *tr(const char *s) {
   return r;
 }
 #endif
-
-/**
- * Looks up an entry in the domain-map.
- * Returns \c DomainInfo or 0 if not found.
- */
-static struct DomainInfo *domain_map_get(const char *domain) {
-  struct hashtable *dm = domain_map_instance();
-  return (struct DomainInfo *)hashtable_search(dm, (void *)domain);
-}
 
 /**
  * Determines from the given language-string a suitable
@@ -148,16 +106,15 @@ static LanguageCode locale_determine_internal_code(const char *str) {
 }
 
 int locale_load_domain(const char *domain, const char *translations) {
-  struct DomainInfo *info;
   /* TODO: In the future resources may specify a package containing
    * all translations for a certain domain.
    * Currently, we rely on all translations being preinstalled.
    */
   assert(translations == 0);
+  if ( !domain ) return 0;
 
   /* don't add any domain twice */
-  info = domain_map_get(domain);
-  if (info) return 1;
+  if ( loaded_domains.find( domain ) != loaded_domains.end() ) return 1;
 
 #ifdef ENABLE_NLS
   {
@@ -171,8 +128,7 @@ int locale_load_domain(const char *domain, const char *translations) {
     bind_textdomain_codeset(domain, lang_data[lang_code].charset);
   }
 #endif
-  info = (struct DomainInfo *)malloc(sizeof(struct DomainInfo));
-  domain_map_insert(domain, info);
+  loaded_domains.emplace( domain );
   return 1;
 }
 
