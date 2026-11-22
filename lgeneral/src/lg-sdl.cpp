@@ -31,7 +31,10 @@ Sdl sdl;
 SDL_Cursor *empty_cursor = 0, *std_cursor = 0;
 
 static SDL_Window *game_window = 0;
+static SDL_Surface *window_surface = 0; /* owned by SDL */
 static bool game_fullscreen = false;
+static int view_zoom = 1;
+static int view_offset_x = 0, view_offset_y = 0;
 
 SDL_Surface *lg_get_video_surface()
 {
@@ -585,10 +588,13 @@ void init_sdl( int f )
 */
 void quit_sdl()
 {
-    /* sdl.screen belongs to the window and is released by SDL_Quit(). */
+    /* window_surface belongs to the window and is released by SDL_Quit(). */
     if ( game_window )
         SDL_StopTextInput( game_window );
+    if ( sdl.screen && sdl.screen != window_surface )
+        SDL_FreeSurface( sdl.screen );
     sdl.screen = 0;
+    window_surface = 0;
     game_window = 0;
     if ( empty_cursor ) SDL_FreeCursor( empty_cursor );
     if (sdl.vmodes) free(sdl.vmodes);
@@ -649,25 +655,83 @@ int get_video_modes( VideoModeInfo **vmi )
     return count * 2;
 }
 
+/** Smallest logical view that still fits the fixed GUI widgets. */
+void lg_min_logical_size( int zoom, int *width, int *height )
+{
+    if ( zoom <= LG_ZOOM_MIN ) {
+        if ( width ) *width = 800;
+        if ( height ) *height = 600;
+    }
+    else {
+        if ( width ) *width = 640;
+        if ( height ) *height = 480;
+    }
+}
+
+/** Copy a logical rectangle to the window surface, magnifying whole pixels. */
+static void lg_present_region( int x, int y, int w, int h )
+{
+    if ( !game_window || !window_surface || !sdl.screen )
+        return;
+    const bool full = w <= 0 || h <= 0;
+    if ( full ) {
+        x = 0; y = 0;
+        w = sdl.screen->w; h = sdl.screen->h;
+        SDL_FillRect( window_surface, nullptr,
+                      SDL_MapRGB( window_surface->format, 0, 0, 0 ) );
+    }
+    if ( x < 0 ) { w += x; x = 0; }
+    if ( y < 0 ) { h += y; y = 0; }
+    if ( x + w > sdl.screen->w ) w = sdl.screen->w - x;
+    if ( y + h > sdl.screen->h ) h = sdl.screen->h - y;
+    if ( w <= 0 || h <= 0 )
+        return;
+
+    SDL_Rect src = { x, y, w, h };
+    SDL_Rect dst = { view_offset_x + x * view_zoom,
+                     view_offset_y + y * view_zoom,
+                     w * view_zoom, h * view_zoom };
+    if ( !SDL_BlitSurfaceScaled( sdl.screen, &src, window_surface, &dst,
+                                 SDL_SCALEMODE_NEAREST ) )
+        fprintf( stderr, "%s", SDL_GetError() );
+    if ( full )
+        SDL_UpdateWindowSurface( game_window );
+    else
+        SDL_UpdateWindowSurfaceRects( game_window, &dst, 1 );
+}
+
 /*
 ====================================================================
 Switch to passed video mode.
 ====================================================================
 */
-int set_video_mode( int width, int height, int fullscreen )
+int set_video_mode( int width, int height, int fullscreen, int zoom )
 {
+    if ( zoom < LG_ZOOM_MIN || zoom > LG_ZOOM_MAX ) {
+        fprintf( stderr, "Invalid zoom level %d\n", zoom );
+        return 1;
+    }
+    int min_w = 0, min_h = 0;
+    lg_min_logical_size( zoom, &min_w, &min_h );
+    if ( width < min_w ) width = min_w;
+    if ( height < min_h ) height = min_h;
+
     const bool want_fullscreen = fullscreen != 0;
-    const bool size_changed = !sdl.screen ||
-                              sdl.screen->w != width || sdl.screen->h != height;
     const bool fullscreen_changed = game_fullscreen != want_fullscreen;
+    int physical_w = width * zoom, physical_h = height * zoom;
+    int current_w = 0, current_h = 0;
+    const bool size_changed = !game_window ||
+        ( lg_get_window_size( &current_w, &current_h ) &&
+          ( current_w != physical_w || current_h != physical_h ) );
+
     if ( !game_window ) {
-        game_window = SDL_CreateWindow( "LGeneral", width, height,
+        game_window = SDL_CreateWindow( "LGeneral", physical_w, physical_h,
                                         SDL_WINDOW_RESIZABLE );
         if ( !game_window ) {
             fprintf(stderr, "%s", SDL_GetError());
             return 1;
         }
-        SDL_SetWindowMinimumSize( game_window, 800, 600 );
+        SDL_SetWindowMinimumSize( game_window, min_w * zoom, min_h * zoom );
     } else {
         /* Apply the window size after leaving fullscreen; some platforms ignore
          * SDL_SetWindowSize() while the window is fullscreen. */
@@ -677,7 +741,7 @@ int set_video_mode( int width, int height, int fullscreen )
                 return 1;
             }
         if ( size_changed )
-            if ( !SDL_SetWindowSize( game_window, width, height ) ) {
+            if ( !SDL_SetWindowSize( game_window, physical_w, physical_h ) ) {
                 fprintf(stderr, "%s", SDL_GetError());
                 return 1;
             }
@@ -690,11 +754,52 @@ int set_video_mode( int width, int height, int fullscreen )
     game_fullscreen = want_fullscreen;
     /* SDL3 invalidates the window surface whenever the window changes, so
      * always fetch it again instead of relying on the old pointer. */
-    sdl.screen = SDL_GetWindowSurface( game_window );
-    if ( !sdl.screen ) {
+    window_surface = SDL_GetWindowSurface( game_window );
+    if ( !window_surface ) {
         fprintf(stderr, "%s", SDL_GetError());
         return 1;
     }
+    /* Some platforms ignore SDL_SetWindowSize() in fullscreen. Keep the fixed
+     * GUI layout intact and lower the zoom to the largest integer that fits
+     * the mode SDL actually gave us. */
+    if ( want_fullscreen &&
+         ( window_surface->w < physical_w || window_surface->h < physical_h ) ) {
+        const int fit_x = window_surface->w / width;
+        const int fit_y = window_surface->h / height;
+        zoom = fit_x < fit_y ? fit_x : fit_y;
+        if ( zoom < LG_ZOOM_MIN ) {
+            zoom = LG_ZOOM_MIN;
+            width = window_surface->w;
+            height = window_surface->h;
+        }
+        else {
+            lg_min_logical_size( zoom, &min_w, &min_h );
+            if ( width < min_w ) width = min_w;
+            if ( height < min_h ) height = min_h;
+        }
+        physical_w = width * zoom;
+        physical_h = height * zoom;
+    }
+    view_zoom = zoom;
+    view_offset_x = window_surface->w > physical_w
+                    ? ( window_surface->w - physical_w ) / 2 : 0;
+    view_offset_y = window_surface->h > physical_h
+                    ? ( window_surface->h - physical_h ) / 2 : 0;
+
+    /* The game draws into a logical surface; presentation scales it into the
+     * window surface. Unlike the old window surface, this one has no colour
+     * key, so black pixels remain opaque. */
+    SDL_Surface *old_screen = sdl.screen;
+    SDL_Surface *new_screen = SDL_CreateSurface( width, height,
+                                                 window_surface->format );
+    if ( !new_screen ) {
+        fprintf(stderr, "Could not create logical surface: %s", SDL_GetError());
+        return 1;
+    }
+    sdl.screen = new_screen;
+    if ( old_screen && old_screen != window_surface )
+        SDL_FreeSurface( old_screen );
+    lg_present_region( 0, 0, 0, 0 );
     /* SDL3 does not deliver SDL_EVENT_TEXT_INPUT unless it is started. */
     if ( !SDL_TextInputActive( game_window ) )
         SDL_StartTextInput( game_window );
@@ -707,6 +812,15 @@ int lg_get_window_size( int *width, int *height )
     if ( !game_window )
         return 0;
     return SDL_GetWindowSizeInPixels( game_window, width, height ) ? 1 : 0;
+}
+
+/** Return the transform used to present the logical surface. */
+int lg_get_view_transform( int *zoom, int *offset_x, int *offset_y )
+{
+    if ( zoom ) *zoom = view_zoom;
+    if ( offset_x ) *offset_x = view_offset_x;
+    if ( offset_y ) *offset_y = view_offset_y;
+    return 1;
 }
 
 /** Return whether the game window is currently fullscreen. */
@@ -732,12 +846,7 @@ void refresh_screen(int x, int y, int w, int h)
 {
     if ( !game_window )
         return;
-    if ( w == 0 || h == 0 ) {
-        SDL_UpdateWindowSurface( game_window );
-    } else {
-        SDL_Rect rect = { (Sint16)x, (Sint16)y, (Uint16)w, (Uint16)h };
-        SDL_UpdateWindowSurfaceRects( game_window, &rect, 1 );
-    }
+    lg_present_region( x, y, w, h );
     sdl.rect_count = 0;
 }
 
@@ -748,11 +857,9 @@ void refresh_rects()
 {
     if ( !game_window )
         return;
-    if (sdl.rect_count == RECT_LIMIT)
-        SDL_UpdateWindowSurface( game_window );
-    else
-        if ( sdl.rect_count > 0 )
-            SDL_UpdateWindowSurfaceRects( game_window, sdl.rect, sdl.rect_count );
+    for ( int i = 0; i < sdl.rect_count; i++ )
+        lg_present_region( sdl.rect[i].x, sdl.rect[i].y,
+                           sdl.rect[i].w, sdl.rect[i].h );
     sdl.rect_count = 0;
 }
 
@@ -914,8 +1021,7 @@ void unlock_screen()
 */
 void flip_screen()
 {
-    if ( game_window )
-        SDL_UpdateWindowSurface( game_window );
+    lg_present_region( 0, 0, 0, 0 );
 }
 
 /* cursor */

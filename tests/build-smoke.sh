@@ -82,6 +82,12 @@ for mode in normal trace; do
         "$tmp/tests/test-events.sh" "$tmp"
         echo "==> smoke: resize event check"
         "$tmp/tests/test-resize.sh" "$tmp"
+        echo "==> smoke: zoom coordinate check"
+        "$tmp/tests/test-zoom.sh" "$tmp"
+        if ! grep -q '^zoom=1$' "$build/src/lgeneral.conf"; then
+            echo "smoke: generated config is missing the default zoom" >&2
+            exit 1
+        fi
         echo "==> smoke: date parser check"
         "$tmp/tests/test-date.sh" "$tmp"
         echo "==> smoke: alpha blit check"
@@ -90,6 +96,12 @@ for mode in normal trace; do
 
     echo "==> smoke: runtime launch ($mode)"
     "$tmp/tests/run-smoke.sh" "$build/src/lgeneral"
+    if [ "$mode" = normal ]; then
+        for zoom in 2 3; do
+            echo "==> smoke: runtime launch (normal, zoom $zoom)"
+            "$tmp/tests/run-smoke.sh" "$build/src/lgeneral" "$zoom"
+        done
+    fi
 
     if [ "$mode" = trace ]; then
         echo "==> smoke: deployment map cleanup check"

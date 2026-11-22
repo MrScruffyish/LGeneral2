@@ -71,6 +71,7 @@ void reset_config()
     config.width = 800;
     config.height = 600;
     config.fullscreen = 0;
+    config.zoom = LG_ZOOM_MIN;
     config.anim_speed = 1;
     /* game options */
     config.supply = 1;
@@ -107,6 +108,17 @@ void load_config( )
     parser_get_int( pd, "width", &config.width );
     parser_get_int( pd, "height", &config.height );
     parser_get_int( pd, "fullscreen", &config.fullscreen );
+    parser_get_int( pd, "zoom", &config.zoom );
+    if ( config.zoom < LG_ZOOM_MIN || config.zoom > LG_ZOOM_MAX ) {
+        fprintf( stderr, "%s", tr("Invalid zoom level; using 1\n") );
+        config.zoom = LG_ZOOM_MIN;
+    }
+    {
+        int min_w = 0, min_h = 0;
+        lg_min_logical_size( config.zoom, &min_w, &min_h );
+        if ( config.width < min_w ) config.width = min_w;
+        if ( config.height < min_h ) config.height = min_h;
+    }
     parser_get_int( pd, "anim_speed", &config.anim_speed );
     if ( config.anim_speed < 1 ) {
         fprintf( stderr, "%s", tr("Invalid animation speed; using 1\n") );
@@ -142,6 +154,7 @@ void save_config( )
         fprintf( file, "width=%i\n", config.width );
         fprintf( file, "height=%i\n", config.height );
         fprintf( file, "fullscreen=%i\n", config.fullscreen );
+        fprintf( file, "zoom=%i\n", config.zoom );
         fprintf( file, "anim_speed=%i\n", config.anim_speed );
         fprintf( file, "supply=%i\n", config.supply );
         fprintf( file, "weather=%i\n", config.weather );

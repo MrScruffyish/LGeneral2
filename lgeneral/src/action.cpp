@@ -236,11 +236,12 @@ void action_queue_set_spot_mask()
     Action *action = action_create( ACTION_SET_SPOT_MASK );
     action_queue( action );
 }
-void action_queue_set_vmode( int w, int h, int fullscreen )
+void action_queue_set_vmode( int w, int h, int fullscreen, int zoom )
 {
     Action *action = action_create( ACTION_SET_VMODE );
     action->w = w; action->h = h;
     action->full = fullscreen;
+    action->zoom = zoom;
     action_queue( action );
 }
 void action_queue_quit()

@@ -16,11 +16,11 @@ The top-level `Makefile` builds both sub-projects into `.build/`:
 make
 ```
 
-It needs CMake 3.16 or newer, `pkg-config`, SDL3 with SDL3_image and SDL3_ttf,
-and gettext 0.21 or newer. CMake runs inside an isolated `.build/` copy, so
-generated files are never added to the source tree. To also convert the Panzer
-General data into the game's data directory, set `PG_DATA` to `pg-data.tar.gz`
-or an unpacked `pg-data` directory:
+It needs CMake 3.16 or newer, `pkg-config`, SDL3 3.2 or newer (with SDL3_image
+and SDL3_ttf), and gettext 0.21 or newer. CMake runs inside an isolated
+`.build/` copy, so generated files are never added to the source tree. To also
+convert the Panzer General data into the game's data directory, set `PG_DATA`
+to `pg-data.tar.gz` or an unpacked `pg-data` directory:
 
 ```bash
 PG_DATA=~/PG_DATA/pg-data.tar.gz make

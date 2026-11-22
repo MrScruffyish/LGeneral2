@@ -27,6 +27,11 @@ extern "C" {
 /* for development */
 //#define SDL_1_1_5
 
+/* Integer display zoom levels. Assets are low-resolution pixel art, so zoom
+ * magnifies whole pixels rather than generating new detail. */
+#define LG_ZOOM_MIN 1
+#define LG_ZOOM_MAX 3
+
 // draw region //
 #define DEST(p, i, j, k, l) {sdl.d.s = p; sdl.d.r.x = i; sdl.d.r.y = j; sdl.d.r.w = k; sdl.d.r.h = l;}
 #define SOURCE(p, i, j) {sdl.s.s = p; sdl.s.r.x = i; sdl.s.r.y = j; sdl.s.r.w = sdl.d.r.w; sdl.s.r.h = sdl.d.r.h;}
@@ -122,8 +127,10 @@ void init_sdl( int f );
 void quit_sdl();
 void set_window_title( const char *title );
 int get_video_modes( VideoModeInfo **vmi );
-int  set_video_mode( int width, int height, int fullscreen );
+int  set_video_mode( int width, int height, int fullscreen, int zoom );
+void lg_min_logical_size( int zoom, int *width, int *height );
 int  lg_get_window_size( int *width, int *height );
+int  lg_get_view_transform( int *zoom, int *offset_x, int *offset_y );
 int  lg_is_fullscreen();
 void hardware_cap();
 void refresh_screen( int x, int y, int w, int h );

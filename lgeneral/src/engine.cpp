@@ -262,6 +262,9 @@ static void engine_select_player( Player *player, int skip_unit_prep );
 static int engine_capture_flag( Unit *unit );
 //static void engine_show_game_menu( int cx, int cy );
 static void engine_handle_button( int id );
+static void engine_set_zoom( int zoom );
+static void engine_logical_size_from_window( int window_w, int window_h,
+                                             int zoom, int *width, int *height );
 static int engine_has_strategic_target(int active, int x,int y);
 
 /*
@@ -2203,19 +2206,33 @@ static void engine_handle_button( int id )
         case ID_C_SHOW_CPU:
             config.show_cpu_turn = !config.show_cpu_turn;
             break;
-        case ID_C_VMODE:
-            /* no video mode menu: toggle fullscreen but keep the window size */
-            if (lg_is_fullscreen())
-                action_queue_set_vmode(windowed_width, windowed_height, 0);
+        case ID_C_VMODE: {
+            /* no video mode menu: toggle fullscreen but keep the zoom level */
+            int window_w = 0, window_h = 0;
+            int logical_w = 0, logical_h = 0;
+            if (lg_is_fullscreen()) {
+                action_queue_set_vmode(windowed_width, windowed_height, 0,
+                                       config.zoom);
+            }
             else {
                 windowed_width = sdl.screen->w;
                 windowed_height = sdl.screen->h;
-                action_queue_set_vmode(windowed_width, windowed_height, 1);
+                if (lg_get_window_size( &window_w, &window_h ) &&
+                    window_w > 0 && window_h > 0)
+                    engine_logical_size_from_window( window_w, window_h,
+                                                     config.zoom,
+                                                     &logical_w, &logical_h );
+                else {
+                    logical_w = windowed_width;
+                    logical_h = windowed_height;
+                }
+                action_queue_set_vmode(logical_w, logical_h, 1, config.zoom);
             }
             group_hide(gui->opt_menu,1);
             /*engine_hide_game_menu();
             gui_vmode_dlg_show();
             status = STATUS_VMODE_DLG;*/
+            }
             break;
         /* main menu -- is fixed now
         case ID_MENU:
@@ -2591,7 +2608,7 @@ static void engine_handle_button( int id )
 			break;
 		action_queue_set_vmode( sdl.vmodes[i].width, 
 					sdl.vmodes[i].height, 
-					sdl.vmodes[i].fullscreen);
+					sdl.vmodes[i].fullscreen, config.zoom );
 		select_dlg_hide( gui->vmode_dlg, 1 );
 		label_hide(gui->label, 1);
 		engine_set_status( STATUS_NONE );
@@ -2660,8 +2677,10 @@ static void engine_check_events(int *reinit)
     int nx, ny;
     SDL_PumpEvents(); /* gather events in the queue */
     if ( sdl_quit ) term_game = 1; /* end game by window manager */
-    if ( event_check_window_resize( &nx, &ny ) )
-        action_queue_set_vmode( nx, ny, lg_is_fullscreen() );
+    if ( event_check_window_resize( &nx, &ny ) ) {
+        engine_logical_size_from_window( nx, ny, config.zoom, &nx, &ny );
+        action_queue_set_vmode( nx, ny, lg_is_fullscreen(), config.zoom );
+    }
     if ( status == STATUS_MOVE || status == STATUS_ATTACK || status == STATUS_STRAT_ATTACK )
         return;
     if ( cur_ctrl == PLAYER_CTRL_CPU ) {
@@ -3183,6 +3202,12 @@ static void engine_check_events(int *reinit)
                             case SDLK_d: if (status!=STATUS_UNIT_MENU) engine_handle_button(ID_DEPLOY); break;
                             case SDLK_e: if (status!=STATUS_UNIT_MENU) engine_handle_button(ID_END_TURN); break;
                             case SDLK_v: if (status!=STATUS_UNIT_MENU) engine_handle_button(ID_C_VMODE); break;
+                            case SDLK_LEFTBRACKET:
+                                if (status!=STATUS_UNIT_MENU) engine_set_zoom(config.zoom - 1);
+                                break;
+                            case SDLK_RIGHTBRACKET:
+                                if (status!=STATUS_UNIT_MENU) engine_set_zoom(config.zoom + 1);
+                                break;
                             case SDLK_g: if (status!=STATUS_UNIT_MENU) engine_handle_button(ID_C_GRID); break;
                             case SDLK_PERIOD: if (status!=STATUS_UNIT_MENU) engine_handle_button(ID_C_SHOW_STRENGTH); break;
                             case SDLK_i: if (status!=STATUS_UNIT_MENU) engine_handle_button(ID_SCEN_INFO); break;
@@ -3372,6 +3397,32 @@ static int engine_capture_flag( Unit *unit ) {
     return 0;
 }
 
+/** Derive a logical view size from a physical window size and zoom level. */
+static void engine_logical_size_from_window( int window_w, int window_h,
+                                             int zoom, int *width, int *height )
+{
+    int min_w = 0, min_h = 0;
+    lg_min_logical_size( zoom, &min_w, &min_h );
+    *width = window_w / zoom;
+    *height = window_h / zoom;
+    if ( *width < min_w ) *width = min_w;
+    if ( *height < min_h ) *height = min_h;
+}
+
+/** Queue a zoom change while keeping the physical window size stable. */
+static void engine_set_zoom( int zoom )
+{
+    int window_w = 0, window_h = 0;
+    int logical_w = 0, logical_h = 0;
+    if ( zoom < LG_ZOOM_MIN || zoom > LG_ZOOM_MAX || zoom == config.zoom )
+        return;
+    if ( !lg_get_window_size( &window_w, &window_h ) )
+        return;
+    engine_logical_size_from_window( window_w, window_h, zoom,
+                                     &logical_w, &logical_h );
+    action_queue_set_vmode( logical_w, logical_h, lg_is_fullscreen(), zoom );
+}
+
 /* get new map view port after screen resolution change */
 static void engine_update_mapview_size()
 {
@@ -3436,15 +3487,18 @@ static void engine_handle_next_action( int *reinit )
             end_scen = 1;
             break;
         case ACTION_SET_VMODE:
-            if ( set_video_mode( action->w, action->h, action->full ) != 0 ) {
+            if ( set_video_mode( action->w, action->h, action->full,
+                                 action->zoom ) != 0 ) {
                 fprintf( stderr, tr("Video Mode: %ix%i, Fullscreen: %i not available\n"),
                          action->w, action->h, action->full );
             }
             else {
-                printf(tr("Applied video mode %dx%dx%d %s\n"),
+                int view_zoom = 1, offset_x = 0, offset_y = 0;
+                lg_get_view_transform( &view_zoom, &offset_x, &offset_y );
+                printf(tr("Applied video mode %dx%dx%d %s (zoom %d)\n"),
                                         sdl.screen->w, sdl.screen->h, 32,
                                         lg_is_fullscreen()?tr("Fullscreen"):
-                                            tr("Window"));
+                                            tr("Window"), view_zoom);
                 /* rebind widgets to the new window surface and re-layout */
                 gui_resize_panel();
                 gui_rebind_surfaces( sdl.screen );
@@ -3473,6 +3527,10 @@ static void engine_handle_next_action( int *reinit )
                 config.width = sdl.screen->w;
                 config.height = sdl.screen->h;
                 config.fullscreen = lg_is_fullscreen() ? 1 : 0;
+                /* Fullscreen may lower the level to keep the GUI visible. */
+                config.zoom = view_zoom;
+                event_set_view_transform( view_zoom, offset_x, offset_y,
+                                          sdl.screen->w, sdl.screen->h );
                 if ( !config.fullscreen ) {
                     windowed_width = config.width;
                     windowed_height = config.height;

@@ -79,7 +79,10 @@ with the SDL_AUDIODRIVER environment variable.
 original size, so a larger window simply shows more of the map. Fullscreen uses
 the last window size. You can still set the initial width and height in
 lgeneral.conf (in Linux this file resides in ~/.lgames and in Windows it is in
-the same directory like the binary).
+the same directory like the binary). Press '[' and ']' to change the integer
+zoom level (1-3). Zoom magnifies whole pixels with nearest-neighbour sampling;
+the original unit graphics are low resolution, so it adds size but no detail.
+In fullscreen the level is reduced if the display cannot fit the minimum layout.
 
 4. Main Menu
 ------------

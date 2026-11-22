@@ -2,7 +2,7 @@
 # Launch a built game with dummy SDL drivers and verify a clean shutdown.
 #
 # Usage:
-#   tests/run-smoke.sh /path/to/lgeneral
+#   tests/run-smoke.sh /path/to/lgeneral [zoom]
 #
 # The game resolves data relative to its working directory, so the script runs
 # it from the directory containing the executable. SIGTERM is used as the
@@ -12,6 +12,7 @@
 set -eu
 
 binary=${1:-}
+zoom=${2:-}
 if [ -z "$binary" ]; then
     echo "run-smoke: usage: $0 /path/to/lgeneral" >&2
     exit 2
@@ -31,10 +32,15 @@ binary="$game_dir/$(basename -- "$binary")"
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/lgeneral-run-smoke.XXXXXX")
 log="$tmp/game.log"
 trace_log="$tmp/trace.log"
+config="$game_dir/lgeneral.conf"
+config_backup=
 pid=
 watchdog=
 
 cleanup() {
+    if [ -n "$config_backup" ] && [ -f "$config_backup" ]; then
+        cp "$config_backup" "$config"
+    fi
     if [ -n "$watchdog" ] && kill -0 "$watchdog" 2>/dev/null; then
         kill "$watchdog" 2>/dev/null || true
         wait "$watchdog" 2>/dev/null || true
@@ -46,6 +52,18 @@ cleanup() {
     rm -rf "$tmp"
 }
 trap cleanup EXIT HUP INT TERM
+
+if [ -n "$zoom" ]; then
+    cp "$config" "$tmp/lgeneral.conf.orig"
+    config_backup="$tmp/lgeneral.conf.orig"
+    if grep -q '^zoom=' "$config"; then
+        sed "s/^zoom=.*/zoom=$zoom/" "$config" > "$config.new"
+    else
+        cat "$config" > "$config.new"
+        printf 'zoom=%s\n' "$zoom" >> "$config.new"
+    fi
+    mv "$config.new" "$config"
+fi
 
 if command -v stdbuf >/dev/null 2>&1; then
     set -- stdbuf -oL -eL "$binary"

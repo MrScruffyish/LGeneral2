@@ -18,6 +18,7 @@
 #include "lgeneral.h"
 #include "event.h"
 
+#include <cmath>
 #include <cstring>
 
 int buttonup = 0, buttondown = 0;
@@ -32,6 +33,9 @@ static bool resize_pending = false;
 static int resize_width = 0, resize_height = 0;
 static bool pixel_size_pending = false;
 static int pixel_width = 0, pixel_height = 0;
+static int view_zoom = 1;
+static int view_offset_x = 0, view_offset_y = 0;
+static int view_width = 0, view_height = 0;
 
 /*
 =====================================================================
@@ -100,12 +104,32 @@ static int game_button( Uint8 button )
     }
 }
 
+/** Convert window pointer coordinates into logical game coordinates. */
+static void lg_transform_pointer( float window_x, float window_y,
+                                  int *logical_x, int *logical_y )
+{
+    int x = static_cast<int>( std::floor( ( window_x - view_offset_x ) /
+                                          view_zoom ) );
+    int y = static_cast<int>( std::floor( ( window_y - view_offset_y ) /
+                                          view_zoom ) );
+    if ( view_width > 0 ) {
+        if ( x < 0 ) x = 0;
+        if ( x >= view_width ) x = view_width - 1;
+    }
+    if ( view_height > 0 ) {
+        if ( y < 0 ) y = 0;
+        if ( y >= view_height ) y = view_height - 1;
+    }
+    *logical_x = x;
+    *logical_y = y;
+}
+
 int event_filter( const SDL_Event *event )
 {
     switch ( event->type ) {
         case SDL_MOUSEMOTION:
-            motion_x = static_cast<int>( event->motion.x );
-            motion_y = static_cast<int>( event->motion.y );
+            lg_transform_pointer( event->motion.x, event->motion.y,
+                                  &motion_x, &motion_y );
             /* SDL3 reports the button state as a bit mask; map it to the
                button indices used by the game (the SDL 1.2 code indexed the
                state array with the mask, which mismatched the right button). */
@@ -121,6 +145,8 @@ int event_filter( const SDL_Event *event )
             const int button = game_button( event->button.button );
             if ( button != BUTTON_NONE )
                 buttonstate[button] = 0;
+            lg_transform_pointer( event->button.x, event->button.y,
+                                  &motion_x, &motion_y );
             buttonup = button;
             return 0;
         }
@@ -128,6 +154,8 @@ int event_filter( const SDL_Event *event )
             const int button = game_button( event->button.button );
             if ( button != BUTTON_NONE )
                 buttonstate[button] = 1;
+            lg_transform_pointer( event->button.x, event->button.y,
+                                  &motion_x, &motion_y );
             buttondown = button;
             return 0;
         }
@@ -224,6 +252,21 @@ int event_check_window_resize( int *width, int *height )
     resize_pending = false;
     pixel_size_pending = false;
     return 1;
+}
+
+/*
+====================================================================
+Set the logical view transform used to convert pointer coordinates.
+====================================================================
+*/
+void event_set_view_transform( int zoom, int offset_x, int offset_y,
+                               int logical_width, int logical_height )
+{
+    view_zoom = zoom > 0 ? zoom : 1;
+    view_offset_x = offset_x > 0 ? offset_x : 0;
+    view_offset_y = offset_y > 0 ? offset_y : 0;
+    view_width = logical_width;
+    view_height = logical_height;
 }
 
 /*

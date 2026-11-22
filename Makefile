@@ -117,7 +117,7 @@ lgeneral: $(LGENERAL_BUILD)/.synced
 		done; \
 	done
 	@printf '%s\n' '@' 'grid=0' 'tran=1' 'bar=1' 'width=800' 'height=600' \
-		'fullscreen=0' 'anim_speed=1' 'supply=1' 'weather=1' \
+		'fullscreen=0' 'zoom=1' 'anim_speed=1' 'supply=1' 'weather=1' \
 		'fog_of_war=1' 'cpu_turn=1' 'deploy=1' 'purchase=1' \
 		'ai_debug=0' 'sound_on=1' 'sound_volume=96' 'music_on=1' \
 		'music_volume=96' > $(GAME_DATA)/lgeneral.conf

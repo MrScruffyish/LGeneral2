@@ -125,8 +125,9 @@ AC_MSG_RESULT(executable's path determination strategy... $ac_paths_determ)
 AM_CONDITIONAL(compile_paths_linux, test x$ac_paths_determ = xlinux)
 
 dnl SDL3 is used by the game, the converter and the editor toolchain.
-PKG_CHECK_MODULES([SDL3], [sdl3], [],
-                  [AC_MSG_ERROR([lib SDL3 is needed])])
+dnl The game needs 3.2+ for SDL_BlitSurfaceScaled() and SDL_SCALEMODE_NEAREST.
+PKG_CHECK_MODULES([SDL3], [sdl3 >= 3.2.0], [],
+                  [AC_MSG_ERROR([lib SDL3 3.2 or newer is needed])])
 
 dnl check sound
 sound_flag=""

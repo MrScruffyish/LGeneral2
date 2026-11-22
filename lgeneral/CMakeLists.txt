@@ -15,7 +15,7 @@ option(LGENERAL_NLS "Build with gettext translations" ON)
 option(LGENERAL_INSTALL "Use installed data paths" OFF)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(SDL3 REQUIRED IMPORTED_TARGET sdl3)
+pkg_check_modules(SDL3 REQUIRED IMPORTED_TARGET sdl3>=3.2.0)
 
 find_library(MATH_LIBRARY m)
 if(NOT MATH_LIBRARY)

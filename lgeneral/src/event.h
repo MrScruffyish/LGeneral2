@@ -49,6 +49,14 @@ int event_check_window_resize( int *width, int *height );
 
 /*
 ====================================================================
+Set the logical view transform used to convert pointer coordinates.
+====================================================================
+*/
+void event_set_view_transform( int zoom, int offset_x, int offset_y,
+                               int logical_width, int logical_height );
+
+/*
+====================================================================
 Check if an motion event occured since last call.
 ====================================================================
 */

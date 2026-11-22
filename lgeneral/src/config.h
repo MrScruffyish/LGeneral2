@@ -37,6 +37,7 @@ typedef struct {
     int tran; /* transparancy */
     int show_bar; /* show unit's life bar and icons */
     int width, height, fullscreen;
+    int zoom; /* integer display magnification: 1=normal, 2=2x, ... */
     int anim_speed; /* scale animations by this factor: 1=normal, 2=doubled, ... */
     /* game options */
     int supply; /* units must supply */

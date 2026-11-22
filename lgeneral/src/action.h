@@ -60,7 +60,7 @@ typedef struct {
     Unit *unit;     /* unit performing the action */
     Unit *target;   /* target if attack */
     int x, y;       /* dest position if movement */
-    int w, h, full; /* video mode settings */
+    int w, h, full, zoom; /* video mode settings */
     int id;         /* slot id if any */
     int str;        /* strength of split */
 } Action;
@@ -125,7 +125,7 @@ void action_queue_disband( Unit *unit );
 void action_queue_deploy( Unit *unit, int x, int y );
 void action_queue_draw_map();
 void action_queue_set_spot_mask();
-void action_queue_set_vmode( int w, int h, int fullscreen );
+void action_queue_set_vmode( int w, int h, int fullscreen, int zoom );
 void action_queue_quit();
 void action_queue_restart();
 void action_queue_load( int id );
