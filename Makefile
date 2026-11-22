@@ -6,7 +6,7 @@
 #   make                                   # build everything
 #   PG_DATA=/path/to/pg-data.tar.gz make    # tarball or unpacked directory
 #   make run                               # start the game from its data dir
-#   make smoke                             # clean normal + TRACE=1 build test
+#   make smoke                             # clean builds + runtime launch test
 #   make clean                             # remove build output
 
 SHELL := /bin/sh

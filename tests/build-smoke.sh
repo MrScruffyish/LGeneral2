@@ -73,6 +73,9 @@ for mode in normal trace; do
         echo "==> smoke: translation check"
         "$tmp/tests/test-translations.sh" "$build"
     fi
+
+    echo "==> smoke: runtime launch ($mode)"
+    "$tmp/tests/run-smoke.sh" "$build/src/lgeneral"
 done
 
 if ! strings "$tmp/.build/lgeneral-trace/src/lgeneral" | grep -q '\[trace\]'; then
