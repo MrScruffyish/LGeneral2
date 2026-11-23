@@ -147,6 +147,21 @@ static Unit_Class *get_purchase_trsp_class()
 	return NULL;
 }
 
+/** Return 1 if unit lib entry @e is still available at @date. A NULL date
+ * means no date restriction. */
+static int unit_lib_entry_available_at( const Unit_Lib_Entry *e, const Date *date )
+{
+	if (date == NULL)
+		return 1;
+	if (e->start_year > date->year)
+		return 0;
+	if (e->start_year == date->year && e->start_month > date->month)
+		return 0;
+	if (e->last_year && e->last_year < date->year)
+		return 0;
+	return 1;
+}
+
 /** Select those entries from unit library that match certain criteria:
  * @nationid: unit belongs to nation with this id string (if NULL any)
  * @uclassid: unit belongs to class with this id string (if NULL any)
@@ -175,15 +190,8 @@ List *get_purchasable_unit_lib_entries( const char *nationid,
 			continue;
 		if (uclassid && strcmp(unit_classes[e->unit_class].id, uclassid))
 			continue;
-		if (date ) {
-			if (e->start_year > date->year)
-				continue;
-			if (e->start_year == date->year && e->start_month > 
-								date->month)
-				continue;
-			if (e->last_year && e->last_year < date->year)
-				continue;
-		}
+		if (!unit_lib_entry_available_at(e, date))
+			continue;
 		list_add(l,e);
 	}
 	return l;
@@ -361,6 +369,45 @@ int player_can_purchase_unit( Player *p, Unit_Lib_Entry *unit,
 	return 1;
 }
 
+/** Return 1 if player @p can afford and accommodate at least one purchasable
+ * unit right now. This is used to draw attention to the reinforcement button
+ * only when opening the purchase dialogue can lead to an actual purchase. */
+int player_can_purchase_any_unit( Player *p )
+{
+	Unit_Lib_Entry *e = NULL;
+	int i, nation_ok;
+
+	if (p == NULL || player_get_purchase_unit_limit(p, 0, 0) == 0)
+		return 0;
+
+	list_reset(unit_lib);
+	while ((e = (Unit_Lib_Entry*)list_next(unit_lib))) {
+		if (e->cost <= 0 || e->cost > p->cur_prestige)
+			continue;
+		if (e->nation < 0 || e->nation >= nation_count ||
+			e->unit_class < 0 || e->unit_class >= unit_class_count)
+			continue;
+		if (unit_classes[e->unit_class].purchase != UC_PT_NORMAL)
+			continue;
+		if (!unit_lib_entry_available_at(e,
+					(const Date*)&scen_info->start_date))
+			continue;
+
+		nation_ok = 0;
+		for (i = 0; i < p->nation_count; i++) {
+			Nation *n = p->nations[i];
+			if (n && !n->no_purchase &&
+				!strcmp(nations[e->nation].id, n->id)) {
+				nation_ok = 1;
+				break;
+			}
+		}
+		if (nation_ok)
+			return 1;
+	}
+	return 0;
+}
+
 /** Render info of selected unit (unit, transporter, total cost, ... ) 
  * and enable/disable purchase button depending on whether enough prestige
  * and capacity. */
@@ -443,13 +490,13 @@ static void update_unit_purchase_info( PurchaseDlg *pdlg )
 	frame_apply( pdlg->main_group->frame );
 }
 
-/** Modify @pdlg's current unit limit by adding @add and render unit 
- * limit. If core is set add to core count otherwise auxiliary count. */
+/** Modify @pdlg's current unit limit by adding @add and render prestige and
+ * unit limit. If core is set add to core count otherwise auxiliary count. */
 static void update_purchase_unit_limit( PurchaseDlg *pdlg, int add, int core )
 {
 	SDL_Surface *contents = pdlg->ulimit_frame->contents;
-	char str[16];
-	int y = 7;
+	char str[64];
+	int y = 4;
 	
 	if (core) {
 		if (pdlg->cur_core_limit != -1) {
@@ -465,6 +512,8 @@ static void update_purchase_unit_limit( PurchaseDlg *pdlg, int add, int core )
 	
 	SDL_FillRect( contents, 0, 0x0 );
 	gui->font_std->align = ALIGN_X_CENTER | ALIGN_Y_TOP;
+	snprintf( str, sizeof str, tr("Prestige: %d"), cur_player->cur_prestige );
+	write_line( contents, gui->font_std, str, contents->w/2, &y );
 	write_line(contents, gui->font_std, tr("Available:"), contents->w/2, &y );
 	if (pdlg->cur_core_limit == -1 && pdlg->cur_aux_limit == -1)
 		strcpy( str, "---" );
@@ -472,10 +521,10 @@ static void update_purchase_unit_limit( PurchaseDlg *pdlg, int add, int core )
 		strcpy( str, tr("None") );
 	else {
 		if (camp_loaded)
-			snprintf(str, 16, "%d / %d", pdlg->cur_core_limit,
+			snprintf(str, sizeof str, "%d / %d", pdlg->cur_core_limit,
 					pdlg->cur_aux_limit);
 		else
-			snprintf(str, 16, "%d", pdlg->cur_aux_limit);
+			snprintf(str, sizeof str, "%d", pdlg->cur_aux_limit);
 	}
 	write_line( contents, gui->font_std, str, contents->w/2, &y );
 	
@@ -598,8 +647,8 @@ PurchaseDlg *purchase_dlg_create( const char *theme_path )
 	group_add_button( pdlg->main_group, ID_PURCHASE_EXIT, sx + 30, sy, 0, 
 							tr("Exit") );
 	
-	/* create unit limit info frame */
-	pdlg->ulimit_frame = frame_create( gui_create_frame( 112, 40 ), alpha,
+	/* create prestige/unit limit info frame */
+	pdlg->ulimit_frame = frame_create( gui_create_frame( 112, 56 ), alpha,
 							sdl.screen, 0, 0);
 	if (pdlg->ulimit_frame == NULL)
 		goto failure;
@@ -615,7 +664,7 @@ PurchaseDlg *purchase_dlg_create( const char *theme_path )
 	
 	/* create class listbox */
 	snprintf( path, 512, "%s/scroll_buttons.bmp", theme_path );
-	pdlg->uclass_lbox = lbox_create( gui_create_frame( 112, 166 ), alpha, 6,
+	pdlg->uclass_lbox = lbox_create( gui_create_frame( 112, 150 ), alpha, 6,
 			load_surf( path, SDL_SWSURFACE ), 24, 24, gui->label,
 			10, 2, 100, 12, 1, 0x0000ff,
 			render_lbox_uclass, sdl.screen, 0, 0);

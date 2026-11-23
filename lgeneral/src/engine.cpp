@@ -525,16 +525,25 @@ static void engine_check_menu_buttons()
         group_set_active( gui->base_menu, ID_SCEN_INFO, 0 );
     else
         group_set_active( gui->base_menu, ID_SCEN_INFO, 1 );
-    /* purchase */
-    if ( config.purchase && cur_ctrl != PLAYER_CTRL_NOBODY && (!deploy_turn  && status == STATUS_NONE ) )
+    /* purchase. The button stays usable while the dialogue is reachable, but
+       it is highlighted only when a purchase is actually possible. */
+    if ( config.purchase && cur_ctrl != PLAYER_CTRL_NOBODY && !deploy_turn &&
+         status == STATUS_NONE )
         group_set_active( gui->base_menu, ID_PURCHASE, 1 );
     else
         group_set_active( gui->base_menu, ID_PURCHASE, 0 );
+    group_set_highlight( gui->base_menu, ID_PURCHASE,
+        config.purchase && cur_ctrl != PLAYER_CTRL_NOBODY && !deploy_turn &&
+        status == STATUS_NONE && player_can_purchase_any_unit( cur_player ) );
     /* deploy */
-    if ( ( avail_units->count > 0 ) && status == STATUS_NONE )
+    if ( ( avail_units->count > 0 || deploy_turn ) && status == STATUS_NONE &&
+         cur_ctrl != PLAYER_CTRL_NOBODY )
         group_set_active( gui->base_menu, ID_DEPLOY, 1 );
     else
         group_set_active( gui->base_menu, ID_DEPLOY, 0 );
+    group_set_highlight( gui->base_menu, ID_DEPLOY,
+        ( avail_units->count > 0 || deploy_turn ) && status == STATUS_NONE &&
+        cur_ctrl != PLAYER_CTRL_NOBODY );
     //unit list
     if ( status == STATUS_NONE )
         group_set_active( gui->base_menu, ID_UNIT_LIST, 1 );
@@ -3074,14 +3083,10 @@ static void engine_check_events(int *reinit)
                 }
                 /* if there was a button pressed released it */
                 if ( last_button ) {
-                    if ( !last_button->lock ) {
+                    if ( !last_button->lock )
                         last_button->down = 0;
-                        if ( last_button->active )
-                            last_button->button_rect.x = 0;
-                    }
-                    if ( last_button->button_rect.x == 0 )
-                        if ( button_focus( last_button, cx, cy ) )
-                            last_button->button_rect.x = last_button->surf_rect.w;
+                    group_refresh_button( last_button,
+                                          button_focus( last_button, cx, cy ) );
                     last_button = 0;
                 }
             }

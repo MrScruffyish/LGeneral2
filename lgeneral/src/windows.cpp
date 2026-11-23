@@ -161,6 +161,7 @@ int group_add_button_complex( Group *group, int id, int icon_id, int x, int y, i
     group->buttons[group->button_count].button_rect.h = group->h;
     group->buttons[group->button_count].id = id;
     group->buttons[group->button_count].active = 1;
+    group->buttons[group->button_count].highlight = 0;
     strcpy_lt( group->buttons[group->button_count].tooltip, tooltip, 31 );
     group->buttons[group->button_count].lock = lock;
     group->button_count++;
@@ -182,6 +183,37 @@ Button* group_get_button( Group *group, int id )
 }
 /*
 ====================================================================
+Choose the sprite column used for a button. The focus frame doubles as
+the attention frame, so a highlighted button stays lit when the pointer
+moves away.
+====================================================================
+*/
+static void group_update_button_rect( Button *button, int focused )
+{
+    int w = button->surf_rect.w;
+
+    if ( !button->active )
+        button->button_rect.x = 3 * w;
+    else if ( focused && button->down )
+        button->button_rect.x = 2 * w;
+    else if ( focused )
+        button->button_rect.x = w;
+    else if ( button->down && button->lock )
+        button->button_rect.x = 2 * w;
+    else if ( button->highlight )
+        button->button_rect.x = w;
+    else
+        button->button_rect.x = 0;
+}
+
+void group_refresh_button( Button *button, int focused )
+{
+    if ( button )
+        group_update_button_rect( button, focused );
+}
+
+/*
+====================================================================
 Set active state of a button by global id.
 ====================================================================
 */
@@ -191,12 +223,27 @@ void group_set_active( Group *group, int id, int active )
     for ( i = 0; i < group->button_count; i++ )
         if ( id == group->buttons[i].id ) {
             group->buttons[i].active = active;
-            if ( active ) {
-               group->buttons[i].button_rect.x = 0;
-               group->buttons[i].down = 0;
-            }
-            else
-               group->buttons[i].button_rect.x = 3 * group->w;
+            group->buttons[i].highlight = 0;
+            if ( active )
+                group->buttons[i].down = 0;
+            group_update_button_rect(&group->buttons[i], 0 );
+            break;
+        }
+}
+
+/*
+====================================================================
+Set the attention state of a button by global id. Inactive buttons are
+never highlighted.
+====================================================================
+*/
+void group_set_highlight( Group *group, int id, int value )
+{
+    int i;
+    for ( i = 0; i < group->button_count; i++ )
+        if ( id == group->buttons[i].id ) {
+            group->buttons[i].highlight = value && group->buttons[i].active;
+            group_update_button_rect(&group->buttons[i], 0 );
             break;
         }
 }
@@ -211,10 +258,7 @@ void group_lock_button( Group *group, int id, int down )
     Button *button = group_get_button( group, id );
     if ( button && button->lock ) {
         button->down = down;
-        if ( down )
-            button->button_rect.x = 2 * group->w;
-        else
-            button->button_rect.x = 0;
+        group_update_button_rect(button, 0 );
     }
 }
 /*
@@ -233,20 +277,16 @@ int group_handle_motion( Group *group, int x, int y )
         label_hide( group->label, 1 );
         for ( i = 0; i < group->button_count; i++ )
             if ( group->buttons[i].active ) {
-                if ( button_focus( &group->buttons[i], x, y ) ) {
+                int focused = button_focus( &group->buttons[i], x, y );
+                if ( focused )
                     label_write( group->label, 0, group->buttons[i].tooltip );
-                    if ( !group->buttons[i].down )
-                        group->buttons[i].button_rect.x = group->w;
-                }
-                else
-                    if ( !group->buttons[i].down || !group->buttons[i].lock )
-                        group->buttons[i].button_rect.x = 0;
+                group_update_button_rect(&group->buttons[i], focused );
             }
         return 1;
     }
     for ( i = 0; i < group->button_count; i++ )
-        if ( group->buttons[i].active && ( !group->buttons[i].down || !group->buttons[i].lock ) )
-            group->buttons[i].button_rect.x = 0;
+        if ( group->buttons[i].active )
+            group_update_button_rect(&group->buttons[i], 0 );
     return 0;
 }
 /*
@@ -268,10 +308,7 @@ int group_handle_button( Group *group, int button_id, int x, int y, Button **but
                 if ( button_focus( &group->buttons[i], x, y ) ) {
                     *button = &group->buttons[i];
                     (*button)->down = !(*button)->down;
-                    if ( (*button)->down )
-                        (*button)->button_rect.x = 2 * group->w;
-                    else
-                        (*button)->button_rect.x = 0;
+                    group_update_button_rect(*button, (*button)->down );
                     return 1;
                 }
     }

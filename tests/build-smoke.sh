@@ -92,6 +92,8 @@ for mode in normal trace; do
         "$tmp/tests/test-date.sh" "$tmp"
         echo "==> smoke: alpha blit check"
         "$tmp/tests/test-alpha.sh" "$tmp"
+        echo "==> smoke: reinforcement UI feedback check"
+        "$tmp/tests/test-ui-feedback.sh" "$tmp"
     fi
 
     echo "==> smoke: runtime launch ($mode)"

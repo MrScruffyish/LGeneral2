@@ -82,6 +82,7 @@ typedef struct {
     int id;                 /* if returned on click */
     char tooltip[32];       /* displayed as short help */
     int active;             /* true if button may be used */
+    int highlight;          /* draw the focus frame to draw attention */
     int down;               /* true if currently pressed */
     int lock;               /* keep button down when released */
 } Button;
@@ -137,6 +138,8 @@ Set active state of a button by global id.
 ====================================================================
 */
 void group_set_active( Group *group, int id, int active );
+void group_set_highlight( Group *group, int id, int value );
+void group_refresh_button( Button *button, int focused );
 
 /*
 ====================================================================

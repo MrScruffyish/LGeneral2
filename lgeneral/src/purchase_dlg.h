@@ -54,6 +54,10 @@ int purchase_dlg_handle_button( PurchaseDlg *pdlg, int bid, int cx, int cy,
 
 void purchase_dlg_reset( PurchaseDlg *pdlg );
 
+/** Return 1 if player @p can afford and accommodate at least one purchasable
+ * unit right now. */
+int player_can_purchase_any_unit( Player *p );
+
 
 #ifdef __cplusplus
 }
